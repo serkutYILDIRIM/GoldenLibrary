@@ -7,13 +7,27 @@
     <div class="card-body px-0">
         @foreach (var post in Model)
         {
-            <div class="mb-3 pb-3 border-bottom">
-                <div class="small text-muted mb-1">@post.PublishedOn.ToString("MMM d")</div>
-                <h6 class="mb-0 fw-bold">
-                    <a href="/posts/details/@post.Url" class="text-decoration-none text-dark">
-                        @post.Title
-                    </a>
-                </h6>
+            <div class="mb-3">
+                <div class="d-flex align-items-start">
+                    @if (!string.IsNullOrEmpty(post.Image))
+                    {
+                        <img src="~/img/@post.Image" class="rounded me-2" style="width: 60px; height: 60px; object-fit: cover;" alt="@post.Title">
+                    }
+                    else
+                    {
+                        <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-image text-muted"></i>
+                        </div>
+                    }
+                    <div>
+                        <h6 class="mb-1 fw-bold">
+                            <a href="/posts/details/@post.Url" class="text-decoration-none">
+                                @post.Title
+                            </a>
+                        </h6>
+                        <small class="text-muted">@post.PublishedOn.ToString("MMM d") · @(post.Content?.Length > 0 ? (post.Content.Length / 100) + " min read" : "Quick read")</small>
+                    </div>
+                </div>
             </div>
         }
     </div>

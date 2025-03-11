@@ -1,45 +1,107 @@
 ﻿@model PostsViewModel
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="bg-white p-4 p-md-5">
-            <h1 class="mb-4 fw-bold">Featured Stories</h1>
-            @foreach(var post in Model.Posts)
-            {
-                <div class="post-card">
-                    <div class="row">
-                        <div class="col-md-8 order-md-1 order-2">
-                            <h2 class="post-title">
-                                <a href="/posts/details/@post.Url" class="text-decoration-none text-dark">@post.Title</a>
-                            </h2>
-                            <p class="post-description">@post.Description</p>
-                            <div class="post-meta">
-                                <span class="me-3"><i class="bi bi-calendar-date me-1"></i>@post.PublishedOn.ToString("MMM d, yyyy")</span>
-                                <span><i class="bi bi-clock me-1"></i>4 min read</span>
-                            </div>
-                        </div>
-                        <div class="col-md-4 order-md-2 order-1 mb-3 mb-md-0">
-                            <img src="~/img/@post.Image" class="img-fluid rounded" alt="@post.Title">
-                        </div>
-                    </div>
+<!-- Hero Section -->
+<section class="hero-section mb-5">
+    <div class="hero-overlay"></div>
+    <div class="container">
+        <div class="hero-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Discover stories that inspire.</h1>
+                    <p class="fs-5 mb-4">Join a community of writers and readers who share ideas that matter.</p>
+                    <a href="/posts/popular" class="btn btn-lg rounded-pill" style="background-color: #B8860B; color: white;">Start reading</a>
                 </div>
-            }
-            
-            <nav aria-label="Page navigation" class="mt-5">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                </ul>
-            </nav>
+            </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="sticky-top pt-3">
-            <vc:tags-menu></vc:tags-menu>
-            <vc:new-posts></vc:new-posts>
+</section>
+
+<div class="container">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="bg-white p-4 shadow-sm rounded mb-5">
+                <h2 class="mb-4 fw-bold">Popular on Golden Library</h2>
+
+                @foreach (var post in Model.Posts)
+                {
+                    <div class="post-card">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="post-meta mb-2">
+                                    @if (post.User != null && !string.IsNullOrEmpty(post.User.Image))
+                                    {
+                                        <img src="~/img/@post.User.Image" alt="Author">
+                                    }
+                                    <span>@(post.User?.Name ?? "Unknown Author")</span>
+                                    <span class="mx-1">·</span>
+                                    <span>@post.PublishedOn.ToString("MMM d")</span>
+                                </div>
+                                <h3 class="post-title">
+                                    <a href="/posts/details/@(post.Url ?? post.PostId.ToString())" class="text-decoration-none">@(post.Title ?? "Untitled Post")</a>
+                                </h3>
+                                <p class="post-description">@(post.Description ?? "No description available")</p>
+                                <div class="d-flex align-items-center">
+                                    @if (post.Tags != null && post.Tags.Any())
+                                    {
+                                        <span class="badge bg-light text-dark me-2">@post.Tags.FirstOrDefault()?.Text</span>
+                                    }
+                                    <small class="text-muted">@(post.Content?.Length > 0 ? (post.Content.Length / 100) + " min read" : "Quick read")</small>
+                                    <a href="#" class="ms-auto text-golden"><i class="bi bi-bookmark"></i></a>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                @if (!string.IsNullOrEmpty(post.Image))
+                                {
+                                    <img src="~/img/@post.Image" class="img-fluid rounded" alt="@(post.Title ?? "Post Image")">
+                                }
+                                else
+                                {
+                                    <img src="~/img/default-post.jpg" class="img-fluid rounded" alt="Default Post Image">
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                }
+
+                <nav aria-label="Pagination" class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item"><a href="#" class="page-link">1</a></li>
+                        <li class="page-item"><a href="#" class="page-link">2</a></li>
+                        <li class="page-item"><a href="#" class="page-link">3</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <!-- Discover by Topic -->
+                <div class="sidebar-container mb-4">
+                    <h4 class="sidebar-title">Discover by Topic</h4>
+                    <vc:tags-menu></vc:tags-menu>
+                </div>
+
+                <!-- Recent Posts -->
+                <div class="sidebar-container mb-4">
+                    <h4 class="sidebar-title">Recently Published</h4>
+                    <vc:new-posts></vc:new-posts>
+                </div>
+
+                <!-- Newsletter Subscribe -->
+                <div class="sidebar-container">
+                    <h4 class="sidebar-title">Stay updated</h4>
+                    <p class="mb-3">Get the latest stories delivered to your inbox</p>
+                    <form>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" placeholder="Your email">
+                        </div>
+                        <button type="submit" class="btn btn-golden w-100 rounded-pill">Subscribe</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-

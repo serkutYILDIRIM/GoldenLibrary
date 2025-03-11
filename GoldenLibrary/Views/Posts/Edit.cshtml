@@ -1,90 +1,102 @@
 ﻿@model PostCreateViewModel
 
-<div class="row">
-    <div class="col-lg-10 offset-lg-1">
-        <div class="bg-white p-4 p-md-5 rounded">
-            <h1 class="fw-bold mb-4">Edit story</h1>
-            
-            <form asp-action="Edit" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="PostId" value="@Model.PostId">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                
-                <div class="mb-4">
-                    <label asp-for="Title" class="form-label"></label>
-                    <input asp-for="Title" class="form-control form-control-lg" placeholder="Story title">
-                    <span asp-validation-for="Title" class="text-danger small"></span>
-                </div>
-                
-                <div class="mb-4">
-                    <label asp-for="Description" class="form-label"></label>
-                    <input asp-for="Description" class="form-control" placeholder="Add a short description">
-                    <span asp-validation-for="Description" class="text-danger small"></span>
-                </div>
-                
-                <div class="mb-4">
-                    <label asp-for="Url" class="form-label"></label>
-                    <div class="input-group">
-                        <span class="input-group-text text-muted">/posts/</span>
-                        <input asp-for="Url" class="form-control" placeholder="url-for-your-post">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="bg-white p-5 shadow-sm rounded">
+                <h1 class="display-6 mb-4">Edit your story</h1>
+
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" name="PostId" value="@Model.PostId" />
+
+                    <div class="mb-4">
+                        <input type="text" class="form-control form-control-lg border-0 fw-bold"
+                               id="Title" name="Title" value="@Model.Title"
+                               placeholder="Title" style="font-size: 2rem;">
                     </div>
-                    <span asp-validation-for="Url" class="text-danger small"></span>
-                </div>
-                
-                <div class="mb-3">
-                    <img src="/img/@Model.ImageName" alt="" class="img-thumbnail" style="width: 150px;">
-                </div>
-                
-                <div class="mb-4">
-                    <label asp-for="Image" class="form-label"></label>
-                    <input asp-for="Image" class="form-control" accept="image/*">
-                    <span asp-validation-for="Image" class="text-danger small"></span>
-                </div>
-                
-                <div class="mb-4">
-                    <label asp-for="Content" class="form-label"></label>
-                    <textarea asp-for="Content" id="editor" rows="10" class="form-control"></textarea>
-                    <span asp-validation-for="Content" class="text-danger small"></span>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label">Tags</label>
-                    <div class="d-flex flex-wrap gap-2 mb-2">
-                        @foreach (var tag in ViewBag.Tags)
-                        {
-                            <div class="form-check">
-                                <input type="checkbox" name="Tags" value="@tag.TagId" id="tag_@tag.TagId" class="form-check-input"
-                                       @(Model.Tags.Any(i=> i == tag.TagId) ? "checked" : "")>
-                                <label for="tag_@tag.TagId" class="form-check-label">@tag.Text</label>
-                            </div>
-                        }
+
+                    <div class="mb-4">
+                        <textarea class="form-control border-0"
+                                  id="Description" name="Description"
+                                  rows="3" placeholder="Write a brief description...">@Model.Description</textarea>
                     </div>
-                </div>
-                
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="form-check">
-                            <input asp-for="IsActive" class="form-check-input">
-                            <label asp-for="IsActive" class="form-check-label"></label>
+
+                    <div class="mb-4">
+                        <textarea class="form-control border-0"
+                                  id="Content" name="Content"
+                                  rows="12" placeholder="Tell your story...">@Model.Content</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="Url" class="form-label text-muted">URL Slug</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted">/posts/details/</span>
+                            <input type="text" class="form-control" id="Url" name="Url" value="@Model.Url">
                         </div>
                     </div>
+
+                    @if (User.IsInRole("admin"))
+                    {
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" value="true" @(Model.IsActive ? "checked" : "")>
+                            <label class="form-check-label" for="IsActive">Publish now</label>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Select Tags</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var tag in ViewBag.Tags)
+                            {
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input"
+                                           name="tagIds" value="@tag.TagId"
+                                    @(Model.Tags != null && Model.Tags.Any(t => t.TagId == tag.TagId) ? "checked" : "")>
+                                    <label class="form-check-label">@tag.Text</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-5">
+                        <a href="/posts/list" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-golden rounded-pill px-4">Save and publish</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <div class="sidebar-container">
+                    <h4 class="sidebar-title">Writing Tips</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-golden me-2"></i>
+                            Start with a compelling title
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-golden me-2"></i>
+                            Use your unique voice and perspective
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-golden me-2"></i>
+                            Include relevant images to enhance engagement
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-golden me-2"></i>
+                            Proofread before publishing
+                        </li>
+                    </ul>
                 </div>
-                
-                <div class="d-flex gap-3">
-                    <button type="submit" class="btn btn-primary px-4 py-2">Update Story</button>
-                    <a href="/posts/list" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script src="https://cdn.ckeditor.com/ckeditor5/38.1.0/classic/ckeditor.js"></script>
-    <script>
-        ClassicEditor
-            .create(document.querySelector('#editor'))
-            .catch(error => {
-                console.error(error);
-            });
-    </script>
-}
+<style>
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #d4af37;
+    }
+</style>

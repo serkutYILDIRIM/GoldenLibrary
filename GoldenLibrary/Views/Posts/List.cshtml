@@ -1,60 +1,161 @@
-﻿@model List<Post>
+﻿@model IEnumerable<Post>
 
-<div class="row">
-    <div class="col-12">
-        <div class="bg-white p-4 p-md-5 rounded">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="fw-bold mb-0">Your Stories</h1>
-                <a href="/posts/create" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Write a story</a>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center bg-white p-4 shadow-sm rounded">
+                <div>
+                    <h1 class="h3 mb-0">Your stories</h1>
+                </div>
+                <div>
+                    <a href="/posts/create" class="btn btn-golden rounded-pill">
+                        <i class="bi bi-pencil"></i> Write a story
+                    </a>
+                </div>
             </div>
-            
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 140px;">Image</th>
-                            <th>Title</th>
-                            <th class="text-center">Status</th>
-                            <th style="width: 130px;" class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach(var item in Model)
-                        {
-                            <tr>
-                                <td>
-                                    <img src="/img/@item.Image" class="img-thumbnail" alt="@item.Title" style="height: 80px; object-fit: cover;">
-                                </td>
-                                <td>
-                                    <h6 class="mb-1">@item.Title</h6>
-                                    <small class="text-muted">@item.PublishedOn.ToString("MMM d, yyyy")</small>
-                                </td>
-                                <td class="text-center">
-                                    @if (item.IsActive)
-                                    {
-                                        <span class="badge bg-success">Published</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">Draft</span>
-                                    }
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-end">
-                                        <a href="/posts/edit/@item.PostId" class="btn btn-sm btn-outline-secondary me-2">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a href="#" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- Sidebar Navigation -->
+            <div class="bg-white p-4 shadow-sm rounded mb-4">
+                <ul class="nav flex-column nav-pills">
+                    <li class="nav-item mb-2">
+                        <a class="nav-link active" href="/posts/list">
+                            <i class="bi bi-grid me-2"></i> All stories
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link text-dark" href="/posts/drafts">
+                            <i class="bi bi-file-earmark me-2"></i> Drafts
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a class="nav-link text-dark" href="/posts/published">
+                            <i class="bi bi-check-circle me-2"></i> Published
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="/stats">
+                            <i class="bi bi-graph-up me-2"></i> Stats
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Tags Filter -->
+            <div class="bg-white p-4 shadow-sm rounded">
+                <h5 class="text-golden mb-3">Filter by topic</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="#" class="badge bg-light text-dark text-decoration-none p-2">All</a>
+                    <a href="#" class="badge text-white text-decoration-none p-2 bg-golden">Writing</a>
+                    <a href="#" class="badge bg-light text-dark text-decoration-none p-2">Books</a>
+                    <a href="#" class="badge bg-light text-dark text-decoration-none p-2">Fiction</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <!-- Stories List -->
+            <div class="bg-white shadow-sm rounded p-4">
+                <div class="d-flex justify-content-between mb-4">
+                    <h5 class="mb-0">All stories (@Model.Count())</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Sort by: Recent
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Recent</a></li>
+                            <li><a class="dropdown-item" href="#">Title A-Z</a></li>
+                            <li><a class="dropdown-item" href="#">Most views</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                @foreach (var post in Model)
+                {
+                    <div class="card border-0 mb-4">
+                        <div class="row g-0">
+                            <div class="col-md-8">
+                                <div class="card-body p-0">
+                                    <h5 class="card-title mb-1">
+                                        <a href="/posts/details/@post.Url" class="text-decoration-none text-dark">@post.Title</a>
+                                    </h5>
+                                    <p class="card-text text-muted mb-2 small">
+                                        @post.Description?.Substring(0, Math.Min(post.Description.Length, 100))
+                                        @(post.Description?.Length > 100 ? "..." : "")
+                                    </p>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge @(post.IsActive ? "bg-success" : "bg-warning") me-2">
+                                            @(post.IsActive ? "Published" : "Draft")
+                                        </span>
+                                        <span class="text-muted small">
+                                            @post.PublishedOn.ToString("MMM d, yyyy") ·
+                                            @(post.Content?.Length > 0 ? (post.Content.Length / 100) + " min read" : "Quick read")
+                                        </span>
                                     </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                    <div class="d-flex">
+                                        <a href="/posts/edit/@post.PostId" class="btn btn-sm btn-outline-secondary me-2">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a href="/posts/stats/@post.PostId" class="btn btn-sm btn-outline-secondary me-2">
+                                            <i class="bi bi-graph-up"></i> Stats
+                                        </a>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                More
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="/posts/details/@post.Url">View story</a></li>
+                                                <li><a class="dropdown-item" href="#">Share story</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="/posts/delete/@post.PostId">Delete</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                @if (!string.IsNullOrEmpty(post.Image))
+                                {
+                                    <img src="~/img/@post.Image" class="img-fluid rounded" alt="@post.Title">
+                                }
+                                else
+                                {
+                                    <div class="bg-light rounded h-100 d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-image text-muted fs-1"></i>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                }
+
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-journal-text text-muted fs-1"></i>
+                        <p class="mt-3">You haven't written any stories yet.</p>
+                        <a href="/posts/create" class="btn btn-golden rounded-pill">Write a story</a>
+                    </div>
+                }
             </div>
         </div>
     </div>
 </div>
 
+<style>
+    .nav-link.active {
+        background-color: #d4af37 !important;
+    }
+
+    .card {
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+</style>
