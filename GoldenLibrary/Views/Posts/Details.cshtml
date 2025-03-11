@@ -64,7 +64,7 @@
                     <h3 class="h5 mb-4 text-golden">Responses (@Model.Comments.Count)</h3>
 
                     <!-- Comment Form -->
-                    <form asp-action="AddComment" method="post" class="mb-5">
+                    <form asp-controller="Posts" asp-action="AddComment" method="post" class="mb-5">
                         <input type="hidden" name="PostId" value="@Model.PostId" />
                         <div class="d-flex mb-3">
                             <img src="~/img/profile.jpg" class="rounded-circle me-2" width="40" height="40" alt="Your profile">
@@ -88,12 +88,6 @@
                                     <div class="comment-date mb-2">@comment.PublishedOn.ToString("MMM d, yyyy")</div>
                                     <p>@comment.Text</p>
                                     <div class="d-flex align-items-center">
-                                        <button class="btn btn-sm text-muted me-3">
-                                            <i class="bi bi-hand-thumbs-up"></i> <span>8</span>
-                                        </button>
-                                        <button class="btn btn-sm text-muted">
-                                            <i class="bi bi-chat"></i> <span>Reply</span>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
