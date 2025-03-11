@@ -1,22 +1,31 @@
 ﻿@model LoginViewModel
 
-<div class="row">
-    <div class="col-12">
-        <div class="bg-white p-4">
-            <h1>Login</h1>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="bg-white p-4 p-md-5 rounded">
+            <h1 class="display-6 fw-bold mb-4 text-center">Welcome back</h1>
             <form action="Login" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="mb-3">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                
+                <div class="mb-4">
                     <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" class="form-control">
-                    <span asp-validation-for="Email" class="text-danger"></span>
+                    <input asp-for="Email" class="form-control form-control-lg" placeholder="Enter your email">
+                    <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
-                <div class="mb-3">
+                
+                <div class="mb-4">
                     <label asp-for="Password" class="form-label"></label>
-                    <input asp-for="Password" class="form-control">
-                    <span asp-validation-for="Password" class="text-danger"></span>
+                    <input asp-for="Password" class="form-control form-control-lg" placeholder="Enter your password">
+                    <span asp-validation-for="Password" class="text-danger small"></span>
                 </div>
-                <button type="submit" class="btn btn-primary">Login</button>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">Sign in</button>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <p class="mb-0">Don't have an account? <a href="/users/register">Sign up</a></p>
+                </div>
             </form>
         </div>
     </div>

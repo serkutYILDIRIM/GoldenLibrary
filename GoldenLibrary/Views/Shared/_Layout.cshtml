@@ -3,48 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/css/style.css">
-    <title>Document</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <title>Golden Library</title>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg bg-white">
         <div class="container">
             <a href="/posts" class="navbar-brand">
-                <i class="bi bi-code"></i> BlogApp
+                <i class="bi bi-book" style="color: var(--gold-primary);"></i> Golden Library
             </a>
 
-            <ul class="navbar-nav ms-auto">
-                @if (User.Identity!.IsAuthenticated)
-                {
-                    <li class="nav-item">
-                        <a href="/posts/list" class="nav-link">Posts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">@User.Identity.Name</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/users/logout" class="nav-link">Logout</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="nav-item">
-                        <a href="/users/login" class="nav-link">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/users/register" class="nav-link">Register</a>
-                    </li>
-                }
-
-            </ul>
-
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto">
+                    @if (User.Identity!.IsAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <a href="/posts/list" class="nav-link">Posts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/posts/create" class="nav-link">Write</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @User.Identity.Name
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="/profile/@User.Identity.Name">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/users/logout">Logout</a></li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a href="/users/login" class="nav-link">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/users/register" class="nav-link btn btn-outline-secondary py-1 px-3 ms-2">Register</a>
+                        </li>
+                    }
+                </ul>
+            </div>
         </div>
     </nav>
-    <div class="container mt-3">
+    
+    <div class="container mt-4">
         @RenderBody()
     </div>
+    
+    <footer class="py-5 mt-5 border-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-3 fw-bold text-dark">Golden Library</h5>
+                    <p class="text-muted">A community where good ideas find you.</p>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h6 class="mb-3 fw-bold text-dark">Navigation</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/posts" class="text-muted text-decoration-none">Home</a></li>
+                        <li class="mb-2"><a href="/posts/list" class="text-muted text-decoration-none">My Stories</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h6 class="mb-3 fw-bold text-dark">Help</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">About</a></li>
+                        <li class="mb-2"><a href="#" class="text-muted text-decoration-none">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-3 fw-bold text-dark">Stay updated</h6>
+                    <p class="text-muted mb-3">Subscribe to our newsletter</p>
+                    <div class="input-group">
+                        <input type="email" class="form-control" placeholder="Your email address">
+                        <button class="btn btn-primary" type="button">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-top mt-4 pt-4 text-center text-muted">
+                <p>&copy; @DateTime.Now.Year - Golden Library. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

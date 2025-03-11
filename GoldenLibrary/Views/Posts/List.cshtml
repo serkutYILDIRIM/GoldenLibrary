@@ -2,32 +2,59 @@
 
 <div class="row">
     <div class="col-12">
-        <h2>Post List</h2>
-        <a href="/posts/create" class="btn btn-primary">New Post</a>
-        <table class="table tabled-bordered mt-3">
-            <thead>
-                <tr>
-                    <th style="width: 200px;">Image</th>
-                    <th>Title</th>
-                    <th>Is Active</th>
-                    <th style="width: 125px;"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(var item in Model)
-                {
-                    <tr>
-                        <td><img src="/img/@item.Image" class="img-fluid" alt=""></td>
-                        <td>@item.Title</td>
-                        <td>@item.IsActive</td>
-                        <td>
-                            <a href="/posts/edit/@item.PostId" class="btn btn-sm btn-primary">Edit</a>
-                            <a href="#" class="btn btn-sm btn-danger">Delete</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <div class="bg-white p-4 p-md-5 rounded">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="fw-bold mb-0">Your Stories</h1>
+                <a href="/posts/create" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Write a story</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 140px;">Image</th>
+                            <th>Title</th>
+                            <th class="text-center">Status</th>
+                            <th style="width: 130px;" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="/img/@item.Image" class="img-thumbnail" alt="@item.Title" style="height: 80px; object-fit: cover;">
+                                </td>
+                                <td>
+                                    <h6 class="mb-1">@item.Title</h6>
+                                    <small class="text-muted">@item.PublishedOn.ToString("MMM d, yyyy")</small>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Published</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Draft</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-end">
+                                        <a href="/posts/edit/@item.PostId" class="btn btn-sm btn-outline-secondary me-2">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

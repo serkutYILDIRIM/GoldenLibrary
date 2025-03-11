@@ -1,15 +1,16 @@
 ﻿@model List<Post>
 
-<div class="card mb-2">
-    <div class="card-header">
-        <h5 class="card-title mb-0">New Posts</h5>
+<div class="card mb-4 border-0">
+    <div class="card-header bg-transparent border-0">
+        <h5 class="card-title mb-0 fw-bold">Recently Published</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body px-0">
         @foreach (var post in Model)
         {
-            <div class="mb-3">
-                <h6 class="mb-0">
-                    <a href="/posts/details/@post.Url">
+            <div class="mb-3 pb-3 border-bottom">
+                <div class="small text-muted mb-1">@post.PublishedOn.ToString("MMM d")</div>
+                <h6 class="mb-0 fw-bold">
+                    <a href="/posts/details/@post.Url" class="text-decoration-none text-dark">
                         @post.Title
                     </a>
                 </h6>

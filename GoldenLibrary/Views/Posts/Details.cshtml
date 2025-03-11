@@ -2,41 +2,66 @@
 
 <div class="row">
     <div class="col-lg-8">
-        <div class="bg-white p-4">
-            <h1 class="h4 mb-4">@Model.Title</h1>
-            <div class="tags">
+        <div class="bg-white p-4 p-md-5">
+            <h1 class="display-5 fw-bold mb-4">@Model.Title</h1>
+            
+            <div class="d-flex align-items-center mb-4">
+                <img src="/img/@Model.User.Image" alt="@Model.User.Name" class="rounded-circle me-2" style="width: 48px; height: 48px; object-fit: cover;">
+                <div>
+                    <div class="fw-bold"><a href="/profile/@Model.User.UserName" class="text-decoration-none">@Model.User.Name</a></div>
+                    <div class="text-muted small">
+                        <span>@Model.PublishedOn.ToString("MMM d, yyyy")</span> · 
+                        <span>5 min read</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tags mb-4">
                 @foreach (var tag in Model.Tags)
                 {
-                    <a href="/posts/tag/@tag.Url" class="badge bg-@tag.Color bg-opacity-10 text-@tag.Color mb-2 fw-bold">@tag.Text</a>
+                    <a href="/posts/tag/@tag.Url" class="tag-pill text-decoration-none">@tag.Text</a>
                 }
             </div>
-            <img src="~/img/@Model.Image" class="img-fluid rounded" alt="">
-            <ul class="list-inline my-3 ">
-                <li class="list-inline-item"><i class="bi bi-calendar"></i> @Model.PublishedOn.ToString("d")</li>
-                <li class="list-inline-item"><i class="bi bi-person-circle"></i> <a href="/profile/@Model.User.UserName">@Model.User.Name</a> </li>
-            </ul>
-            <hr class="py-3">
-            <div>@Html.Raw(@Model.Content)</div>
-        </div>
-        <div class="bg-white mt-3">
-            <div class="card border-0">
-                <div class="card-header pb-0">
-                    <h4><span id="commentCount">@Model.Comments.Count()</span> adet yorum</h4>
+
+            <img src="~/img/@Model.Image" class="img-fluid rounded mb-4" alt="@Model.Title">
+            
+            <article class="post-content mb-5">
+                @Html.Raw(@Model.Content)
+            </article>
+            
+            <!-- Simple author info at the end of article -->
+            <div class="border-top border-bottom py-4 my-4">
+                <div class="d-flex align-items-center">
+                    <img src="/img/@Model.User.Image" alt="@Model.User.Name" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                    <div>
+                        <h5 class="mb-1">
+                            <a href="/profile/@Model.User.UserName" class="text-decoration-none text-dark">@Model.User.Name</a>
+                        </h5>
+                        <p class="text-muted mb-0 small">Author at Golden Library</p>
+                    </div>
                 </div>
-                <div class="card-body">
+            </div>
+        </div>
+        
+        <div class="bg-white mt-4 p-4 p-md-5">
+            <div class="card border-0">
+                <div class="card-header bg-transparent pb-0 border-0">
+                    <h3 class="fw-bold mb-3">Responses <span class="text-muted">(@Model.Comments.Count())</span></h3>
+                </div>
+                <div class="card-body px-0">
                     <div id="comments">
                         @foreach (var comment in Model.Comments)
                         {
-                            <div class="my-4 d-flex">
-                                <img src="/img/@comment.User.Image" alt="" class="avatar rounded-circle float-start me-3">
+                            <div class="d-flex mb-4 pb-4 border-bottom">
+                                <img src="/img/@comment.User.Image" alt="@comment.User.Name" class="avatar rounded-circle me-3" style="width: 40px; height: 40px;">
                                 <div>
-                                    <div class="mb-2 d-flex">
-                                        <h6 class="me-2">
-                                            <a href="/profile/@comment.User.UserName">@comment.User.Name</a>
+                                    <div class="mb-2">
+                                        <h6 class="mb-0 fw-bold">
+                                            <a href="/profile/@comment.User.UserName" class="text-decoration-none">@comment.User.Name</a>
                                         </h6>
-                                        <small>@comment.PublishedOn.ToString("G")</small>
+                                        <small class="text-muted">@comment.PublishedOn.ToString("MMM d, yyyy")</small>
                                     </div>
-                                    <p>@comment.Text</p>
+                                    <p class="mb-0">@comment.Text</p>
                                 </div>
                             </div>
                         }
@@ -44,42 +69,53 @@
 
                     @if (User.Identity!.IsAuthenticated)
                     {
-                        <hr class="my-4">
-                        <div>
-                            <h4 class="mb-3">Yorum Ekle</h4>
+                        <div class="mt-5">
+                            <h4 class="mb-4 fw-bold">Add a response</h4>
                             <form action="/posts/AddComment" method="post">
                                 <input type="hidden" id="PostId" name="PostId" value="@Model.PostId">
                                 <div class="mb-3">
-                                    <label for="Text" class="form-label">Yorum</label>
-                                    <textarea type="text" name="Text" id="Text" rows="3" class="form-control"></textarea>
+                                    <textarea name="Text" id="Text" rows="4" class="form-control" placeholder="What are your thoughts?"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <button id="btnYorumKayit" type="submit" class="btn btn-primary">Kaydet</button>
+                                    <button id="btnYorumKayit" type="submit" class="btn btn-primary px-4">Respond</button>
                                 </div>
                             </form>
                         </div>
                     }
                     else
                     {
-                        <p>Yorum için uygulamaya giriş yapmalısınız. <a href="/users/login">Login</a></p>
+                        <div class="alert alert-light border mt-4">
+                            <p class="mb-0">Sign in to leave a response. <a href="/users/login">Login</a></p>
+                        </div>
                     }
-
                 </div>
             </div>
         </div>
     </div>
     <div class="col-lg-4">
-        <vc:tags-menu></vc:tags-menu>
-        <vc:new-posts></vc:new-posts>
+        <div class="sticky-top pt-3">
+            <vc:tags-menu></vc:tags-menu>
+            <vc:new-posts></vc:new-posts>
+        </div>
     </div>
-
 </div>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script type="text/javascript">
         $(document).ready(function() {
+            // Reading progress bar
+            const progressContainer = $('<div class="progress-container"><div class="progress-bar" id="readingProgress"></div></div>');
+            $('body').prepend(progressContainer);
+            
+            $(window).scroll(function() {
+                let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                let scrolled = (winScroll / height) * 100;
+                $("#readingProgress").css("width", scrolled + "%");
+            });
 
+            // Existing comment ajax functionality
             $("#btnYorumKayit").click(function() {
                 $.ajax({
                     type: 'POST',
@@ -117,7 +153,6 @@
 
                 return false;
             });
-
         });
     </script>
 }
