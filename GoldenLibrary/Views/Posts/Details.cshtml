@@ -31,7 +31,7 @@
                 <div class="mb-4">
                     @foreach (var tag in Model.Tags)
                     {
-                        <a href="/posts/?tag=@tag.Url" class="badge text-decoration-none p-2 rounded-pill me-1" 
+                        <a href="/posts/?tag=@tag.Url" class="badge text-decoration-none p-2 rounded-pill me-1"
                            style="background-color: var(--gold-lightest); color: var(--gold-darker);">@tag.Text</a>
                     }
                 </div>
@@ -60,37 +60,44 @@
                 </div>
 
                 <!-- Comments Section -->
-                <div class="comment-container">
-                    <h3 class="h5 mb-4 text-golden">Responses (@Model.Comments.Count)</h3>
-
-                    <!-- Comment Form -->
-                    <form asp-controller="Posts" asp-action="AddComment" method="post" class="mb-5">
-                        <input type="hidden" name="PostId" value="@Model.PostId" />
-                        <div class="d-flex mb-3">
-                            <img src="~/img/profile.jpg" class="rounded-circle me-2" width="40" height="40" alt="Your profile">
-                            <div class="flex-grow-1">
-                                <textarea name="Text" class="form-control border-0 bg-light" rows="3" placeholder="What are your thoughts?"></textarea>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-golden rounded-pill">Respond</button>
-                        </div>
-                    </form>
-
-                    <!-- Comments List -->
-                    @foreach (var comment in Model.Comments)
-                    {
-                        <div class="comment-item border-bottom pb-4 mb-4">
-                            <div class="d-flex">
-                                <img src="~/img/@comment.User.Image" class="rounded-circle me-2" width="40" height="40" alt="@comment.User.Name">
+                <div class="card-body px-0">
+                    <div id="comments">
+                        @foreach (var comment in Model.Comments)
+                        {
+                            <div class="d-flex mb-4 pb-4 border-bottom">
+                                <img src="/img/@comment.User.Image" alt="@comment.User.Name" class="avatar rounded-circle me-3" style="width: 40px; height: 40px;">
                                 <div>
-                                    <div class="fw-bold comment-author">@comment.User.Name</div>
-                                    <div class="comment-date mb-2">@comment.PublishedOn.ToString("MMM d, yyyy")</div>
-                                    <p>@comment.Text</p>
-                                    <div class="d-flex align-items-center">
+                                    <div class="mb-2">
+                                        <h6 class="mb-0 fw-bold">
+                                            <a href="/profile/@comment.User.UserName" class="text-decoration-none">@comment.User.Name</a>
+                                        </h6>
+                                        <small class="text-muted">@comment.PublishedOn.ToString("MMM d, yyyy")</small>
                                     </div>
+                                    <p class="mb-0">@comment.Text</p>
                                 </div>
                             </div>
+                        }
+                    </div>
+
+                    @if (User.Identity!.IsAuthenticated)
+                    {
+                        <div class="mt-5">
+                            <h4 class="mb-4 fw-bold">Add a response</h4>
+                            <form action="/posts/AddComment" method="post">
+                                <input type="hidden" id="PostId" name="PostId" value="@Model.PostId">
+                                <div class="mb-3">
+                                    <textarea name="Text" id="Text" rows="4" class="form-control" placeholder="What are your thoughts?"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <button id="submitButon" type="submit" class="btn btn-golden rounded-pill">Respond</button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-light border mt-4">
+                            <p class="mb-0">Sign in to leave a response. <a href="/users/login">Login</a></p>
                         </div>
                     }
                 </div>
@@ -157,8 +164,8 @@
                 <div class="d-flex align-items-center">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <button class="btn @(ViewBag.HasLiked == true ? "btn-danger" : "btn-outline-danger") ms-2" 
-                                id="likeButton" 
+                        <button class="btn @(ViewBag.HasLiked == true ? "btn-danger" : "btn-outline-danger") ms-2"
+                                id="likeButton"
                                 data-post-id="@Model.PostId">
                             <i class="fa fa-heart"></i>
                             <span>@(ViewBag.HasLiked == true ? "Beğendin" : "Beğen")</span>
@@ -177,31 +184,57 @@
 </div>
 
 @section Scripts {
-    <script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
         $(document).ready(function() {
-            $("#likeButton").click(function() {
-                const postId = $(this).data("post-id");
-                
+            // Reading progress bar
+            const progressContainer = $('<div class="progress-container"><div class="progress-bar" id="readingProgress"></div></div>');
+            $('body').prepend(progressContainer);
+
+            $(window).scroll(function() {
+                let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                let scrolled = (winScroll / height) * 100;
+                $("#readingProgress").css("width", scrolled + "%");
+            });
+
+            // Existing comment ajax functionality
+            $("#submitButon").click(function() {
                 $.ajax({
-                    url: "@Url.Action("LikePost")",
-                    type: "POST",
-                    data: { postId: postId },
-                    success: function(response) {
-                        if (response.success) {
-                            $("#likesCount").text(response.likeCount);
-                            
-                            if (response.liked) {
-                                $("#likeButton").removeClass("btn-outline-danger").addClass("btn-danger");
-                                $("#likeButton span").text("Beğendin");
-                            } else {
-                                $("#likeButton").removeClass("btn-danger").addClass("btn-outline-danger");
-                                $("#likeButton span").text("Beğen");
-                            }
-                        } else {
-                            alert(response.message);
-                        }
+                    type: 'POST',
+                    url: '@Url.Action("AddComment")',
+                    dataType: 'json',
+                    data: {
+                        PostId: $('#PostId').val(),
+                        UserName: $('#UserName').val(),
+                        Text: $('#Text').val(),
+                    },
+                    success: function(yorum) {
+
+                        var date = new Date(yorum.publishedOn);
+
+                        $("#comments").append(`
+                            <div class="my-4 d-flex">
+                                <img src="/img/${yorum.avatar}" alt="" class="avatar rounded-circle float-start me-3">
+                                <div>
+                                    <div class="mb-2 d-flex">
+                                        <h6 class="me-2">${yorum.username}</h6>
+                                        <small>${date.toLocaleDateString()}</small>
+                                    </div>
+                                    <p>${yorum.text}</p>
+                                </div>
+                            </div>
+                        `);
+
+                        $("#UserName").val('');
+                        $("#Text").val('');
+
+                        var adet = parseInt($("#commentCount").text());
+                        $("#commentCount").text(adet + 1);
                     }
                 });
+
+                return false;
             });
         });
     </script>
