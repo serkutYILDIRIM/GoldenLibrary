@@ -1,32 +1,63 @@
 ﻿@model User
 
 <div class="row">
-    <div class="col-md-2">
-        <div class="bg-white p-2">
-            <img src="/img/@Model.Image" class="img-fluid" alt="">
-        </div>
-    </div>
-    <div class="col-md-10">
-        <div class="bg-white p-4">
-            <h5>@Model.Name</h5>
-            <hr>
-            <div id="posts">
-                <h5 class="my-4">Yayınlanan Gönderiler</h5>
-                <ul class="list-group">
-                    @foreach (var post in @Model.Posts)
-                    {
-                        <li class="list-group-item"><i class="bi bi-caret-right-fill"></i> <a href="/posts/details/@post.Url">@post.Title</a></li>
-                    }
-                </ul>
+    <div class="col-md-10 offset-md-1">
+        <div class="bg-white p-4 p-md-5 rounded">
+            <div class="d-flex align-items-center mb-5">
+                <img src="/img/@Model.Image" class="rounded-circle me-4" alt="@Model.Name" style="width: 100px; height: 100px; object-fit: cover;">
+                <div>
+                    <h1 class="display-6 fw-bold mb-1">@Model.Name</h1>
+                    <p class="text-muted mb-0">@Model.UserName</p>
+                </div>
             </div>
+            
+            <div id="posts" class="mb-5">
+                <h2 class="fw-bold mb-3">Published Stories</h2>
+                @if (Model.Posts.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var post in @Model.Posts)
+                        {
+                            <a href="/posts/details/@post.Url" class="list-group-item list-group-item-action border-bottom py-3 px-0 bg-transparent">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-text me-3 text-muted"></i>
+                                    <div>
+                                        <h5 class="mb-1">@post.Title</h5>
+                                        <small class="text-muted">Published on @post.PublishedOn.ToString("MMM d, yyyy")</small>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No stories published yet.</p>
+                }
+            </div>
+            
             <div id="comments">
-                <h5 class="my-4">Yorumlar</h5>
-                <ul class="list-group">
-                    @foreach (var comment in @Model.Comments)
-                    {
-                        <li class="list-group-item"><i class="bi bi-chat-right-text-fill"></i> @comment.Text <i><u>[@comment.Post.Title]</u></i></li>
-                    }
-                </ul>
+                <h2 class="fw-bold mb-3">Comments</h2>
+                @if (Model.Comments.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var comment in @Model.Comments)
+                        {
+                            <div class="list-group-item border-bottom py-3 px-0 bg-transparent">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-chat-quote me-2 text-muted"></i>
+                                    <h6 class="mb-0">On <a href="/posts/details/@comment.Post.Url">@comment.Post.Title</a></h6>
+                                    <small class="text-muted ms-auto">@comment.PublishedOn.ToString("MMM d")</small>
+                                </div>
+                                <p class="mb-0">@comment.Text</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No comments yet.</p>
+                }
             </div>
         </div>
     </div>

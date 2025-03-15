@@ -1,18 +1,33 @@
 ﻿@model List<Post>
 
-<div class="card mb-2">
-    <div class="card-header">
-        <h5 class="card-title mb-0">New Posts</h5>
+<div class="card mb-4 border-0">
+    <div class="card-header bg-transparent border-0">
+        <h5 class="card-title mb-0 fw-bold">Recently Published</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body px-0">
         @foreach (var post in Model)
         {
             <div class="mb-3">
-                <h6 class="mb-0">
-                    <a href="/posts/details/@post.Url">
-                        @post.Title
-                    </a>
-                </h6>
+                <div class="d-flex align-items-start">
+                    @if (!string.IsNullOrEmpty(post.Image))
+                    {
+                        <img src="~/img/@post.Image" class="rounded me-2" style="width: 60px; height: 60px; object-fit: cover;" alt="@post.Title">
+                    }
+                    else
+                    {
+                        <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-image text-muted"></i>
+                        </div>
+                    }
+                    <div>
+                        <h6 class="mb-1 fw-bold">
+                            <a href="/posts/details/@post.Url" class="text-decoration-none">
+                                @post.Title
+                            </a>
+                        </h6>
+                        <small class="text-muted">@post.PublishedOn.ToString("MMM d") · @(post.Content?.Length > 0 ? (post.Content.Length / 100) + " min read" : "Quick read")</small>
+                    </div>
+                </div>
             </div>
         }
     </div>

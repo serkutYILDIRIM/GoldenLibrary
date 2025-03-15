@@ -1,42 +1,79 @@
 ﻿@model Post
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="bg-white p-4">
-            <h1 class="h4 mb-4">@Model.Title</h1>
-            <div class="tags">
-                @foreach (var tag in Model.Tags)
-                {
-                    <a href="/posts/tag/@tag.Url" class="badge bg-@tag.Color bg-opacity-10 text-@tag.Color mb-2 fw-bold">@tag.Text</a>
-                }
-            </div>
-            <img src="~/img/@Model.Image" class="img-fluid rounded" alt="">
-            <ul class="list-inline my-3 ">
-                <li class="list-inline-item"><i class="bi bi-calendar"></i> @Model.PublishedOn.ToString("d")</li>
-                <li class="list-inline-item"><i class="bi bi-person-circle"></i> <a href="/profile/@Model.User.UserName">@Model.User.Name</a> </li>
-            </ul>
-            <hr class="py-3">
-            <div>@Html.Raw(@Model.Content)</div>
-        </div>
-        <div class="bg-white mt-3">
-            <div class="card border-0">
-                <div class="card-header pb-0">
-                    <h4><span id="commentCount">@Model.Comments.Count()</span> adet yorum</h4>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <!-- Article Header -->
+        <div class="col-lg-8 mb-4">
+            <div class="bg-white p-5 shadow-sm rounded">
+                <h1 class="display-5 fw-bold mb-3">@Model.Title</h1>
+
+                <div class="d-flex align-items-center mb-4">
+                    <img src="~/img/@Model.User.Image" class="rounded-circle me-2" width="48" height="48" alt="@Model.User.Name">
+                    <div>
+                        <div class="fw-bold">@Model.User.Name</div>
+                        <div class="text-muted d-flex align-items-center">
+                            <span>@Model.PublishedOn.ToString("MMM d, yyyy")</span>
+                            <span class="mx-1">·</span>
+                            <span>@(Model.Content?.Length > 0 ? (Model.Content.Length / 100) + " min read" : "Quick read")</span>
+                        </div>
+                    </div>
+                    <div class="ms-auto">
+                        <button class="btn btn-outline-secondary rounded-circle me-2" title="Share">
+                            <i class="bi bi-share"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary rounded-circle" title="Save">
+                            <i class="bi bi-bookmark"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
+
+                <!-- Tags -->
+                <div class="mb-4">
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <a href="/posts/?tag=@tag.Url" class="badge text-decoration-none p-2 rounded-pill me-1"
+                           style="background-color: var(--gold-lightest); color: var(--gold-darker);">@tag.Text</a>
+                    }
+                </div>
+
+                <!-- Featured Image -->
+                @if (!string.IsNullOrEmpty(Model.Image))
+                {
+                    <img src="~/img/@Model.Image" class="img-fluid rounded mb-5" alt="@Model.Title">
+                }
+
+                <!-- Article Content -->
+                <div class="content-container mb-5">
+                    @Html.Raw(Model.Content)
+                </div>
+
+                <!-- Author Bio -->
+                <div class="border-top border-bottom py-4 my-5">
+                    <div class="d-flex">
+                        <img src="~/img/@Model.User.Image" class="rounded-circle me-3" width="72" height="72" alt="@Model.User.Name">
+                        <div>
+                            <h5 class="mb-1">Written by @Model.User.Name</h5>
+                            <p class="text-muted mb-2">Author bio goes here. This is where you would typically see a short description about the author.</p>
+                            <button class="btn btn-golden rounded-pill">Follow</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="card-body px-0">
                     <div id="comments">
                         @foreach (var comment in Model.Comments)
                         {
-                            <div class="my-4 d-flex">
-                                <img src="/img/@comment.User.Image" alt="" class="avatar rounded-circle float-start me-3">
+                            <div class="d-flex mb-4 pb-4 border-bottom">
+                                <img src="/img/@comment.User.Image" alt="@comment.User.Name" class="avatar rounded-circle me-3" style="width: 40px; height: 40px;">
                                 <div>
-                                    <div class="mb-2 d-flex">
-                                        <h6 class="me-2">
-                                            <a href="/profile/@comment.User.UserName">@comment.User.Name</a>
+                                    <div class="mb-2">
+                                        <h6 class="mb-0 fw-bold">
+                                            <a href="/profile/@comment.User.UserName" class="text-decoration-none">@comment.User.Name</a>
                                         </h6>
-                                        <small>@comment.PublishedOn.ToString("G")</small>
+                                        <small class="text-muted">@comment.PublishedOn.ToString("MMM d, yyyy")</small>
                                     </div>
-                                    <p>@comment.Text</p>
+                                    <p class="mb-0">@comment.Text</p>
                                 </div>
                             </div>
                         }
@@ -44,43 +81,125 @@
 
                     @if (User.Identity!.IsAuthenticated)
                     {
-                        <hr class="my-4">
-                        <div>
-                            <h4 class="mb-3">Yorum Ekle</h4>
+                        <div class="mt-5">
+                            <h4 class="mb-4 fw-bold">Add a response</h4>
                             <form action="/posts/AddComment" method="post">
                                 <input type="hidden" id="PostId" name="PostId" value="@Model.PostId">
                                 <div class="mb-3">
-                                    <label for="Text" class="form-label">Yorum</label>
-                                    <textarea type="text" name="Text" id="Text" rows="3" class="form-control"></textarea>
+                                    <textarea name="Text" id="Text" rows="4" class="form-control" placeholder="What are your thoughts?"></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <button id="btnYorumKayit" type="submit" class="btn btn-primary">Kaydet</button>
+                                    <button id="submitButon" type="submit" class="btn btn-golden rounded-pill">Respond</button>
                                 </div>
                             </form>
                         </div>
                     }
                     else
                     {
-                        <p>Yorum için uygulamaya giriş yapmalısınız. <a href="/users/login">Login</a></p>
+                        <div class="alert alert-light border mt-4">
+                            <p class="mb-0">Sign in to leave a response. <a href="/users/login">Login</a></p>
+                        </div>
                     }
+                </div>
+            </div>
+        </div>
 
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <!-- Author Card -->
+                <div class="sidebar-container mb-4">
+                    <div class="text-center mb-3">
+                        <img src="~/img/@Model.User.Image" class="rounded-circle mb-2" width="64" height="64" alt="@Model.User.Name">
+                        <h5>@Model.User.Name</h5>
+                        <button class="btn btn-sm btn-golden rounded-pill">Follow</button>
+                    </div>
+                    <p class="text-muted small text-center">Author of stories on Golden Library</p>
+                </div>
+
+                <!-- More from author -->
+                <div class="sidebar-container mb-4">
+                    <h4 class="sidebar-title">More from @Model.User.Name</h4>
+                    <div class="list-group list-group-flush border-0">
+                        @foreach (var post in Model.User.Posts.Take(3))
+                        {
+                            @if (post.PostId != Model.PostId)
+                            {
+                                <a href="/posts/details/@post.Url" class="list-group-item border-0 px-0">
+                                    <h6 class="mb-1">@post.Title</h6>
+                                    <p class="small text-muted mb-0">
+                                        @post.PublishedOn.ToString("MMM d") ·
+                                        @(post.Content?.Length > 0 ? (post.Content.Length / 100) + " min read" : "Quick read")
+                                    </p>
+                                </a>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Recommended Topics -->
+                <div class="sidebar-container mb-4">
+                    <h4 class="sidebar-title">Recommended Topics</h4>
+                    <vc:tags-menu></vc:tags-menu>
+                </div>
+
+                <!-- Related Posts -->
+                <div class="sidebar-container">
+                    <h4 class="sidebar-title">You might also like</h4>
+                    <vc:new-posts></vc:new-posts>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
-        <vc:tags-menu></vc:tags-menu>
-        <vc:new-posts></vc:new-posts>
-    </div>
+</div>
 
+<div class="container mt-5">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h1 class="card-title">@Model.Title</h1>
+            <div class="d-flex justify-content-between">
+                <div>
+                    <small class="text-muted">@Model.User?.UserName tarafından @Model.PublishedOn.ToShortDateString() tarihinde paylaşıldı</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <button class="btn @(ViewBag.HasLiked == true ? "btn-danger" : "btn-outline-danger") ms-2"
+                                id="likeButton"
+                                data-post-id="@Model.PostId">
+                            <i class="fa fa-heart"></i>
+                            <span>@(ViewBag.HasLiked == true ? "Beğendin" : "Beğen")</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <a href="/account/login" class="btn btn-outline-secondary ms-2">
+                            <i class="fa fa-heart"></i> Beğenmek için giriş yapın
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script type="text/javascript">
         $(document).ready(function() {
+            // Reading progress bar
+            const progressContainer = $('<div class="progress-container"><div class="progress-bar" id="readingProgress"></div></div>');
+            $('body').prepend(progressContainer);
 
-            $("#btnYorumKayit").click(function() {
+            $(window).scroll(function() {
+                let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                let scrolled = (winScroll / height) * 100;
+                $("#readingProgress").css("width", scrolled + "%");
+            });
+
+            // Existing comment ajax functionality
+            $("#submitButon").click(function() {
                 $.ajax({
                     type: 'POST',
                     url: '@Url.Action("AddComment")',
@@ -91,7 +210,7 @@
                         Text: $('#Text').val(),
                     },
                     success: function(yorum) {
-                        
+
                         var date = new Date(yorum.publishedOn);
 
                         $("#comments").append(`
@@ -117,9 +236,6 @@
 
                 return false;
             });
-
         });
     </script>
 }
-
-

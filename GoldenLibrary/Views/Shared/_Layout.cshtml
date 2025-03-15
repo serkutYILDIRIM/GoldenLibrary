@@ -3,48 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/css/style.css">
-    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Golden Library</title>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg shadow-sm fixed-top">
         <div class="container">
-            <a href="/posts" class="navbar-brand">
-                <i class="bi bi-code"></i> BlogApp
+            <a href="/posts" class="navbar-brand text-golden d-flex align-items-center">
+                <i class="bi bi-book-half me-2"></i> Golden Library
             </a>
-
-            <ul class="navbar-nav ms-auto">
-                @if (User.Identity!.IsAuthenticated)
-                {
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a href="/posts/list" class="nav-link">Posts</a>
+                        <a href="/about" class="nav-link">About</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">@User.Identity.Name</a>
+                        <a href="/contact" class="nav-link">Contact</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/users/logout" class="nav-link">Logout</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="nav-item">
-                        <a href="/users/login" class="nav-link">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/users/register" class="nav-link">Register</a>
-                    </li>
-                }
-
-            </ul>
-
+                    @if (User.Identity!.IsAuthenticated)
+                    {
+                        <li class="nav-item ms-2">
+                            <a href="/posts/create" class="nav-link btn btn-golden text-white px-3 rounded-pill">Write</a>
+                        </li>
+                        <li class="nav-item dropdown ms-2">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <img src="/img/profile.jpg" class="rounded-circle" width="32" height="32" alt="Profile">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                <li><a class="dropdown-item" href="/posts/list">My Stories</a></li>
+                                <li><a class="dropdown-item" href="/users/profile">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/users/logout">Sign Out</a></li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item ms-2">
+                            <a href="/users/login" class="nav-link">Sign In</a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a href="/users/register" class="nav-link btn btn-golden text-white px-3 rounded-pill">Write Article</a>
+                        </li>
+                    }
+                </ul>
+            </div>
         </div>
     </nav>
-    <div class="container mt-3">
+
+    <div style="padding-top: 70px;">
         @RenderBody()
     </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-golden mb-3">Golden Library</h5>
+                    <p>A modern platform for writers and readers to connect, share ideas, and explore the world of literature together.</p>
+                    <div class="d-flex mt-3">
+                        <a href="#" class="me-3 fs-5"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="me-3 fs-5"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="me-3 fs-5"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="fs-5"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h5 class="mb-3">Explore</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/posts">Home</a></li>
+                        <li class="mb-2"><a href="/about">About</a></li>
+                        <li class="mb-2"><a href="/posts/popular">Blog</a></li>
+                        <li class="mb-2"><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h5 class="mb-3">Resources</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/help">Help Center</a></li>
+                        <li class="mb-2"><a href="/writing-tips">Writing Tips</a></li>
+                        <li class="mb-2"><a href="/careers">Careers</a></li>
+                        <li class="mb-2"><a href="/status">Status</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="mb-3">Subscribe to our newsletter</h5>
+                    <p>Stay updated with our latest stories and articles</p>
+                    <form class="mt-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Your email address">
+                            <button class="btn btn-golden" type="submit">Subscribe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="border-top border-secondary pt-4 mt-2">
+                <p class="text-center mb-0">&copy; 2023 Golden Library. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

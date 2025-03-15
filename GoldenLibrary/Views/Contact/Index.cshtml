@@ -1,0 +1,135 @@
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="container mt-5 pt-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="bg-white p-5 shadow-sm rounded mb-5">
+                <h1 class="display-4 fw-bold mb-4 text-center text-golden">Contact Us</h1>
+                
+                <div class="row mt-5">
+                    <div class="col-lg-6 pe-lg-5 mb-5 mb-lg-0">
+                        <h2 class="h3 mb-4">Get in touch</h2>
+                        <p class="mb-4">We'd love to hear from you! Whether you have a question about features, membership, or anything else, our team is ready to answer all your questions.</p>
+                        
+                        <div class="mb-4 d-flex align-items-start">
+                            <div class="me-3 text-golden">
+                                <i class="bi bi-geo-alt fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Address</h5>
+                                <p class="text-muted">123 Library Street, Reading City, RC 10001</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4 d-flex align-items-start">
+                            <div class="me-3 text-golden">
+                                <i class="bi bi-envelope fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Email</h5>
+                                <p class="text-muted">contact@goldenlibrary.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4 d-flex align-items-start">
+                            <div class="me-3 text-golden">
+                                <i class="bi bi-telephone fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Phone</h5>
+                                <p class="text-muted">+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-5">
+                            <h5 class="mb-3">Follow us</h5>
+                            <div class="d-flex">
+                                <a href="#" class="me-3 fs-4 text-golden"><i class="bi bi-twitter-x"></i></a>
+                                <a href="#" class="me-3 fs-4 text-golden"><i class="bi bi-facebook"></i></a>
+                                <a href="#" class="me-3 fs-4 text-golden"><i class="bi bi-instagram"></i></a>
+                                <a href="#" class="fs-4 text-golden"><i class="bi bi-linkedin"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6 ps-lg-5">
+                        <div class="bg-light p-4 rounded">
+                            <h2 class="h3 mb-4">Send us a message</h2>
+                            
+                            <form>
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="name" placeholder="Your name">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" placeholder="Your email">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="subject" placeholder="Subject">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" rows="5" placeholder="Your message"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-golden rounded-pill px-4 py-2 mt-3">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 pt-5 border-top">
+                    <h3 class="h4 mb-4 text-center">Frequently Asked Questions</h3>
+                    
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item border-0 mb-3 shadow-sm">
+                            <h4 class="accordion-header">
+                                <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How do I create an account?
+                                </button>
+                            </h4>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Creating an account is easy! Simply click the "Get Started" button in the top navigation and follow the registration steps. You'll need to provide a valid email address and create a password.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0 mb-3 shadow-sm">
+                            <h4 class="accordion-header">
+                                <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Is Golden Library free to use?
+                                </button>
+                            </h4>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, Golden Library offers a free tier that gives you access to most features. We also offer premium subscriptions with additional benefits for those who want an enhanced experience.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item border-0 mb-3 shadow-sm">
+                            <h4 class="accordion-header">
+                                <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    How do I publish my first story?
+                                </button>
+                            </h4>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    After logging in, click on the "Write" button in the navigation bar. This will take you to our editor where you can create, preview, and publish your story. Don't forget to add a compelling title and cover image!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

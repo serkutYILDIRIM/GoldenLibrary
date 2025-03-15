@@ -1,43 +1,165 @@
 ﻿@model PostCreateViewModel
 
-<div class="row">
-    <div class="col-12">
-        <div class="bg-white p-4">
-            <h1>Post Create</h1>
-            <form action="Create" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="mb-3">
-                    <label asp-for="Title" class="form-label"></label>
-                    <input asp-for="Title" class="form-control">
-                    <span asp-validation-for="Title" class="text-danger"></span>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="bg-white p-5 shadow-sm rounded">
+                <h1 class="display-6 mb-4 text-golden">Write your story</h1>
+
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <input type="text" class="form-control form-control-lg border-0 fw-bold"
+                               id="Title" name="Title" value="@Model?.Title"
+                               placeholder="Title" style="font-size: 2rem;">
+                    </div>
+
+                    <div class="mb-4">
+                        <textarea class="form-control border-0"
+                                  id="Description" name="Description"
+                                  rows="3" placeholder="Write a brief description...">@Model?.Description</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <textarea class="form-control border-0"
+                                  id="Content" name="Content"
+                                  rows="12" placeholder="Tell your story...">@Model?.Content</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="Url" class="form-label text-muted">URL Slug</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted">/posts/details/</span>
+                            <input type="text" class="form-control" id="Url" name="Url" value="@Model?.Url">
+                        </div>
+                        <small class="text-muted">This will be the URL of your story. Leave blank to auto-generate.</small>
+                    </div>
+
+                    <div class="my-4">
+                        <label class="form-label text-muted">Cover Image</label>
+                        <div class="d-flex align-items-center">
+                            <label for="Image" class="upload-area border rounded p-3 me-3 text-center cursor-pointer" style="width: 100px; height: 100px;">
+                                <i class="bi bi-image text-golden fs-2"></i>
+                                <div class="small text-muted mt-1">Add cover</div>
+                                <input type="file" id="Image" name="ImageFile" class="d-none">
+                            </label>
+                            <div>
+                                <p class="mb-0">Add a high-quality image to your story to capture people's interest.</p>
+                                <small class="text-muted">Recommended: 1200 x 600px</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Topics</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            @if (ViewBag.Tags != null)
+                            {
+                                @foreach (var tag in ViewBag.Tags)
+                                {
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="tagIds" value="@tag.TagId">
+                                        <label class="form-check-label">@tag.Text</label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-5">
+                        <a href="/posts" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-golden rounded-pill px-4">Publish</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <div class="sidebar-container">
+                    <h4 class="sidebar-title">Writing Tips</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-golden me-2"></i>
+                            Start with a compelling title
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-golden me-2"></i>
+                            Use your unique voice and perspective
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-golden me-2"></i>
+                            Include relevant images to enhance engagement
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-golden me-2"></i>
+                            Proofread before publishing
+                        </li>
+                    </ul>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="Description" class="form-label"></label>
-                    <input asp-for="Description" class="form-control">
-                    <span asp-validation-for="Description" class="text-danger"></span>
+
+                <div class="sidebar-container mt-4">
+                    <h4 class="sidebar-title">Writing Tools</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <a href="#" class="text-decoration-none d-flex align-items-center">
+                                <i class="bi bi-book text-golden me-2"></i>
+                                <span>Style Guide</span>
+                            </a>
+                        </li>
+                        <li class="mb-3">
+                            <a href="#" class="text-decoration-none d-flex align-items-center">
+                                <i class="bi bi-card-text text-golden me-2"></i>
+                                <span>Grammar Help</span>
+                            </a>
+                        </li>
+                        <li class="mb-3">
+                            <a href="#" class="text-decoration-none d-flex align-items-center">
+                                <i class="bi bi-chat-quote text-golden me-2"></i>
+                                <span>Writing Prompts</span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-                <div class="mb-3">
-                    <label asp-for="Url" class="form-label"></label>
-                    <input asp-for="Url" class="form-control">
-                    <span asp-validation-for="Url" class="text-danger"></span>
-                </div>
-                <div class="mb-3">
-                    <label asp-for="Content" class="form-label"></label>
-                    <textarea asp-for="Content" class="form-control"></textarea>
-                    <span asp-validation-for="Content" class="text-danger"></span>
-                </div>
-                <button type="submit" class="btn btn-primary">Create</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
+<style>
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #d4af37;
+    }
+
+    .upload-area {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .upload-area:hover {
+        background-color: #f8f9fa;
+        border-color: #d4af37 !important;
+    }
+</style>
+
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.7.0/tinymce.min.js"></script>
     <script>
-        tinymce.init({
-            selector: '#Content'
+        document.querySelector('.upload-area').addEventListener('click', function() {
+            document.getElementById('Image').click();
+        });
+        
+        document.getElementById('Image').addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('.upload-area i').classList.add('d-none');
+                    document.querySelector('.upload-area div').classList.add('d-none');
+                    document.querySelector('.upload-area').style.backgroundImage = `url(${e.target.result})`;
+                    document.querySelector('.upload-area').style.backgroundSize = 'cover';
+                    document.querySelector('.upload-area').style.backgroundPosition = 'center';
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
         });
     </script>
-
 }
