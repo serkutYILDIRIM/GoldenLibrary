@@ -30,7 +30,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-SeedData.TestVerileriniDoldur(app);
+SeedData.FillTestData(app);
 
 app.MapControllerRoute(
     name: "post_details",

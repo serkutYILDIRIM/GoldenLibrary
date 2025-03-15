@@ -52,12 +52,15 @@
                     <div class="mb-4">
                         <label class="form-label text-muted">Topics</label>
                         <div class="d-flex flex-wrap gap-2">
-                            @foreach (var tag in ViewBag.Tags)
+                            @if (ViewBag.Tags != null)
                             {
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="tagIds" value="@tag.TagId">
-                                    <label class="form-check-label">@tag.Text</label>
-                                </div>
+                                @foreach (var tag in ViewBag.Tags)
+                                {
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="tagIds" value="@tag.TagId">
+                                        <label class="form-check-label">@tag.Text</label>
+                                    </div>
+                                }
                             }
                         </div>
                     </div>
