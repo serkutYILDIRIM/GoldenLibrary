@@ -1,0 +1,77 @@
+@model IEnumerable<GoldenLibrary.Entity.Post>
+
+@{
+    ViewData["Title"] = "Admin - Manage Posts";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="bg-white p-4 p-md-5 rounded">
+            <h1 class="display-6 fw-bold mb-4">Manage Posts</h1>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Published On</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var post in Model)
+                        {
+                            <tr>
+                                <td>@post.Title</td>
+                                <td>@post.User.Name</td>
+                                <td>@post.PublishedOn.ToString("MMM d, yyyy")</td>
+                                <td>
+                                    <span class="badge @(post.IsActive ? "bg-success" : "bg-danger")">
+                                        @(post.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm @(post.IsActive ? "btn-outline-danger" : "btn-outline-success") toggle-status" 
+                                            data-post-id="@post.PostId" data-is-active="@post.IsActive.ToString().ToLower()">
+                                        @(post.IsActive ? "Deactivate" : "Activate")
+                                    </button>
+                                    <a href="/posts/details/@post.Url" class="btn btn-sm btn-outline-primary ms-1">Details</a>
+                                    <a href="/posts/edit/@post.PostId" class="btn btn-sm btn-outline-secondary ms-1">Edit</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            $('.toggle-status').on('click', function() {
+                const button = $(this);
+                const postId = button.data('post-id');
+                
+                $.post('/posts/togglepoststatus/' + postId, function(data) {
+                    if (data.success) {
+                        // Update button
+                        if (data.isActive) {
+                            button.removeClass('btn-outline-success').addClass('btn-outline-danger');
+                            button.text('Deactivate');
+                            button.closest('tr').find('.badge').removeClass('bg-danger').addClass('bg-success').text('Active');
+                        } else {
+                            button.removeClass('btn-outline-danger').addClass('btn-outline-success');
+                            button.text('Activate');
+                            button.closest('tr').find('.badge').removeClass('bg-success').addClass('bg-danger').text('Inactive');
+                        }
+                        button.data('is-active', data.isActive.toString().toLowerCase());
+                    }
+                });
+            });
+        });
+    </script>
+}

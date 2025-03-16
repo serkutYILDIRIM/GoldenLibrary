@@ -116,6 +116,35 @@ namespace GoldenLibrary.Controllers
             return View(await posts.ToListAsync());
         }
 
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> AdminPosts()
+        {
+            var posts = await _postRepository.Posts
+                        .Include(p => p.User)
+                        .OrderByDescending(p => p.PublishedOn)
+                        .ToListAsync();
+            return View(posts);
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpPost]
+        public async Task<IActionResult> TogglePostStatus(int id)
+        {
+            var post = await _postRepository.Posts
+                        .Include(p => p.Tags)
+                        .FirstOrDefaultAsync(p => p.PostId == id);
+                        
+            if (post == null)
+            {
+                return NotFound();
+            }
+            
+            post.IsActive = !post.IsActive;
+            _postRepository.EditPost(post, post.Tags.Select(t => t.TagId).ToArray());
+            
+            return Json(new { success = true, isActive = post.IsActive });
+        }
+
         [Authorize]
         public IActionResult Edit(int? id)
         {

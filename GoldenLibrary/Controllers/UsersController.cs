@@ -80,7 +80,7 @@ namespace GoldenLibrary.Controllers
                     userClaims.Add(new Claim(ClaimTypes.GivenName, isUser.Name ?? ""));
                     userClaims.Add(new Claim(ClaimTypes.UserData, isUser.Image ?? ""));
 
-                    if (isUser.Email == "info@sadikturan.com")
+                    if (isUser.Email == "emily.johnson@example.com")
                     {
                         userClaims.Add(new Claim(ClaimTypes.Role, "admin"));
                     }
