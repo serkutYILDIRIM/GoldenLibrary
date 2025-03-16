@@ -128,21 +128,65 @@ namespace GoldenLibrary.Controllers
 
         [Authorize(Roles = "admin")]
         [HttpPost]
-        public async Task<IActionResult> TogglePostStatus(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TogglePostStatus([FromBody] PostStatusViewModel model)
         {
-            var post = await _postRepository.Posts
-                        .Include(p => p.Tags)
-                        .FirstOrDefaultAsync(p => p.PostId == id);
-                        
-            if (post == null)
+            try
             {
-                return NotFound();
+                if (model == null || model.Id <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid post ID" });
+                }
+
+                // Get the complete post entity with all properties
+                var post = await _postRepository.Posts
+                            .Include(p => p.Tags)
+                            .Include(p => p.User)
+                            .FirstOrDefaultAsync(p => p.PostId == model.Id);
+                            
+                if (post == null)
+                {
+                    return Json(new { success = false, message = "Post not found" });
+                }
+                
+                // Toggle the status
+                bool originalStatus = post.IsActive;
+                post.IsActive = !originalStatus;
+                
+                // Get the tag IDs to maintain associations
+                var tagIds = post.Tags?.Select(t => t.TagId).ToArray() ?? Array.Empty<int>();
+                
+                // Create a complete entity that preserves all properties
+                var entityToUpdate = new Post
+                {
+                    PostId = post.PostId,
+                    Title = post.Title,
+                    Content = post.Content,
+                    Description = post.Description,
+                    Image = post.Image,
+                    Url = post.Url,
+                    UserId = post.UserId,
+                    PublishedOn = post.PublishedOn,
+                    IsActive = post.IsActive // This is the toggled value
+                };
+                
+                // Update the post in database
+                _postRepository.EditPost(entityToUpdate, tagIds);
+                
+                // Return clear success response
+                return Json(new { 
+                    success = true, 
+                    isActive = entityToUpdate.IsActive,
+                    message = $"Post status changed from {(originalStatus ? "active" : "inactive")} to {(entityToUpdate.IsActive ? "active" : "inactive")}"
+                });
             }
-            
-            post.IsActive = !post.IsActive;
-            _postRepository.EditPost(post, post.Tags.Select(t => t.TagId).ToArray());
-            
-            return Json(new { success = true, isActive = post.IsActive });
+            catch (Exception ex)
+            {
+                // Log the error for debugging
+                System.Diagnostics.Debug.WriteLine($"Error in TogglePostStatus: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         [Authorize]
