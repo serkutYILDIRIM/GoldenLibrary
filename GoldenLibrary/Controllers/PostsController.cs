@@ -101,7 +101,7 @@ namespace GoldenLibrary.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(string tag)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "");
             var role = User.FindFirstValue(ClaimTypes.Role);
@@ -112,6 +112,16 @@ namespace GoldenLibrary.Controllers
             {
                 posts = posts.Where(i => i.UserId == userId);
             }
+
+            // Filter by tag if specified
+            if (!string.IsNullOrEmpty(tag))
+            {
+                posts = posts.Where(x => x.Tags.Any(t => t.Url == tag));
+            }
+
+            // Get all tags for the filter
+            ViewBag.Tags = await _tagRepository.Tags.ToListAsync();
+            ViewBag.SelectedTag = tag;
 
             return View(await posts.ToListAsync());
         }
