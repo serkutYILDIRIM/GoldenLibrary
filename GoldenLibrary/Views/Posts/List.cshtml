@@ -36,6 +36,14 @@
                             <i class="bi bi-check-circle me-2"></i> Published
                         </a>
                     </li>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <li class="nav-item mb-2">
+                            <a class="nav-link text-dark" href="/posts/AdminPosts">
+                                <i class="bi bi-shield me-2"></i> User Posts Panel
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
 
