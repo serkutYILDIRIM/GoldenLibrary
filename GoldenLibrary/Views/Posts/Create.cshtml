@@ -1,11 +1,13 @@
 ﻿@model PostCreateViewModel
 
 <div class="container mt-4">
+    <div class="save-status" id="saveStatus"></div>
+    
     @if (Model?.PostId > 0)
     {
         <div class="alert alert-info">
             <i class="bi bi-info-circle me-2"></i>
-            You're working on a draft. You can continue editing or publish when ready.
+            You're working on a draft. Your changes are saved automatically.
         </div>
     }
     
@@ -14,23 +16,24 @@
             <div class="bg-white p-5 shadow-sm rounded">
                 <h1 class="display-6 mb-4 text-golden">Write your story</h1>
 
-                <form asp-action="Create" method="post" enctype="multipart/form-data">
-                    <input type="hidden" asp-for="PostId" />
+                <form id="storyForm" asp-action="Create" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="PostId" id="postId" />
+                    @Html.AntiForgeryToken()
                     
                     <div class="mb-4">
-                        <input type="text" class="form-control form-control-lg border-0 fw-bold"
+                        <input type="text" class="form-control form-control-lg border-0 fw-bold title-input"
                                id="Title" name="Title" value="@Model?.Title"
                                placeholder="Title" style="font-size: 2rem;">
                     </div>
 
                     <div class="mb-4">
-                        <textarea class="form-control border-0"
+                        <textarea class="form-control border-0 description-input"
                                   id="Description" name="Description"
                                   rows="3" placeholder="Write a brief description...">@Model?.Description</textarea>
                     </div>
 
                     <div class="mb-4">
-                        <textarea class="form-control border-0"
+                        <textarea class="form-control border-0 content-input"
                                   id="Content" name="Content"
                                   rows="12" placeholder="Tell your story...">@Model?.Content</textarea>
                     </div>
@@ -39,7 +42,7 @@
                         <label for="Url" class="form-label text-muted">URL Slug</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted">/posts/details/</span>
-                            <input type="text" class="form-control" id="Url" name="Url" value="@Model?.Url">
+                            <input type="text" class="form-control url-input" id="Url" name="Url" value="@Model?.Url">
                         </div>
                         <small class="text-muted">This will be the URL of your story. Leave blank to auto-generate.</small>
                     </div>
@@ -67,7 +70,9 @@
                                 @foreach (var tag in ViewBag.Tags)
                                 {
                                     <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="tagIds" value="@tag.TagId">
+                                        <input type="checkbox" class="form-check-input tag-input" 
+                                               name="tagIds" value="@tag.TagId"
+                                               @(Model?.Tags != null && Model.Tags.Any(t => t.TagId == tag.TagId) ? "checked" : "")>
                                         <label class="form-check-label">@tag.Text</label>
                                     </div>
                                 }
@@ -76,11 +81,8 @@
                     </div>
 
                     <div class="d-flex justify-content-between mt-5">
-                        <a href="/posts" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                        <a href="/posts/drafts" class="btn btn-outline-secondary rounded-pill px-4">Back to Drafts</a>
                         <div>
-                            <button type="submit" name="action" value="draft" class="btn btn-outline-golden rounded-pill px-4 me-2">
-                                <i class="bi bi-save me-1"></i> Save Draft
-                            </button>
                             <button type="submit" name="action" value="publish" class="btn btn-golden rounded-pill px-4">
                                 <i class="bi bi-send me-1"></i> Publish
                             </button>
@@ -190,48 +192,155 @@
         background-color: #d4af37;
         color: white;
     }
+
+    .save-status {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 8px 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        z-index: 1000;
+        transition: opacity 0.3s ease-in-out;
+        opacity: 0;
+        background-color: #f8f9fa;
+        color: #6c757d;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .save-status.saving {
+        opacity: 1;
+        background-color: #e9ecef;
+        color: #495057;
+    }
+    
+    .save-status.saved {
+        opacity: 1;
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .save-status.error {
+        opacity: 1;
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .title-input:focus,
+    .description-input:focus,
+    .content-input:focus {
+        outline: none;
+        box-shadow: none;
+    }
 </style>
 
 @section Scripts {
     <script>
-        // Auto-save draft functionality
         let autoSaveTimer;
-        const autoSaveDelay = 60000; // 1 minute
-
-        function autoSaveDraft() {
-            const formData = new FormData(document.querySelector('form'));
-            formData.append('action', 'draft');
+        const autoSaveDelay = 3000; // Save after 3 seconds of inactivity
+        let lastSavedContent = ''; // Track last saved content to avoid unnecessary saves
+        let savingInProgress = false;
+        const saveStatus = document.getElementById('saveStatus');
+        
+        // Function to show save status
+        function showSaveStatus(status, message) {
+            saveStatus.textContent = message;
+            saveStatus.className = 'save-status ' + status;
             
-            fetch('@Url.Action("Create")', {
+            if (status === 'saved') {
+                // Hide the status after 3 seconds
+                setTimeout(() => {
+                    saveStatus.style.opacity = '0';
+                }, 3000);
+            }
+        }
+        
+        // Function to perform auto-save
+        function performAutoSave() {
+            if (savingInProgress) return;
+            
+            const title = document.getElementById('Title').value;
+            const content = document.getElementById('Content').value;
+            const description = document.getElementById('Description').value;
+            const url = document.getElementById('Url').value;
+            const postId = document.getElementById('postId').value;
+            
+            // Don't save if nothing has changed or if both title and content are empty
+            const currentContent = title + content + description;
+            if (currentContent === lastSavedContent || (title.trim() === '' && content.trim() === '')) {
+                return;
+            }
+            
+            savingInProgress = true;
+            showSaveStatus('saving', 'Saving...');
+            
+            const formData = new FormData();
+            formData.append('Title', title);
+            formData.append('Content', content);
+            formData.append('Description', description);
+            formData.append('Url', url);
+            formData.append('PostId', postId);
+            
+            // Get the anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            fetch('@Url.Action("AutoSave")', {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': token
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    console.log('Draft auto-saved');
-                    // Show a small notification
-                    const notification = document.createElement('div');
-                    notification.className = 'auto-save-notification';
-                    notification.innerHTML = 'Draft saved <i class="bi bi-check"></i>';
-                    document.body.appendChild(notification);
+            .then(response => response.json())
+            .then(data => {
+                savingInProgress = false;
+                
+                if (data.success) {
+                    showSaveStatus('saved', 'Saved');
+                    lastSavedContent = currentContent;
                     
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 3000);
+                    // If this is a new draft, update the postId field
+                    if (postId === '0' && data.postId) {
+                        document.getElementById('postId').value = data.postId;
+                    }
+                } else {
+                    showSaveStatus('error', 'Failed to save');
                 }
+            })
+            .catch(error => {
+                savingInProgress = false;
+                showSaveStatus('error', 'Error: Could not save');
+                console.error('Auto-save error:', error);
             });
         }
-
-        // Set up auto-save when user makes changes
-        const contentElements = document.querySelectorAll('#Title, #Description, #Content');
-        contentElements.forEach(el => {
+        
+        // Initialize auto-save on input fields
+        const inputElements = document.querySelectorAll('.title-input, .description-input, .content-input, .url-input');
+        inputElements.forEach(el => {
             el.addEventListener('input', () => {
                 clearTimeout(autoSaveTimer);
-                autoSaveTimer = setTimeout(autoSaveDraft, autoSaveDelay);
+                autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
             });
+        });
+        
+        // Save before user leaves the page
+        window.addEventListener('beforeunload', () => {
+            performAutoSave();
+        });
+        
+        // Initial content to compare against
+        document.addEventListener('DOMContentLoaded', () => {
+            const title = document.getElementById('Title').value;
+            const content = document.getElementById('Content').value;
+            const description = document.getElementById('Description').value;
+            lastSavedContent = title + content + description;
+            
+            // Place cursor in title if empty
+            if (!title) {
+                document.getElementById('Title').focus();
+            } else if (!content) {
+                document.getElementById('Content').focus();
+            }
         });
 
         document.querySelector('.upload-area').addEventListener('click', function() {
