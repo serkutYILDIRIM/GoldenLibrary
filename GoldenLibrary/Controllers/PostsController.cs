@@ -70,34 +70,143 @@ namespace GoldenLibrary.Controllers
         }
 
         [Authorize]
-        public IActionResult Create()
+        public IActionResult Create(int? id)
         {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            
+            // Check if user is trying to edit an existing draft
+            if (id.HasValue)
+            {
+                var draft = _postRepository.GetDraft(id.Value, userId);
+                if (draft != null)
+                {
+                    // Return existing draft for editing
+                    ViewBag.Tags = _tagRepository.Tags.ToList();
+                    return View(new PostCreateViewModel
+                    {
+                        PostId = draft.PostId,
+                        Title = draft.Title,
+                        Description = draft.Description,
+                        Content = draft.Content,
+                        Url = draft.Url,
+                        Tags = draft.Tags
+                    });
+                }
+            }
+            
+            // Start a new draft
+            ViewBag.Tags = _tagRepository.Tags.ToList();
             return View();
         }
 
         [HttpPost]
         [Authorize]
-        public IActionResult Create(PostCreateViewModel model)
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(PostCreateViewModel model, int[] tagIds, string action)
         {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            
             if (ModelState.IsValid)
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var post = new Post
+                {
+                    PostId = model.PostId, // Will be 0 for new posts
+                    Title = model.Title,
+                    Description = model.Description,
+                    Content = model.Content,
+                    Url = model.Url,
+                    UserId = userId,
+                    PublishedOn = DateTime.Now,
+                    LastModified = DateTime.Now,
+                    Image = "1.jpg"
+                };
 
-                _postRepository.CreatePost(
-                    new Post
+                if (action == "draft")
+                {
+                    _postRepository.SaveDraft(post, tagIds);
+                    TempData["Message"] = "Your draft has been saved successfully.";
+                    return RedirectToAction("Drafts");
+                }
+                else
+                {
+                    post.IsActive = true;
+                    post.IsDraft = false;
+                    
+                    if (model.PostId > 0)
                     {
-                        Title = model.Title,
-                        Content = model.Content,
-                        Url = model.Url,
-                        UserId = int.Parse(userId ?? ""),
-                        PublishedOn = DateTime.Now,
-                        Image = "1.jpg",
-                        IsActive = false
+                        // This was a draft that's now being published
+                        _postRepository.EditPost(post, tagIds);
                     }
-                );
-                return RedirectToAction("Index");
+                    else
+                    {
+                        _postRepository.CreatePost(post);
+                    }
+                    TempData["Message"] = "Your story has been published successfully.";
+                    return RedirectToAction("Index");
+                }
             }
+            
+            ViewBag.Tags = _tagRepository.Tags.ToList();
             return View(model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken] // Add this attribute to validate the token
+        public JsonResult AutoSave(PostCreateViewModel model)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            
+            if (string.IsNullOrWhiteSpace(model.Title) && string.IsNullOrWhiteSpace(model.Content))
+            {
+                return Json(new { success = false, message = "Nothing to save" });
+            }
+            
+            var post = new Post
+            {
+                PostId = model.PostId,
+                Title = model.Title ?? "Untitled",
+                Description = model.Description,
+                Content = model.Content,
+                Url = model.Url,
+                UserId = userId,
+                PublishedOn = DateTime.Now,
+                LastModified = DateTime.Now,
+                Image = "1.jpg",
+                IsActive = false,
+                IsDraft = true
+            };
+            
+            bool success = _postRepository.AutoSaveDraft(post);
+            
+            if (success)
+            {
+                // If this was a new draft, we need to return the new ID
+                if (model.PostId == 0)
+                {
+                    var newDraft = _postRepository.GetUserDrafts(userId).FirstOrDefault(d => 
+                        d.Title == post.Title && 
+                        d.Content == post.Content);
+                        
+                    if (newDraft != null)
+                    {
+                        return Json(new { success = true, message = "Draft saved", postId = newDraft.PostId });
+                    }
+                }
+                
+                return Json(new { success = true, message = "Draft saved" });
+            }
+            
+            return Json(new { success = false, message = "Failed to save draft" });
+        }
+
+        [Authorize]
+        public IActionResult Drafts()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var drafts = _postRepository.GetUserDrafts(userId);
+            
+            return View(drafts);
         }
 
         [Authorize]
@@ -106,7 +215,7 @@ namespace GoldenLibrary.Controllers
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "");
             var role = User.FindFirstValue(ClaimTypes.Role);
 
-            var posts = _postRepository.Posts;
+            var posts = _postRepository.Posts.Where(p => !p.IsDraft); // Exclude drafts from regular list
 
             if (string.IsNullOrEmpty(role))
             {
