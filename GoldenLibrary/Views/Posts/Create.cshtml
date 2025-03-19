@@ -1,12 +1,22 @@
 ﻿@model PostCreateViewModel
 
 <div class="container mt-4">
+    @if (Model?.PostId > 0)
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            You're working on a draft. You can continue editing or publish when ready.
+        </div>
+    }
+    
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="bg-white p-5 shadow-sm rounded">
                 <h1 class="display-6 mb-4 text-golden">Write your story</h1>
 
                 <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="PostId" />
+                    
                     <div class="mb-4">
                         <input type="text" class="form-control form-control-lg border-0 fw-bold"
                                id="Title" name="Title" value="@Model?.Title"
@@ -67,7 +77,14 @@
 
                     <div class="d-flex justify-content-between mt-5">
                         <a href="/posts" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
-                        <button type="submit" class="btn btn-golden rounded-pill px-4">Publish</button>
+                        <div>
+                            <button type="submit" name="action" value="draft" class="btn btn-outline-golden rounded-pill px-4 me-2">
+                                <i class="bi bi-save me-1"></i> Save Draft
+                            </button>
+                            <button type="submit" name="action" value="publish" class="btn btn-golden rounded-pill px-4">
+                                <i class="bi bi-send me-1"></i> Publish
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -140,10 +157,83 @@
         background-color: #f8f9fa;
         border-color: #d4af37 !important;
     }
+
+    .auto-save-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #2e7d32;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @@keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+    
+    .btn-outline-golden {
+        color: #d4af37;
+        border-color: #d4af37;
+    }
+    
+    .btn-outline-golden:hover {
+        background-color: #d4af37;
+        color: white;
+    }
 </style>
 
 @section Scripts {
     <script>
+        // Auto-save draft functionality
+        let autoSaveTimer;
+        const autoSaveDelay = 60000; // 1 minute
+
+        function autoSaveDraft() {
+            const formData = new FormData(document.querySelector('form'));
+            formData.append('action', 'draft');
+            
+            fetch('@Url.Action("Create")', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Draft auto-saved');
+                    // Show a small notification
+                    const notification = document.createElement('div');
+                    notification.className = 'auto-save-notification';
+                    notification.innerHTML = 'Draft saved <i class="bi bi-check"></i>';
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 3000);
+                }
+            });
+        }
+
+        // Set up auto-save when user makes changes
+        const contentElements = document.querySelectorAll('#Title, #Description, #Content');
+        contentElements.forEach(el => {
+            el.addEventListener('input', () => {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(autoSaveDraft, autoSaveDelay);
+            });
+        });
+
         document.querySelector('.upload-area').addEventListener('click', function() {
             document.getElementById('Image').click();
         });

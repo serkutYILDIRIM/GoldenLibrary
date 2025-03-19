@@ -72,31 +72,73 @@ namespace GoldenLibrary.Controllers
         [Authorize]
         public IActionResult Create()
         {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            
+            // Check if user has a draft
+            var draft = _postRepository.GetDraft(userId);
+            
+            if (draft != null)
+            {
+                // Return existing draft
+                ViewBag.Tags = _tagRepository.Tags.ToList();
+                return View(new PostCreateViewModel
+                {
+                    PostId = draft.PostId,
+                    Title = draft.Title,
+                    Description = draft.Description,
+                    Content = draft.Content,
+                    Url = draft.Url,
+                    Tags = draft.Tags
+                });
+            }
+            
+            ViewBag.Tags = _tagRepository.Tags.ToList();
             return View();
         }
 
         [HttpPost]
         [Authorize]
-        public IActionResult Create(PostCreateViewModel model)
+        public IActionResult Create(PostCreateViewModel model, int[] tagIds, string action)
         {
             if (ModelState.IsValid)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                _postRepository.CreatePost(
-                    new Post
+                var post = new Post
+                {
+                    PostId = model.PostId, // Will be 0 for new posts
+                    Title = model.Title,
+                    Description = model.Description,
+                    Content = model.Content,
+                    Url = model.Url,
+                    UserId = int.Parse(userId ?? ""),
+                    PublishedOn = DateTime.Now,
+                    Image = "1.jpg",
+                    IsActive = action != "draft" // Only active if not a draft
+                };
+
+                if (action == "draft")
+                {
+                    _postRepository.SaveDraft(post);
+                    TempData["Message"] = "Your draft has been saved successfully.";
+                    return RedirectToAction("List");
+                }
+                else
+                {
+                    if (model.PostId > 0)
                     {
-                        Title = model.Title,
-                        Content = model.Content,
-                        Url = model.Url,
-                        UserId = int.Parse(userId ?? ""),
-                        PublishedOn = DateTime.Now,
-                        Image = "1.jpg",
-                        IsActive = false
+                        // This was a draft that's now being published
+                        _postRepository.EditPost(post, tagIds);
                     }
-                );
-                return RedirectToAction("Index");
+                    else
+                    {
+                        _postRepository.CreatePost(post);
+                    }
+                    return RedirectToAction("Index");
+                }
             }
+            
+            ViewBag.Tags = _tagRepository.Tags.ToList();
             return View(model);
         }
 

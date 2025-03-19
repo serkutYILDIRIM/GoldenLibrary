@@ -8,5 +8,7 @@ namespace GoldenLibrary.Data.Abstract
         void CreatePost(Post post);
         void EditPost(Post post);
         void EditPost(Post post, int[] tagIds);
+        void SaveDraft(Post post);
+        Post? GetDraft(int userId);
     }
 }
