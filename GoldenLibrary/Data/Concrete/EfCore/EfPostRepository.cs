@@ -160,5 +160,48 @@ namespace GoldenLibrary.Data.Concrete.EfCore
                 .OrderByDescending(p => p.PublishedOn)
                 .FirstOrDefault();
         }
+
+        public void DeletePost(int postId)
+        {
+            try
+            {
+                // Find the post entity
+                var post = _context.Posts.Find(postId);
+                if (post != null)
+                {
+                    // Explicitly load the related tags
+                    _context.Entry(post).Collection(p => p.Tags).Load();
+                    
+                    // Explicitly load the related comments
+                    _context.Entry(post).Collection(p => p.Comments).Load();
+                    
+                    // Remove the tags association (if any)
+                    if (post.Tags != null)
+                    {
+                        post.Tags.Clear();
+                        _context.SaveChanges(); // Save to update the tag relationships
+                    }
+                    
+                    // Remove related comments (if any)
+                    if (post.Comments != null && post.Comments.Any())
+                    {
+                        foreach (var comment in post.Comments.ToList())
+                        {
+                            _context.Comments.Remove(comment);
+                        }
+                    }
+                    
+                    // Now remove the post
+                    _context.Posts.Remove(post);
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error for debugging
+                System.Diagnostics.Debug.WriteLine($"Error deleting post: {ex.Message}");
+                throw; // Re-throw the exception to notify the caller
+            }
+        }
     }
 }
