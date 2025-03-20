@@ -361,5 +361,29 @@ namespace GoldenLibrary.Controllers
             ViewBag.Tags = _tagRepository.Tags.ToList();
             return View(model);
         }
+
+        [Authorize]
+        public IActionResult Delete(int id)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            
+            // Get the draft
+            var draft = _postRepository.GetDraft(id, userId);
+            
+            // Check if the draft exists and belongs to the current user
+            if (draft == null)
+            {
+                return NotFound();
+            }
+            
+            // Delete the draft
+            _postRepository.DeletePost(id);
+            
+            // Add success message
+            TempData["Message"] = "Draft deleted successfully.";
+            
+            // Redirect back to drafts page
+            return RedirectToAction("Drafts");
+        }
     }
 }

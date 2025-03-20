@@ -15,5 +15,6 @@ namespace GoldenLibrary.Data.Abstract
         Post? GetDraft(int draftId, int userId);
         List<Post> GetUserDrafts(int userId);
         bool AutoSaveDraft(Post post);
+        void DeletePost(int postId);
     }
 }
