@@ -1,256 +1,871 @@
 ﻿@model PostCreateViewModel
+@{
+    ViewData["Title"] = "Write Your Story";
+}
 
-<div class="container mt-4">
-    <div class="save-status" id="saveStatus"></div>
-    
-    @if (Model?.PostId > 0)
-    {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle me-2"></i>
-            You're working on a draft. Your changes are saved automatically.
+<div class="editor-container">
+    <!-- Top Navigation Bar -->
+    <div class="editor-navbar">
+        <div class="editor-stats">
+            <span id="wordCount">0 words</span>
+            <span class="separator">•</span>
+            <span id="characterCount">0 characters</span>
         </div>
-    }
+        
+        <div class="save-indicator" id="saveStatus">
+            <span class="save-dot"></span>
+            <span class="save-text">Saved</span>
+        </div>
+        
+        <div class="editor-actions">
+            <button class="btn btn-outline-secondary btn-sm rounded-pill me-2" id="previewBtn">Preview</button>
+            <button class="btn btn-golden btn-sm rounded-pill" id="publishBtn">Publish</button>
+        </div>
+    </div>
     
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="bg-white p-5 shadow-sm rounded">
-                <h1 class="display-6 mb-4 text-golden">Write your story</h1>
-
-                <form id="storyForm" asp-action="Create" method="post" enctype="multipart/form-data">
-                    <input type="hidden" asp-for="PostId" id="postId" />
-                    @Html.AntiForgeryToken()
-                    
-                    <div class="mb-4">
-                        <input type="text" class="form-control form-control-lg border-0 fw-bold title-input"
-                               id="Title" name="Title" value="@Model?.Title"
-                               placeholder="Title" style="font-size: 2rem;">
-                    </div>
-
-                    <div class="mb-4">
-                        <textarea class="form-control border-0 description-input"
-                                  id="Description" name="Description"
-                                  rows="3" placeholder="Write a brief description...">@Model?.Description</textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <textarea class="form-control border-0 content-input"
-                                  id="Content" name="Content"
-                                  rows="12" placeholder="Tell your story...">@Model?.Content</textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="Url" class="form-label text-muted">URL Slug</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-muted">/posts/details/</span>
-                            <input type="text" class="form-control url-input" id="Url" name="Url" value="@Model?.Url">
-                        </div>
-                        <small class="text-muted">This will be the URL of your story. Leave blank to auto-generate.</small>
-                    </div>
-
-                    <div class="my-4">
-                        <label class="form-label text-muted">Cover Image</label>
-                        <div class="d-flex align-items-center">
-                            <label for="Image" class="upload-area border rounded p-3 me-3 text-center cursor-pointer" style="width: 100px; height: 100px;">
-                                <i class="bi bi-image text-golden fs-2"></i>
-                                <div class="small text-muted mt-1">Add cover</div>
-                                <input type="file" id="Image" name="ImageFile" class="d-none">
-                            </label>
-                            <div>
-                                <p class="mb-0">Add a high-quality image to your story to capture people's interest.</p>
-                                <small class="text-muted">Recommended: 1200 x 600px</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label text-muted">Topics</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            @if (ViewBag.Tags != null)
-                            {
-                                @foreach (var tag in ViewBag.Tags)
-                                {
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input tag-input" 
-                                               name="tagIds" value="@tag.TagId"
-                                               @(Model?.Tags != null && Model.Tags.Any(t => t.TagId == tag.TagId) ? "checked" : "")>
-                                        <label class="form-check-label">@tag.Text</label>
-                                    </div>
-                                }
-                            }
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between mt-5">
-                        <a href="/posts/drafts" class="btn btn-outline-secondary rounded-pill px-4">Back to Drafts</a>
-                        <div>
-                            <button type="submit" name="action" value="publish" class="btn btn-golden rounded-pill px-4">
-                                <i class="bi bi-send me-1"></i> Publish
-                            </button>
-                        </div>
-                    </div>
-                </form>
+    <!-- Floating Formatting Toolbar -->
+    <div class="formatting-toolbar" id="formattingToolbar">
+        <div class="toolbar-buttons">
+            <button type="button" class="toolbar-button" data-command="bold" title="Bold (Ctrl+B)">
+                <i class="bi bi-type-bold"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="italic" title="Italic (Ctrl+I)">
+                <i class="bi bi-type-italic"></i>
+            </button>
+            <span class="toolbar-divider"></span>
+            <button type="button" class="toolbar-button" data-command="heading" data-value="h2" title="Heading">
+                <i class="bi bi-type-h2"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="heading" data-value="h3" title="Subheading">
+                <i class="bi bi-type-h3"></i>
+            </button>
+            <span class="toolbar-divider"></span>
+            <button type="button" class="toolbar-button" data-command="link" title="Link (Ctrl+K)">
+                <i class="bi bi-link-45deg"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="quote" title="Quote">
+                <i class="bi bi-blockquote-left"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="highlight" title="Highlight">
+                <i class="bi bi-pencil-fill"></i>
+            </button>
+        </div>
+        
+        <!-- Link Input Form (initially hidden) -->
+        <div class="link-form" id="linkForm">
+            <input type="text" id="linkInput" placeholder="Paste or type a link...">
+            <button type="button" id="applyLinkButton">Apply</button>
+            <button type="button" id="cancelLinkButton">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Content Addition Button -->
+    <div class="content-add-button" id="contentAddButton">
+        <button class="add-button-trigger">
+            <i class="bi bi-plus"></i>
+        </button>
+        <div class="add-button-menu">
+            <button class="add-menu-item" data-content-type="image">
+                <i class="bi bi-image"></i>
+                <span>Image</span>
+            </button>
+            <button class="add-menu-item" data-content-type="video">
+                <i class="bi bi-play-btn"></i>
+                <span>Video</span>
+            </button>
+            <button class="add-menu-item" data-content-type="embed">
+                <i class="bi bi-code-slash"></i>
+                <span>Embed</span>
+            </button>
+            <button class="add-menu-item" data-content-type="code">
+                <i class="bi bi-code-square"></i>
+                <span>Code</span>
+            </button>
+            <button class="add-menu-item" data-content-type="divider">
+                <i class="bi bi-hr"></i>
+                <span>Divider</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Media Upload Dialog -->
+    <div class="media-dialog" id="mediaDialog">
+        <div class="media-dialog-content">
+            <div class="media-dialog-header">
+                <h5 id="mediaDialogTitle">Add Media</h5>
+                <button class="close-dialog" id="closeMediaDialog">
+                    <i class="bi bi-x"></i>
+                </button>
             </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="sticky-top" style="top: 100px;">
-                <div class="sidebar-container">
-                    <h4 class="sidebar-title">Writing Tips</h4>
-                    <ul class="list-unstyled">
-                        <li class="mb-3">
-                            <i class="bi bi-lightbulb text-golden me-2"></i>
-                            Start with a compelling title
-                        </li>
-                        <li class="mb-3">
-                            <i class="bi bi-lightbulb text-golden me-2"></i>
-                            Use your unique voice and perspective
-                        </li>
-                        <li class="mb-3">
-                            <i class="bi bi-lightbulb text-golden me-2"></i>
-                            Include relevant images to enhance engagement
-                        </li>
-                        <li class="mb-3">
-                            <i class="bi bi-lightbulb text-golden me-2"></i>
-                            Proofread before publishing
-                        </li>
-                    </ul>
+            <div class="media-dialog-body">
+                <div id="imageUploadPane" class="media-pane">
+                    <div class="upload-area" id="imageDropArea">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <p>Drag an image or click to upload</p>
+                        <input type="file" id="imageFileInput" accept="image/*" class="d-none">
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label">Or add image URL:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="imageUrlInput" placeholder="https://example.com/image.jpg">
+                            <button class="btn btn-golden" id="insertImageUrlBtn">Insert</button>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="sidebar-container mt-4">
-                    <h4 class="sidebar-title">Writing Tools</h4>
-                    <ul class="list-unstyled">
-                        <li class="mb-3">
-                            <a href="#" class="text-decoration-none d-flex align-items-center">
-                                <i class="bi bi-book text-golden me-2"></i>
-                                <span>Style Guide</span>
-                            </a>
-                        </li>
-                        <li class="mb-3">
-                            <a href="#" class="text-decoration-none d-flex align-items-center">
-                                <i class="bi bi-card-text text-golden me-2"></i>
-                                <span>Grammar Help</span>
-                            </a>
-                        </li>
-                        <li class="mb-3">
-                            <a href="#" class="text-decoration-none d-flex align-items-center">
-                                <i class="bi bi-chat-quote text-golden me-2"></i>
-                                <span>Writing Prompts</span>
-                            </a>
-                        </li>
-                    </ul>
+                
+                <div id="videoUploadPane" class="media-pane">
+                    <div class="mb-3">
+                        <label class="form-label">Enter video URL (YouTube, Vimeo):</label>
+                        <input type="text" class="form-control" id="videoUrlInput" placeholder="https://www.youtube.com/watch?v=...">
+                    </div>
+                    <button class="btn btn-golden" id="insertVideoBtn">Insert Video</button>
+                </div>
+                
+                <div id="embedUploadPane" class="media-pane">
+                    <div class="mb-3">
+                        <label class="form-label">Paste embed code:</label>
+                        <textarea class="form-control" id="embedCodeInput" rows="5" placeholder="<iframe src='...'></iframe>"></textarea>
+                    </div>
+                    <button class="btn btn-golden" id="insertEmbedBtn">Insert Embed</button>
+                </div>
+                
+                <div id="codeBlockPane" class="media-pane">
+                    <div class="mb-3">
+                        <label class="form-label">Language:</label>
+                        <select class="form-select" id="codeLanguageSelect">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="csharp">C#</option>
+                            <option value="java">Java</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="sql">SQL</option>
+                            <option value="plaintext">Plain Text</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Code:</label>
+                        <textarea class="form-control" id="codeInput" rows="8" placeholder="Paste your code here..."></textarea>
+                    </div>
+                    <button class="btn btn-golden" id="insertCodeBtn">Insert Code</button>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Content Editing Area -->
+    <div class="editor-content">
+        <form id="storyForm" asp-action="Create" method="post" enctype="multipart/form-data">
+            <input type="hidden" asp-for="PostId" id="postId" />
+            <input type="hidden" id="Title" name="Title" value="@Model?.Title" />
+            <input type="hidden" id="Description" name="Description" value="@Model?.Description" />
+            <input type="hidden" id="Content" name="Content" value="@Model?.Content" />
+            <input type="hidden" id="Url" name="Url" value="@Model?.Url">
+            <input type="hidden" name="action" id="formAction" value="draft">
+            @Html.AntiForgeryToken()
+            
+            <div class="title-area">
+                <div id="titleEditor" class="editable-title" contenteditable="true" data-placeholder="Title">@Model?.Title</div>
+            </div>
+            
+            <div class="subtitle-area">
+                <div id="descriptionEditor" class="editable-subtitle" contenteditable="true" data-placeholder="Add a subtitle or description">@Model?.Description</div>
+            </div>
+            
+            <div class="content-area">
+                <div id="contentEditor" class="editable-content" contenteditable="true" data-placeholder="Tell your story...">@Model?.Content</div>
+            </div>
+            
+            <div class="image-upload-area mt-4">
+                <label for="Image" class="image-upload-label">
+                    <i class="bi bi-image text-golden"></i>
+                    <span>Add cover image</span>
+                    <input type="file" id="Image" name="ImageFile" class="d-none">
+                </label>
+                @if (!string.IsNullOrEmpty(Model?.Image))
+                {
+                    <div class="current-image mt-2">
+                        <img src="~/img/@Model.Image" class="img-fluid rounded" style="max-height: 200px;" />
+                        <small class="d-block mt-1 text-muted">Current cover image</small>
+                    </div>
+                }
+            </div>
+        </form>
+    </div>
 </div>
 
 <style>
-    .form-control:focus {
-        box-shadow: none;
-        border-color: #d4af37;
+    body {
+        background-color: #fff;
     }
-
-    .upload-area {
+    
+    .editor-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Editor Navigation Bar */
+    .editor-navbar {
+        position: sticky;
+        top: 70px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        margin-bottom: 30px;
+        background-color: rgba(255, 255, 255, 0.98);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        z-index: 900;
+    }
+    
+    .editor-stats {
+        font-size: 14px;
+        color: #6c757d;
+    }
+    
+    .separator {
+        margin: 0 8px;
+    }
+    
+    .save-indicator {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #6c757d;
+    }
+    
+    .save-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #28a745;
+        margin-right: 8px;
+    }
+    
+    .save-indicator.saving .save-dot {
+        background-color: #ffc107;
+        animation: pulse 1s infinite;
+    }
+    
+    .save-indicator.error .save-dot {
+        background-color: #dc3545;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 0.5; }
+        50% { opacity: 1; }
+        100% { opacity: 0.5; }
+    }
+    
+    /* Content Editing Area */
+    .title-area, .subtitle-area, .content-area {
+        margin-bottom: 20px;
+    }
+    
+    /* Contenteditable elements */
+    [contenteditable] {
+        outline: none;
+        cursor: text;
+    }
+    
+    [contenteditable]:empty:before {
+        content: attr(data-placeholder);
+        color: #adb5bd;
+        position: absolute;
+        pointer-events: none;
+    }
+    
+    .editable-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 2.5rem;
+        line-height: 1.2;
+        padding: 0;
+        margin-bottom: 20px;
+        min-height: 60px;
+        position: relative;
+    }
+    
+    .editable-title:empty:before {
+        font-size: 2.5rem;
+    }
+    
+    .editable-subtitle {
+        font-family: 'Merriweather', serif;
+        font-size: 1.25rem;
+        color: #212529;
+        padding: 0;
+        margin-bottom: 30px;
+        min-height: 40px;
+        position: relative;
+    }
+    
+    .editable-subtitle:empty:before {
+        font-size: 1.25rem;
+        color: #adb5bd;
+    }
+    
+    .editable-content {
+        font-family: 'Merriweather', serif;
+        font-size: 1.125rem;
+        line-height: 1.8;
+        min-height: 300px;
+        padding: 0;
+        position: relative;
+    }
+    
+    .editable-content:empty:before {
+        font-size: 1.125rem;
+    }
+    
+    /* Focus styles */
+    .editable-title:focus, .editable-subtitle:focus, .editable-content:focus {
+        border-left: 3px solid #d4af37;
+        padding-left: 10px;
+        transition: all 0.2s ease;
+    }
+    
+    /* Image upload */
+    .image-upload-label {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        border: 1px dashed #d4af37;
+        border-radius: 4px;
+        color: #6c757d;
         cursor: pointer;
         transition: all 0.2s;
     }
-
-    .upload-area:hover {
-        background-color: #f8f9fa;
-        border-color: #d4af37 !important;
-    }
-
-    .auto-save-notification {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: #2e7d32;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        z-index: 1000;
-        animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+    
+    .image-upload-label:hover {
+        background-color: rgba(212, 175, 55, 0.05);
     }
     
-    @@keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    .image-upload-label i {
+        margin-right: 8px;
     }
     
-    @@keyframes fadeOut {
-        from { opacity: 1; }
-        to { opacity: 0; }
-    }
-    
-    .btn-outline-golden {
-        color: #d4af37;
-        border-color: #d4af37;
-    }
-    
-    .btn-outline-golden:hover {
+    /* Golden theme button */
+    .btn-golden {
         background-color: #d4af37;
+        border-color: #d4af37;
+        color: white;
+    }
+    
+    .btn-golden:hover {
+        background-color: #c39e26;
+        border-color: #c39e26;
         color: white;
     }
 
+    /* Hide the save-status div from the old implementation */
     .save-status {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 8px 15px;
-        border-radius: 4px;
-        font-size: 14px;
-        z-index: 1000;
-        transition: opacity 0.3s ease-in-out;
-        opacity: 0;
-        background-color: #f8f9fa;
-        color: #6c757d;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: none;
     }
     
-    .save-status.saving {
+    /* Floating Formatting Toolbar */
+    .formatting-toolbar {
+        position: absolute;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 6px;
+        display: flex;
+        align-items: center;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+        pointer-events: none;
+        z-index: 1000;
+        border: 1px solid #e9ecef;
+    }
+    
+    .formatting-toolbar.visible {
         opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+    
+    .toolbar-buttons {
+        display: flex;
+        align-items: center;
+    }
+    
+    .toolbar-button {
+        background: transparent;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #495057;
+        transition: all 0.15s ease;
+    }
+    
+    .toolbar-button:hover {
+        background-color: #f8f9fa;
+        color: #212529;
+    }
+    
+    .toolbar-button.active {
+        background-color: rgba(212, 175, 55, 0.1);
+        color: #d4af37;
+    }
+    
+    .toolbar-divider {
+        width: 1px;
+        height: 20px;
         background-color: #e9ecef;
+        margin: 0 6px;
+    }
+    
+    /* Link Form */
+    .link-form {
+        display: none;
+        padding: 0 8px;
+        align-items: center;
+    }
+    
+    .link-form.visible {
+        display: flex;
+    }
+    
+    .link-form input {
+        border: none;
+        padding: 4px 8px;
+        margin-right: 6px;
+        min-width: 240px;
+        font-size: 14px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .link-form input:focus {
+        outline: none;
+        border-bottom-color: #d4af37;
+    }
+    
+    .link-form button {
+        background: transparent;
+        border: none;
+        font-size: 14px;
+        padding: 4px 8px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    
+    .link-form button:first-of-type {
+        color: #d4af37;
+        font-weight: 500;
+    }
+    
+    .link-form button:first-of-type:hover {
+        background-color: rgba(212, 175, 55, 0.1);
+    }
+    
+    .link-form button:last-of-type:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Formatting styles for the content */
+    .editable-content h2 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin: 1.5rem 0 1rem 0;
+    }
+    
+    .editable-content h3 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        font-size: 1.4rem;
+        margin: 1.2rem 0 0.8rem 0;
+    }
+    
+    .editable-content blockquote {
+        border-left: 3px solid #d4af37;
+        padding-left: 20px;
+        margin-left: 0;
+        font-style: italic;
         color: #495057;
     }
     
-    .save-status.saved {
-        opacity: 1;
-        background-color: #d4edda;
-        color: #155724;
+    .editable-content a {
+        color: #d4af37;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.3);
     }
     
-    .save-status.error {
-        opacity: 1;
-        background-color: #f8d7da;
-        color: #721c24;
+    .editable-content a:hover {
+        border-bottom-color: #d4af37;
     }
     
-    .title-input:focus,
-    .description-input:focus,
-    .content-input:focus {
-        outline: none;
-        box-shadow: none;
+    .editable-content mark {
+        background-color: rgba(212, 175, 55, 0.2);
+        padding: 0 2px;
+    }
+    
+    /* Content Addition Button */
+    .content-add-button {
+        position: absolute;
+        left: -50px;
+        z-index: 800;
+        transition: all 0.3s ease;
+    }
+    
+    .add-button-trigger {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: white;
+        border: 1px solid #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+    }
+    
+    .add-button-trigger:hover {
+        background-color: #f8f9fa;
+        color: #d4af37;
+        transform: scale(1.05);
+    }
+    
+    .add-button-trigger i {
+        font-size: 18px;
+    }
+    
+    .add-button-menu {
+        position: absolute;
+        left: 46px;
+        top: 0;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+        padding: 8px 0;
+        min-width: 160px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-10px);
+        transition: all 0.2s ease;
+    }
+    
+    .content-add-button.open .add-button-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(0);
+    }
+    
+    .add-menu-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+    
+    .add-menu-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .add-menu-item i {
+        margin-right: 10px;
+        color: #d4af37;
+        font-size: 16px;
+    }
+    
+    /* Media upload dialog */
+    .media-dialog {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1100;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease;
+    }
+    
+    .media-dialog.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .media-dialog-content {
+        background-color: white;
+        border-radius: 8px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    }
+    
+    .media-dialog.visible .media-dialog-content {
+        transform: translateY(0);
+    }
+    
+    .media-dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .media-dialog-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    .close-dialog {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #6c757d;
+    }
+    
+    .media-dialog-body {
+        padding: 20px;
+    }
+    
+    .media-pane {
+        display: none;
+    }
+    
+    .media-pane.active {
+        display: block;
+    }
+    
+    .upload-area {
+        border: 2px dashed #e9ecef;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .upload-area:hover {
+        border-color: #d4af37;
+        background-color: rgba(212, 175, 55, 0.02);
+    }
+    
+    .upload-area i {
+        font-size: 36px;
+        color: #d4af37;
+        margin-bottom: 10px;
+    }
+    
+    /* Content elements styling */
+    .editable-content .media-container {
+        margin: 30px 0;
+        text-align: center;
+    }
+    
+    .editable-content .media-container img {
+        max-width: 100%;
+        border-radius: 4px;
+    }
+    
+    .editable-content .video-container {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        height: 0;
+        overflow: hidden;
+        margin: 30px 0;
+    }
+    
+    .editable-content .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 4px;
+    }
+    
+    .editable-content .embed-container {
+        margin: 30px 0;
+    }
+    
+    .editable-content pre.code-block {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        padding: 16px;
+        margin: 30px 0;
+        overflow-x: auto;
+        font-family: monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        border-left: 3px solid #d4af37;
+    }
+    
+    .editable-content .content-divider {
+        margin: 30px 0;
+        border: 0;
+        height: 1px;
+        background: #e9ecef;
+        position: relative;
+        text-align: center;
+    }
+    
+    .editable-content .content-divider::before {
+        content: '•••';
+        position: absolute;
+        top: -10px;
+        background: white;
+        padding: 0 10px;
+        color: #adb5bd;
+        font-size: 14px;
     }
 </style>
 
 @section Scripts {
     <script>
+        // Variables for auto-save
         let autoSaveTimer;
-        const autoSaveDelay = 3000; // Save after 3 seconds of inactivity
-        let lastSavedContent = ''; // Track last saved content to avoid unnecessary saves
+        const autoSaveDelay = 3000; // 3 seconds
+        let lastSavedContent = '';
         let savingInProgress = false;
-        const saveStatus = document.getElementById('saveStatus');
+        const saveStatus = document.querySelector('.save-indicator');
         
-        // Function to show save status
+        // Update word and character count
+        function updateWordCount() {
+            const text = document.getElementById('contentEditor').innerText;
+            const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            const charCount = text.length;
+            
+            document.getElementById('wordCount').textContent = `${wordCount} words`;
+            document.getElementById('characterCount').textContent = `${charCount} characters`;
+        }
+        
+        // Update hidden form fields with contenteditable content
+        function updateFormFields() {
+            document.getElementById('Title').value = document.getElementById('titleEditor').innerText.trim();
+            document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
+            document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
+        }
+        
+        // Initialize editor
+        document.addEventListener('DOMContentLoaded', function() {
+            const titleEditor = document.getElementById('titleEditor');
+            const descriptionEditor = document.getElementById('descriptionEditor');
+            const contentEditor = document.getElementById('contentEditor');
+            
+            // Initial word count update
+            updateWordCount();
+            
+            // Initialize content for tracking changes
+            updateFormFields();
+            const title = document.getElementById('Title').value;
+            const content = document.getElementById('Content').value;
+            const description = document.getElementById('Description').value;
+            lastSavedContent = title + content + description;
+            
+            // Place cursor in title if empty
+            if (!title) {
+                titleEditor.focus();
+            } else if (!content) {
+                contentEditor.focus();
+            }
+            
+            // Handle paste to remove formatting
+            [titleEditor, descriptionEditor, contentEditor].forEach(editor => {
+                editor.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+                    document.execCommand('insertText', false, text);
+                });
+                
+                // Update form fields on input
+                editor.addEventListener('input', function() {
+                    updateFormFields();
+                    if (this === contentEditor) {
+                        updateWordCount();
+                    }
+                    
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
+                });
+                
+                // Add keydown handler to create new paragraph on Enter in title and subtitle
+                if (editor !== contentEditor) {
+                    editor.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            contentEditor.focus();
+                        }
+                    });
+                }
+            });
+            
+            // Add tab key support between editors
+            titleEditor.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab' && !e.shiftKey) {
+                    e.preventDefault();
+                    descriptionEditor.focus();
+                }
+            });
+            
+            descriptionEditor.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        titleEditor.focus();
+                    } else {
+                        contentEditor.focus();
+                    }
+                }
+            });
+            
+            contentEditor.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab' && e.shiftKey) {
+                    e.preventDefault();
+                    descriptionEditor.focus();
+                }
+            });
+            
+            // Initialize formatting toolbar
+            initFormattingToolbar();
+            
+            // Initialize content addition functionality
+            initContentAddButton();
+        });
+        
+        // Show save status
         function showSaveStatus(status, message) {
-            saveStatus.textContent = message;
-            saveStatus.className = 'save-status ' + status;
+            const saveText = saveStatus.querySelector('.save-text');
+            saveText.textContent = message;
+            
+            saveStatus.className = 'save-indicator ' + status;
             
             if (status === 'saved') {
-                // Hide the status after 3 seconds
+                // Return to default state after 3 seconds
                 setTimeout(() => {
-                    saveStatus.style.opacity = '0';
+                    saveText.textContent = 'Saved';
+                    saveStatus.className = 'save-indicator';
                 }, 3000);
             }
         }
@@ -258,6 +873,8 @@
         // Function to perform auto-save
         function performAutoSave() {
             if (savingInProgress) return;
+            
+            updateFormFields();
             
             const title = document.getElementById('Title').value;
             const content = document.getElementById('Content').value;
@@ -274,11 +891,21 @@
             savingInProgress = true;
             showSaveStatus('saving', 'Saving...');
             
+            // Create URL slug from title if empty
+            if (!url && title.trim() !== '') {
+                const slug = title.toLowerCase()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .trim();
+                document.getElementById('Url').value = slug;
+            }
+            
             const formData = new FormData();
             formData.append('Title', title);
             formData.append('Content', content);
             formData.append('Description', description);
-            formData.append('Url', url);
+            formData.append('Url', document.getElementById('Url').value);
             formData.append('PostId', postId);
             
             // Get the anti-forgery token
@@ -314,51 +941,767 @@
             });
         }
         
-        // Initialize auto-save on input fields
-        const inputElements = document.querySelectorAll('.title-input, .description-input, .content-input, .url-input');
-        inputElements.forEach(el => {
-            el.addEventListener('input', () => {
-                clearTimeout(autoSaveTimer);
-                autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
-            });
-        });
-        
         // Save before user leaves the page
         window.addEventListener('beforeunload', () => {
+            updateFormFields();
             performAutoSave();
         });
         
-        // Initial content to compare against
-        document.addEventListener('DOMContentLoaded', () => {
-            const title = document.getElementById('Title').value;
-            const content = document.getElementById('Content').value;
-            const description = document.getElementById('Description').value;
-            lastSavedContent = title + content + description;
+        // Preview button handler
+        document.getElementById('previewBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            updateFormFields();
+            performAutoSave();
             
-            // Place cursor in title if empty
-            if (!title) {
-                document.getElementById('Title').focus();
-            } else if (!content) {
-                document.getElementById('Content').focus();
-            }
-        });
-
-        document.querySelector('.upload-area').addEventListener('click', function() {
-            document.getElementById('Image').click();
+            // Simple preview in new window
+            const title = document.getElementById('Title').value || 'Untitled';
+            const content = document.getElementById('Content').value || '';
+            const description = document.getElementById('Description').value || '';
+            
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${title} - Preview</title>
+                    <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+                    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.min.css">
+                    <link rel="stylesheet" href="/css/style.css">
+                    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Merriweather', serif; line-height: 1.8; padding: 40px; max-width: 800px; margin: 0 auto; }
+                        h1 { font-family: 'Montserrat', sans-serif; font-weight: 700; margin-bottom: 20px; }
+                        .subtitle { font-size: 1.2rem; color: #6c757d; margin-bottom: 30px; }
+                        .preview-banner { background-color: #f8f9fa; padding: 10px; text-align: center; margin-bottom: 30px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="preview-banner">
+                        <strong>Preview Mode</strong> - This is how your story will look when published
+                    </div>
+                    <h1>${title}</h1>
+                    <div class="subtitle">${description}</div>
+                    <div class="content">${content.replace(/\n/g, '<br>')}</div>
+                </body>
+                </html>
+            `);
         });
         
+        // Publish button handler
+        document.getElementById('publishBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            updateFormFields();
+            document.getElementById('formAction').value = 'publish';
+            document.getElementById('storyForm').submit();
+        });
+        
+        // Image upload preview
         document.getElementById('Image').addEventListener('change', function() {
             if (this.files && this.files[0]) {
-                var reader = new FileReader();
+                const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.querySelector('.upload-area i').classList.add('d-none');
-                    document.querySelector('.upload-area div').classList.add('d-none');
-                    document.querySelector('.upload-area').style.backgroundImage = `url(${e.target.result})`;
-                    document.querySelector('.upload-area').style.backgroundSize = 'cover';
-                    document.querySelector('.upload-area').style.backgroundPosition = 'center';
-                }
+                    // Create image preview if it doesn't exist
+                    if (!document.querySelector('.current-image')) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'current-image mt-2';
+                        previewDiv.innerHTML = `
+                            <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;" />
+                            <small class="d-block mt-1 text-muted">Cover image preview</small>
+                        `;
+                        document.querySelector('.image-upload-area').appendChild(previewDiv);
+                    } else {
+                        // Update existing preview
+                        document.querySelector('.current-image img').src = e.target.result;
+                        document.querySelector('.current-image small').textContent = 'Cover image preview';
+                    }
+                };
                 reader.readAsDataURL(this.files[0]);
             }
         });
+        
+        // Formatting toolbar related code
+        function initFormattingToolbar() {
+            const toolbar = document.getElementById('formattingToolbar');
+            const linkForm = document.getElementById('linkForm');
+            const linkInput = document.getElementById('linkInput');
+            const applyLinkButton = document.getElementById('applyLinkButton');
+            const cancelLinkButton = document.getElementById('cancelLinkButton');
+            const contentEditor = document.getElementById('contentEditor');
+            
+            let currentSelection = null;
+            
+            // Check for text selection and show toolbar
+            document.addEventListener('selectionchange', function() {
+                const selection = window.getSelection();
+                
+                if (selection.rangeCount > 0 && selection.toString().trim() !== '') {
+                    const range = selection.getRangeAt(0);
+                    
+                    // Check if selection is within the content editor
+                    if (contentEditor.contains(range.commonAncestorContainer)) {
+                        currentSelection = selection;
+                        showToolbar(selection);
+                    } else {
+                        hideToolbar();
+                    }
+                } else {
+                    // Small delay to allow for button clicks
+                    setTimeout(hideToolbar, 100);
+                }
+            });
+            
+            // Show the toolbar at the selection
+            function showToolbar(selection) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                // Position the toolbar above the selection
+                toolbar.style.top = `${window.scrollY + rect.top - toolbar.offsetHeight - 10}px`;
+                toolbar.style.left = `${window.scrollX + rect.left + (rect.width / 2) - (toolbar.offsetWidth / 2)}px`;
+                
+                // Make sure the toolbar stays within viewport bounds
+                const rightEdge = toolbar.getBoundingClientRect().right;
+                const viewportWidth = window.innerWidth;
+                
+                if (rightEdge > viewportWidth) {
+                    const offset = rightEdge - viewportWidth + 10;
+                    toolbar.style.left = `${parseInt(toolbar.style.left) - offset}px`;
+                }
+                
+                if (parseInt(toolbar.style.left) < 10) {
+                    toolbar.style.left = '10px';
+                }
+                
+                // Show the toolbar with animation
+                toolbar.classList.add('visible');
+                
+                // Update active state of buttons based on current formatting
+                updateToolbarState();
+            }
+            
+            // Hide the toolbar
+            function hideToolbar() {
+                toolbar.classList.remove('visible');
+                hideLinkForm();
+            }
+            
+            // Update toolbar button states based on current selection formatting
+            function updateToolbarState() {
+                const buttons = toolbar.querySelectorAll('.toolbar-button');
+                
+                buttons.forEach(button => {
+                    button.classList.remove('active');
+                    
+                    const command = button.getAttribute('data-command');
+                    const value = button.getAttribute('data-value');
+                    
+                    if (command === 'bold' && document.queryCommandState('bold')) {
+                        button.classList.add('active');
+                    } else if (command === 'italic' && document.queryCommandState('italic')) {
+                        button.classList.add('active');
+                    } else if (command === 'heading') {
+                        // Check if selection is within a heading
+                        const selection = window.getSelection();
+                        if (selection.rangeCount > 0) {
+                            const node = selection.getRangeAt(0).commonAncestorContainer;
+                            const headingElement = getClosestHeading(node);
+                            
+                            if (headingElement && headingElement.tagName.toLowerCase() === value) {
+                                button.classList.add('active');
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Get closest heading element
+            function getClosestHeading(node) {
+                while (node && node !== contentEditor) {
+                    if (node.nodeType === 1 && /^h[1-6]$/i.test(node.tagName)) {
+                        return node;
+                    }
+                    node = node.parentNode;
+                }
+                return null;
+            }
+            
+            // Handle toolbar button clicks
+            toolbar.querySelectorAll('.toolbar-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const command = this.getAttribute('data-command');
+                    const value = this.getAttribute('data-value');
+                    
+                    // Restore the selection before applying formatting
+                    if (currentSelection) {
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(currentSelection.getRangeAt(0));
+                    }
+                    
+                    applyFormatting(command, value);
+                    
+                    // Update the hidden form fields after formatting
+                    updateFormFields();
+                });
+            });
+            
+            // Apply formatting based on command
+            function applyFormatting(command, value) {
+                switch (command) {
+                    case 'bold':
+                        document.execCommand('bold', false, null);
+                        break;
+                    case 'italic':
+                        document.execCommand('italic', false, null);
+                        break;
+                    case 'link':
+                        showLinkForm();
+                        break;
+                    case 'heading':
+                        applyHeading(value);
+                        break;
+                    case 'quote':
+                        applyQuote();
+                        break;
+                    case 'highlight':
+                        document.execCommand('hiliteColor', false, 'rgba(212, 175, 55, 0.2)');
+                        break;
+                }
+                
+                // Update toolbar state after applying formatting
+                updateToolbarState();
+            }
+            
+            // Apply heading format
+            function applyHeading(headingType) {
+                const selection = window.getSelection();
+                if (selection.rangeCount === 0) return;
+                
+                const range = selection.getRangeAt(0);
+                const startNode = range.startContainer;
+                
+                // Find the nearest block-level parent
+                let currentBlock = startNode;
+                while (currentBlock && currentBlock !== contentEditor && 
+                      (currentBlock.nodeType !== 1 || 
+                       !['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(currentBlock.tagName))) {
+                    currentBlock = currentBlock.parentNode;
+                }
+                
+                if (!currentBlock || currentBlock === contentEditor) {
+                    // If no suitable block found, try to create one by executing a formatBlock command
+                    document.execCommand('formatBlock', false, headingType);
+                    return;
+                }
+                
+                // Check if we're already using this heading type
+                if (currentBlock.tagName.toLowerCase() === headingType) {
+                    // Convert back to paragraph
+                    document.execCommand('formatBlock', false, 'p');
+                } else {
+                    // Apply the heading
+                    document.execCommand('formatBlock', false, headingType);
+                }
+            }
+            
+            // Apply blockquote format
+            function applyQuote() {
+                const selection = window.getSelection();
+                if (selection.rangeCount === 0) return;
+                
+                const range = selection.getRangeAt(0);
+                const startNode = range.startContainer;
+                
+                // Find the nearest block-level parent
+                let currentBlock = startNode;
+                while (currentBlock && currentBlock !== contentEditor && 
+                       (currentBlock.nodeType !== 1 || 
+                        !['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(currentBlock.tagName))) {
+                    currentBlock = currentBlock.parentNode;
+                }
+                
+                if (!currentBlock || currentBlock === contentEditor) {
+                    document.execCommand('formatBlock', false, 'blockquote');
+                    return;
+                }
+                
+                // Toggle blockquote
+                if (currentBlock.tagName.toLowerCase() === 'blockquote') {
+                    document.execCommand('formatBlock', false, 'p');
+                } else {
+                    document.execCommand('formatBlock', false, 'blockquote');
+                }
+            }
+            
+            // Show link input form
+            function showLinkForm() {
+                // Hide toolbar buttons, show link form
+                toolbar.querySelector('.toolbar-buttons').style.display = 'none';
+                linkForm.classList.add('visible');
+                
+                // Get any existing link in the selection
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const node = selection.getRangeAt(0).commonAncestorContainer;
+                    const linkElement = getClosestLink(node);
+                    
+                    if (linkElement) {
+                        linkInput.value = linkElement.href;
+                    } else {
+                        linkInput.value = '';
+                    }
+                }
+                
+                linkInput.focus();
+            }
+            
+            // Get closest link element
+            function getClosestLink(node) {
+                while (node && node !== contentEditor) {
+                    if (node.nodeType === 1 && node.tagName.toLowerCase() === 'a') {
+                        return node;
+                    }
+                    node = node.parentNode;
+                }
+                return null;
+            }
+            
+            // Hide link form
+            function hideLinkForm() {
+                linkForm.classList.remove('visible');
+                toolbar.querySelector('.toolbar-buttons').style.display = 'flex';
+                linkInput.value = '';
+            }
+            
+            // Apply link button click
+            applyLinkButton.addEventListener('click', function() {
+                const url = linkInput.value.trim();
+                if (url) {
+                    // Restore the selection
+                    if (currentSelection) {
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(currentSelection.getRangeAt(0));
+                    }
+                    
+                    // Add protocol if missing
+                    let formattedUrl = url;
+                    if (!/^https?:\/\//i.test(url)) {
+                        formattedUrl = 'https://' + url;
+                    }
+                    
+                    document.execCommand('createLink', false, formattedUrl);
+                    
+                    // Update form fields
+                    updateFormFields();
+                }
+                
+                hideLinkForm();
+                hideToolbar();
+            });
+            
+            // Cancel link button click
+            cancelLinkButton.addEventListener('click', function() {
+                hideLinkForm();
+            });
+            
+            // Handle keyboard shortcuts
+            contentEditor.addEventListener('keydown', function(e) {
+                // Ctrl+B: Bold
+                if (e.ctrlKey && e.key === 'b') {
+                    e.preventDefault();
+                    document.execCommand('bold', false, null);
+                }
+                
+                // Ctrl+I: Italic
+                if (e.ctrlKey && e.key === 'i') {
+                    e.preventDefault();
+                    document.execCommand('italic', false, null);
+                }
+                
+                // Ctrl+K: Link
+                if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    if (window.getSelection().toString().trim() !== '') {
+                        showLinkForm();
+                    }
+                }
+                
+                // Update form fields after formatting
+                updateFormFields();
+            });
+            
+            // Additional handlers for clicking outside the toolbar
+            document.addEventListener('mousedown', function(e) {
+                if (!toolbar.contains(e.target) && toolbar.classList.contains('visible')) {
+                    // Don't hide immediately, allow for button clicks to register
+                    setTimeout(function() {
+                        // Check if link form is visible and clicked outside
+                        if (linkForm.classList.contains('visible') && !linkForm.contains(e.target)) {
+                            hideLinkForm();
+                        }
+                    }, 10);
+                }
+            });
+        }
+        
+        // Initialize content addition button and media dialog
+        function initContentAddButton() {
+            const contentAddButton = document.getElementById('contentAddButton');
+            const addButtonTrigger = contentAddButton.querySelector('.add-button-trigger');
+            const addMenuItems = contentAddButton.querySelectorAll('.add-menu-item');
+            const contentEditor = document.getElementById('contentEditor');
+            const mediaDialog = document.getElementById('mediaDialog');
+            const closeMediaDialog = document.getElementById('closeMediaDialog');
+            
+            // Current cursor position in the editor
+            let currentCaretPosition = null;
+            
+            // Placeholder for selection to keep track of where to insert content
+            let savedSelection = null;
+            
+            // Track button position
+            let lastParagraph = null;
+            
+            // Toggle add menu on click
+            addButtonTrigger.addEventListener('click', function() {
+                contentAddButton.classList.toggle('open');
+                
+                // Save current selection
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    savedSelection = selection.getRangeAt(0);
+                }
+            });
+            
+            // Handle clicks outside of menu to close it
+            document.addEventListener('click', function(e) {
+                if (!contentAddButton.contains(e.target)) {
+                    contentAddButton.classList.remove('open');
+                }
+            });
+            
+            // Content editor click to update button position
+            contentEditor.addEventListener('click', function() {
+                updateButtonPosition();
+            });
+            
+            // Content editor keyup to update button position
+            contentEditor.addEventListener('keyup', function() {
+                updateButtonPosition();
+            });
+            
+            // Update button position based on current caret
+            function updateButtonPosition() {
+                // Get the current selection
+                const selection = window.getSelection();
+                if (selection.rangeCount === 0) return;
+                
+                // Get the current paragraph
+                const range = selection.getRangeAt(0);
+                let currentNode = range.startContainer;
+                
+                // Find paragraph or block-level element
+                while (currentNode && currentNode !== contentEditor) {
+                    if (currentNode.nodeType === 1 && 
+                        (currentNode.tagName === 'P' || 
+                         currentNode.tagName === 'DIV' || 
+                         currentNode.tagName === 'H2' || 
+                         currentNode.tagName === 'H3' || 
+                         currentNode.tagName === 'BLOCKQUOTE')) {
+                        break;
+                    }
+                    currentNode = currentNode.parentNode;
+                }
+                
+                // Use content editor if no specific block found
+                if (!currentNode || currentNode === contentEditor) {
+                    currentNode = contentEditor;
+                }
+                
+                // Only update position if we've moved to a new paragraph
+                if (currentNode !== lastParagraph) {
+                    lastParagraph = currentNode;
+                    
+                    // Get position of current paragraph
+                    const rect = currentNode.getBoundingClientRect();
+                    const editorRect = contentEditor.getBoundingClientRect();
+                    
+                    // Position the button at the left of the editor, aligned with the current paragraph
+                    contentAddButton.style.top = `${rect.top - editorRect.top + contentEditor.scrollTop}px`;
+                    
+                    // Save caret position for later content insertion
+                    currentCaretPosition = range.cloneRange();
+                }
+            }
+            
+            // Handle menu item clicks
+            addMenuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const contentType = this.getAttribute('data-content-type');
+                    
+                    // Close the menu
+                    contentAddButton.classList.remove('open');
+                    
+                    // Handle each content type
+                    switch (contentType) {
+                        case 'image':
+                            showMediaDialog('imageUploadPane', 'Add Image');
+                            break;
+                        case 'video':
+                            showMediaDialog('videoUploadPane', 'Add Video');
+                            break;
+                        case 'embed':
+                            showMediaDialog('embedUploadPane', 'Add Embed');
+                            break;
+                        case 'code':
+                            showMediaDialog('codeBlockPane', 'Add Code Block');
+                            break;
+                        case 'divider':
+                            insertDivider();
+                            break;
+                    }
+                });
+            });
+            
+            // Show media dialog
+            function showMediaDialog(paneId, title) {
+                // Set dialog title
+                document.getElementById('mediaDialogTitle').textContent = title;
+                
+                // Hide all panes and show the selected one
+                document.querySelectorAll('.media-pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+                document.getElementById(paneId).classList.add('active');
+                
+                // Show the dialog
+                mediaDialog.classList.add('visible');
+            }
+            
+            // Close dialog button
+            closeMediaDialog.addEventListener('click', function() {
+                mediaDialog.classList.remove('visible');
+            });
+            
+            // Close dialog when clicking outside
+            mediaDialog.addEventListener('click', function(e) {
+                if (e.target === mediaDialog) {
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Image upload area
+            const imageDropArea = document.getElementById('imageDropArea');
+            const imageFileInput = document.getElementById('imageFileInput');
+            
+            // Click on drop area to trigger file input
+            imageDropArea.addEventListener('click', function() {
+                imageFileInput.click();
+            });
+            
+            // Handle file selection
+            imageFileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    handleImageFile(this.files[0]);
+                }
+            });
+            
+            // Handle drag and drop
+            imageDropArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#d4af37';
+                this.style.backgroundColor = 'rgba(212, 175, 55, 0.05)';
+            });
+            
+            imageDropArea.addEventListener('dragleave', function() {
+                this.style.borderColor = '#e9ecef';
+                this.style.backgroundColor = '';
+            });
+            
+            imageDropArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#e9ecef';
+                this.style.backgroundColor = '';
+                
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleImageFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // Image URL input
+            document.getElementById('insertImageUrlBtn').addEventListener('click', function() {
+                const imageUrl = document.getElementById('imageUrlInput').value.trim();
+                if (imageUrl) {
+                    insertImage(imageUrl);
+                    document.getElementById('imageUrlInput').value = '';
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Video URL input
+            document.getElementById('insertVideoBtn').addEventListener('click', function() {
+                const videoUrl = document.getElementById('videoUrlInput').value.trim();
+                if (videoUrl) {
+                    insertVideo(videoUrl);
+                    document.getElementById('videoUrlInput').value = '';
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Embed code input
+            document.getElementById('insertEmbedBtn').addEventListener('click', function() {
+                const embedCode = document.getElementById('embedCodeInput').value.trim();
+                if (embedCode) {
+                    insertEmbed(embedCode);
+                    document.getElementById('embedCodeInput').value = '';
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Code block input
+            document.getElementById('insertCodeBtn').addEventListener('click', function() {
+                const code = document.getElementById('codeInput').value;
+                const language = document.getElementById('codeLanguageSelect').value;
+                
+                if (code) {
+                    insertCodeBlock(code, language);
+                    document.getElementById('codeInput').value = '';
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Process selected image file
+            function handleImageFile(file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // For this example, we'll just use the data URL directly
+                    // In a real app, you would upload the file to server
+                    insertImage(e.target.result);
+                    mediaDialog.classList.remove('visible');
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Insert image at caret position
+            function insertImage(src) {
+                restoreSelection();
+                
+                const imageHtml = `
+                    <div class="media-container">
+                        <img src="${src}" alt="User uploaded image">
+                    </div>
+                    <p></p>
+                `;
+                
+                insertContentAtCaret(imageHtml);
+            }
+            
+            // Insert video at caret position
+            function insertVideo(url) {
+                restoreSelection();
+                
+                // Extract video ID and create embed code
+                let embedCode = '';
+                
+                if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                    // YouTube
+                    let videoId = '';
+                    
+                    if (url.includes('youtube.com/watch')) {
+                        const urlParams = new URLSearchParams(new URL(url).search);
+                        videoId = urlParams.get('v');
+                    } else if (url.includes('youtu.be/')) {
+                        videoId = url.split('youtu.be/')[1].split('?')[0];
+                    }
+                    
+                    if (videoId) {
+                        embedCode = `<div class="video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
+                    }
+                } else if (url.includes('vimeo.com')) {
+                    // Vimeo
+                    const vimeoId = url.split('vimeo.com/')[1].split('?')[0];
+                    embedCode = `<div class="video-container"><iframe src="https://player.vimeo.com/video/${vimeoId}" allowfullscreen></iframe></div>`;
+                } else {
+                    alert('Unsupported video URL. Please use YouTube or Vimeo links.');
+                    return;
+                }
+                
+                if (embedCode) {
+                    insertContentAtCaret(embedCode + '<p></p>');
+                }
+            }
+            
+            // Insert embed code
+            function insertEmbed(code) {
+                restoreSelection();
+                insertContentAtCaret(`<div class="embed-container">${code}</div><p></p>`);
+            }
+            
+            // Insert code block
+            function insertCodeBlock(code, language) {
+                restoreSelection();
+                
+                // Escape HTML entities to prevent rendering
+                const escapedCode = code
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                
+                insertContentAtCaret(`<pre class="code-block" data-language="${language}">${escapedCode}</pre><p></p>`);
+            }
+            
+            // Insert divider
+            function insertDivider() {
+                restoreSelection();
+                insertContentAtCaret('<hr class="content-divider"><p></p>');
+            }
+            
+            // Restore saved selection
+            function restoreSelection() {
+                if (savedSelection) {
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(savedSelection);
+                }
+            }
+            
+            // Insert HTML content at current caret position
+            function insertContentAtCaret(html) {
+                // Focus the editor first
+                contentEditor.focus();
+                
+                // Get selection
+                const selection = window.getSelection();
+                
+                // If we have a saved selection, use it
+                if (savedSelection) {
+                    selection.removeAllRanges();
+                    selection.addRange(savedSelection);
+                }
+                
+                // If no selection, create one at the end
+                if (selection.rangeCount === 0) {
+                    const range = document.createRange();
+                    range.setStart(contentEditor, contentEditor.childNodes.length);
+                    range.collapse(true);
+                    selection.addRange(range);
+                }
+                
+                // Insert the HTML
+                document.execCommand('insertHTML', false, html);
+                
+                // Update form fields after insertion
+                updateFormFields();
+                
+                // Update the button position
+                setTimeout(updateButtonPosition, 0);
+            }
+        }
     </script>
 }
