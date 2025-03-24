@@ -171,9 +171,10 @@
     }
     
     .editor-container {
-        max-width: 800px;
+        width: 80%;
         margin: 0 auto;
-        padding: 20px;
+        padding: 40px 0;
+        max-width: 1000px;
     }
     
     /* Editor Navigation Bar */
@@ -232,13 +233,17 @@
     
     /* Content Editing Area */
     .title-area, .subtitle-area, .content-area {
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
     
     /* Contenteditable elements */
     [contenteditable] {
         outline: none;
         cursor: text;
+        border: none;
+        resize: none;
+        overflow: hidden;
+        transition: all 0.2s ease;
     }
     
     [contenteditable]:empty:before {
@@ -251,51 +256,61 @@
     .editable-title {
         font-family: 'Montserrat', sans-serif;
         font-weight: 700;
-        font-size: 2.5rem;
+        font-size: 45px;
         line-height: 1.2;
         padding: 0;
         margin-bottom: 20px;
         min-height: 60px;
         position: relative;
+        width: 100%;
+        transition: height 0.2s ease;
     }
     
     .editable-title:empty:before {
-        font-size: 2.5rem;
+        font-size: 45px;
     }
     
     .editable-subtitle {
         font-family: 'Merriweather', serif;
-        font-size: 1.25rem;
-        color: #212529;
+        font-size: 22px;
+        color: #6c757d;
         padding: 0;
         margin-bottom: 30px;
         min-height: 40px;
         position: relative;
+        width: 100%;
     }
     
     .editable-subtitle:empty:before {
-        font-size: 1.25rem;
+        font-size: 22px;
         color: #adb5bd;
     }
     
     .editable-content {
         font-family: 'Merriweather', serif;
-        font-size: 1.125rem;
+        font-size: 20px;
         line-height: 1.8;
         min-height: 300px;
         padding: 0;
         position: relative;
+        width: 100%;
     }
     
     .editable-content:empty:before {
-        font-size: 1.125rem;
+        font-size: 20px;
     }
     
-    /* Focus styles */
+    /* Focus styles - more subtle, minimalistic approach */
     .editable-title:focus, .editable-subtitle:focus, .editable-content:focus {
-        border-left: 3px solid #d4af37;
-        padding-left: 10px;
+        border-left: 2px solid #d4af37;
+        padding-left: 8px;
         transition: all 0.2s ease;
+    }
+    
+    /* Clean white space around editor content */
+    .editor-content {
+        background-color: #fff;
+        padding: 20px 0;
     }
     
     /* Image upload */
@@ -704,6 +719,11 @@
             // Initial word count update
             updateWordCount();
             
+            // Initialize auto-expanding editors
+            initAutoExpand(titleEditor);
+            initAutoExpand(descriptionEditor);
+            initAutoExpand(contentEditor);
+            
             // Initialize content for tracking changes
             updateFormFields();
             const title = document.getElementById('Title').value;
@@ -780,6 +800,41 @@
             // Initialize content addition functionality
             initContentAddButton();
         });
+        
+        // Function to initialize auto-expanding editors
+        function initAutoExpand(element) {
+            // Set initial height if content exists
+            adjustHeight(element);
+            
+            // Add input event listener to adjust height as user types
+            element.addEventListener('input', function() {
+                adjustHeight(this);
+            });
+            
+            // Also adjust on window resize
+            window.addEventListener('resize', function() {
+                adjustHeight(element);
+            });
+        }
+        
+        // Function to adjust element height based on content
+        function adjustHeight(element) {
+            // Reset height to auto so we can calculate the new height
+            element.style.height = 'auto';
+            
+            // Get scrollHeight (full content height) and add a small buffer
+            const newHeight = element.scrollHeight;
+            
+            // Set new height
+            element.style.height = newHeight + 'px';
+            
+            // Ensure minimum height
+            if (element.id === 'titleEditor' && newHeight < 60) {
+                element.style.height = '60px';
+            } else if (element.id === 'descriptionEditor' && newHeight < 40) {
+                element.style.height = '40px';
+            }
+        }
         
         // Show save status
         function showSaveStatus(status, message) {
