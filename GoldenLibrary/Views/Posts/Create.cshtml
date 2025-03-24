@@ -17,13 +17,19 @@
             <span class="save-text">Saved</span>
         </div>
         
+        <div class="draft-indicator" id="draftStatus" style="display: none;">
+            <button class="btn btn-sm btn-link text-muted" id="restoreDraftBtn">
+                <i class="bi bi-arrow-counterclockwise"></i> Restore unsaved draft
+            </button>
+        </div>
+        
         <div class="editor-actions">
             <button class="btn btn-outline-secondary btn-sm rounded-pill me-2" id="previewBtn">Preview</button>
             <button class="btn btn-golden btn-sm rounded-pill" id="publishBtn">Publish</button>
         </div>
     </div>
     
-    <!-- Floating Formatting Toolbar -->
+    <!-- Simplified Minimalist Formatting Toolbar -->
     <div class="formatting-toolbar" id="formattingToolbar">
         <div class="toolbar-buttons">
             <button type="button" class="toolbar-button" data-command="bold" title="Bold (Ctrl+B)">
@@ -32,22 +38,8 @@
             <button type="button" class="toolbar-button" data-command="italic" title="Italic (Ctrl+I)">
                 <i class="bi bi-type-italic"></i>
             </button>
-            <span class="toolbar-divider"></span>
-            <button type="button" class="toolbar-button" data-command="heading" data-value="h2" title="Heading">
-                <i class="bi bi-type-h2"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="heading" data-value="h3" title="Subheading">
-                <i class="bi bi-type-h3"></i>
-            </button>
-            <span class="toolbar-divider"></span>
             <button type="button" class="toolbar-button" data-command="link" title="Link (Ctrl+K)">
                 <i class="bi bi-link-45deg"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="quote" title="Quote">
-                <i class="bi bi-blockquote-left"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="highlight" title="Highlight">
-                <i class="bi bi-pencil-fill"></i>
             </button>
         </div>
         
@@ -155,7 +147,7 @@
     
     <!-- Content Editing Area -->
     <div class="editor-content">
-        <form id="storyForm" asp-action="Create" method="post" enctype="multipart/form-data">
+        <form id="storyForm" asp-action="Create" method="post">
             <input type="hidden" asp-for="PostId" id="postId" />
             <input type="hidden" id="Title" name="Title" value="@Model?.Title" />
             <input type="hidden" id="Description" name="Description" value="@Model?.Description" />
@@ -175,21 +167,6 @@
             <div class="content-area">
                 <div id="contentEditor" class="editable-content" contenteditable="true" data-placeholder="Tell your story...">@Model?.Content</div>
             </div>
-            
-            <div class="image-upload-area mt-4">
-                <label for="Image" class="image-upload-label">
-                    <i class="bi bi-image text-golden"></i>
-                    <span>Add cover image</span>
-                    <input type="file" id="Image" name="ImageFile" class="d-none">
-                </label>
-                @if (!string.IsNullOrEmpty(Model?.Image))
-                {
-                    <div class="current-image mt-2">
-                        <img src="~/img/@Model.Image" class="img-fluid rounded" style="max-height: 200px;" />
-                        <small class="d-block mt-1 text-muted">Current cover image</small>
-                    </div>
-                }
-            </div>
         </form>
     </div>
 </div>
@@ -200,9 +177,10 @@
     }
     
     .editor-container {
-        max-width: 800px;
+        width: 80%;
         margin: 0 auto;
-        padding: 20px;
+        padding: 40px 0;
+        max-width: 1000px;
     }
     
     /* Editor Navigation Bar */
@@ -253,7 +231,7 @@
         background-color: #dc3545;
     }
     
-    @keyframes pulse {
+    @@keyframes pulse {
         0% { opacity: 0.5; }
         50% { opacity: 1; }
         100% { opacity: 0.5; }
@@ -261,13 +239,17 @@
     
     /* Content Editing Area */
     .title-area, .subtitle-area, .content-area {
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
     
     /* Contenteditable elements */
     [contenteditable] {
         outline: none;
         cursor: text;
+        border: none;
+        resize: none;
+        overflow: hidden;
+        transition: all 0.2s ease;
     }
     
     [contenteditable]:empty:before {
@@ -280,51 +262,61 @@
     .editable-title {
         font-family: 'Montserrat', sans-serif;
         font-weight: 700;
-        font-size: 2.5rem;
+        font-size: 45px;
         line-height: 1.2;
         padding: 0;
         margin-bottom: 20px;
         min-height: 60px;
         position: relative;
+        width: 100%;
+        transition: height 0.2s ease;
     }
     
     .editable-title:empty:before {
-        font-size: 2.5rem;
+        font-size: 45px;
     }
     
     .editable-subtitle {
         font-family: 'Merriweather', serif;
-        font-size: 1.25rem;
-        color: #212529;
+        font-size: 22px;
+        color: #6c757d;
         padding: 0;
         margin-bottom: 30px;
         min-height: 40px;
         position: relative;
+        width: 100%;
     }
     
     .editable-subtitle:empty:before {
-        font-size: 1.25rem;
+        font-size: 22px;
         color: #adb5bd;
     }
     
     .editable-content {
         font-family: 'Merriweather', serif;
-        font-size: 1.125rem;
+        font-size: 20px;
         line-height: 1.8;
         min-height: 300px;
         padding: 0;
         position: relative;
+        width: 100%;
     }
     
     .editable-content:empty:before {
-        font-size: 1.125rem;
+        font-size: 20px;
     }
     
-    /* Focus styles */
+    /* Focus styles - more subtle, minimalistic approach */
     .editable-title:focus, .editable-subtitle:focus, .editable-content:focus {
-        border-left: 3px solid #d4af37;
-        padding-left: 10px;
+        border-left: 2px solid #d4af37;
+        padding-left: 8px;
         transition: all 0.2s ease;
+    }
+    
+    /* Clean white space around editor content */
+    .editor-content {
+        background-color: #fff;
+        padding: 20px 0;
     }
     
     /* Image upload */
@@ -365,13 +357,13 @@
         display: none;
     }
     
-    /* Floating Formatting Toolbar */
+    /* Minimalist Formatting Toolbar - Updated Styles */
     .formatting-toolbar {
         position: absolute;
         background: white;
         border-radius: 4px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        padding: 6px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        padding: 4px;
         display: flex;
         align-items: center;
         transition: opacity 0.2s ease, transform 0.2s ease;
@@ -379,7 +371,7 @@
         transform: translateY(10px) scale(0.95);
         pointer-events: none;
         z-index: 1000;
-        border: 1px solid #e9ecef;
+        border: 1px solid rgba(0,0,0,0.08);
     }
     
     .formatting-toolbar.visible {
@@ -396,8 +388,8 @@
     .toolbar-button {
         background: transparent;
         border: none;
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: 4px;
         cursor: pointer;
         display: flex;
@@ -405,6 +397,7 @@
         justify-content: center;
         color: #495057;
         transition: all 0.15s ease;
+        margin: 0 2px;
     }
     
     .toolbar-button:hover {
@@ -417,17 +410,10 @@
         color: #d4af37;
     }
     
-    .toolbar-divider {
-        width: 1px;
-        height: 20px;
-        background-color: #e9ecef;
-        margin: 0 6px;
-    }
-    
-    /* Link Form */
+    /* Link Form - Updated for minimalist look */
     .link-form {
         display: none;
-        padding: 0 8px;
+        padding: 0 6px;
         align-items: center;
     }
     
@@ -439,7 +425,7 @@
         border: none;
         padding: 4px 8px;
         margin-right: 6px;
-        min-width: 240px;
+        min-width: 220px;
         font-size: 14px;
         border-bottom: 1px solid #e9ecef;
     }
@@ -452,8 +438,8 @@
     .link-form button {
         background: transparent;
         border: none;
-        font-size: 14px;
-        padding: 4px 8px;
+        font-size: 13px;
+        padding: 3px 6px;
         cursor: pointer;
         border-radius: 4px;
     }
@@ -469,44 +455,6 @@
     
     .link-form button:last-of-type:hover {
         background-color: #f8f9fa;
-    }
-    
-    /* Formatting styles for the content */
-    .editable-content h2 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700;
-        font-size: 1.8rem;
-        margin: 1.5rem 0 1rem 0;
-    }
-    
-    .editable-content h3 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 1.4rem;
-        margin: 1.2rem 0 0.8rem 0;
-    }
-    
-    .editable-content blockquote {
-        border-left: 3px solid #d4af37;
-        padding-left: 20px;
-        margin-left: 0;
-        font-style: italic;
-        color: #495057;
-    }
-    
-    .editable-content a {
-        color: #d4af37;
-        text-decoration: none;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-    }
-    
-    .editable-content a:hover {
-        border-bottom-color: #d4af37;
-    }
-    
-    .editable-content mark {
-        background-color: rgba(212, 175, 55, 0.2);
-        padding: 0 2px;
     }
     
     /* Content Addition Button */
@@ -746,10 +694,86 @@
     <script>
         // Variables for auto-save
         let autoSaveTimer;
+        let localSaveTimer;
         const autoSaveDelay = 3000; // 3 seconds
+        const localSaveDelay = 1000; // 1 second
         let lastSavedContent = '';
         let savingInProgress = false;
         const saveStatus = document.querySelector('.save-indicator');
+        const draftStatus = document.getElementById('draftStatus');
+        const restoreDraftBtn = document.getElementById('restoreDraftBtn');
+        
+        // Get the post ID for storage keys
+        const getPostKey = () => {
+            const postId = document.getElementById('postId').value;
+            return postId !== '0' ? `post_draft_${postId}` : 'new_post_draft';
+        };
+        
+        // LocalStorage functions
+        const localStorageDraft = {
+            save: function() {
+                try {
+                    const draft = {
+                        title: document.getElementById('Title').value,
+                        description: document.getElementById('Description').value,
+                        content: document.getElementById('Content').value,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem(getPostKey(), JSON.stringify(draft));
+                    
+                    // Try to check storage quota
+                    if (navigator.storage && navigator.storage.estimate) {
+                        navigator.storage.estimate().then(estimate => {
+                            const percentUsed = Math.round((estimate.usage / estimate.quota) * 100);
+                            if (percentUsed > 90) {
+                                console.warn('LocalStorage is almost full (' + percentUsed + '%). Some drafts may not be saved.');
+                            }
+                        });
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('LocalStorage save error:', error);
+                    
+                    // Show error message if saving fails
+                    showSaveStatus('error', 'Failed to save locally');
+                    return false;
+                }
+            },
+            
+            load: function() {
+                try {
+                    const draftData = localStorage.getItem(getPostKey());
+                    if (!draftData) return null;
+                    
+                    return JSON.parse(draftData);
+                } catch (error) {
+                    console.error('LocalStorage load error:', error);
+                    return null;
+                }
+            },
+            
+            clear: function() {
+                try {
+                    localStorage.removeItem(getPostKey());
+                    return true;
+                } catch (error) {
+                    console.error('LocalStorage clear error:', error);
+                    return false;
+                }
+            },
+            
+            isNewer: function(serverUpdated) {
+                const draft = this.load();
+                if (!draft || !draft.lastUpdated) return false;
+                
+                // If no server timestamp provided, but we have a draft, consider it newer
+                if (!serverUpdated) return true;
+                
+                return new Date(draft.lastUpdated) > new Date(serverUpdated);
+            }
+        };
         
         // Update word and character count
         function updateWordCount() {
@@ -777,12 +801,90 @@
             // Initial word count update
             updateWordCount();
             
+            // Initialize auto-expanding editors
+            initAutoExpand(titleEditor);
+            initAutoExpand(descriptionEditor);
+            initAutoExpand(contentEditor);
+            
             // Initialize content for tracking changes
             updateFormFields();
             const title = document.getElementById('Title').value;
             const content = document.getElementById('Content').value;
             const description = document.getElementById('Description').value;
             lastSavedContent = title + content + description;
+            
+            // Check for local draft that's newer than server version
+            // Avoid directly accessing the UpdatedAt property which doesn't exist
+            let serverUpdated = null;
+            
+            // Get the post ID to handle draft storage
+            const postId = document.getElementById('postId').value;
+            
+            // See if we have a local draft for this post
+            const draft = localStorageDraft.load();
+            if (draft && draft.lastUpdated) {
+                // Calculate the time since the draft was saved
+                const draftDate = new Date(draft.lastUpdated);
+                const now = new Date();
+                const timeDiff = Math.floor((now - draftDate) / 1000 / 60); // minutes
+                
+                // Get formatted time string (e.g., "10 minutes ago" or "2 hours ago")
+                let timeAgo = timeDiff < 1 ? 'just now' : 
+                             timeDiff === 1 ? '1 minute ago' : 
+                             timeDiff < 60 ? `${timeDiff} minutes ago` :
+                             timeDiff < 120 ? '1 hour ago' : 
+                             `${Math.floor(timeDiff/60)} hours ago`;
+                
+                // Show restore button with time information
+                const restoreText = `Restore unsaved draft (saved ${timeAgo})`;
+                restoreDraftBtn.innerHTML = `<i class="bi bi-arrow-counterclockwise"></i> ${restoreText}`;
+                draftStatus.style.display = 'block';
+                
+                // Auto-restore if the form is empty but a draft exists
+                const title = document.getElementById('Title').value;
+                const content = document.getElementById('Content').value;
+                if (!title && !content && draft.title && draft.content) {
+                    // Wait briefly to allow the page to render before restoring
+                    setTimeout(() => {
+                        const shouldRestore = confirm("An unsaved draft was found. Would you like to restore it?");
+                        if (shouldRestore) {
+                            restoreDraft(draft);
+                        }
+                    }, 500);
+                }
+            }
+            
+            // Function to restore a draft
+            function restoreDraft(draft) {
+                titleEditor.innerHTML = draft.title || '';
+                descriptionEditor.innerHTML = draft.description || '';
+                contentEditor.innerHTML = draft.content || '';
+                
+                // Update the form fields
+                updateFormFields();
+                
+                // Update word count
+                updateWordCount();
+                
+                // Hide the restore button
+                draftStatus.style.display = 'none';
+                
+                // Show a success message
+                showSaveStatus('saved', 'Draft restored');
+                
+                // Adjust heights for auto-expanding
+                adjustHeight(titleEditor);
+                adjustHeight(descriptionEditor);
+                adjustHeight(contentEditor);
+            }
+            
+            // Restore draft button click handler
+            restoreDraftBtn.addEventListener('click', function() {
+                const draft = localStorageDraft.load();
+                if (draft) {
+                    restoreDraft(draft);
+                }
+            });
             
             // Place cursor in title if empty
             if (!title) {
@@ -799,14 +901,19 @@
                     document.execCommand('insertText', false, text);
                 });
                 
-                // Update form fields on input
+                // Update form fields on input and save to localStorage
                 editor.addEventListener('input', function() {
                     updateFormFields();
                     if (this === contentEditor) {
                         updateWordCount();
                     }
                     
+                    // Clear existing timers
                     clearTimeout(autoSaveTimer);
+                    clearTimeout(localSaveTimer);
+                    
+                    // Set new timers
+                    localSaveTimer = setTimeout(saveToLocalStorage, localSaveDelay);
                     autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
                 });
                 
@@ -853,6 +960,62 @@
             // Initialize content addition functionality
             initContentAddButton();
         });
+        
+        // Function to save content to localStorage
+        function saveToLocalStorage() {
+            // Only save if there's actually content to save
+            const title = document.getElementById('Title').value;
+            const content = document.getElementById('Content').value;
+            
+            if (title.trim() === '' && content.trim() === '') return;
+            
+            if (localStorageDraft.save()) {
+                // Show a brief "Saved to device" message
+                const saveText = saveStatus.querySelector('.save-text');
+                const originalText = saveText.textContent;
+                saveText.textContent = 'Saved to device';
+                
+                // Revert back to original text after 2 seconds
+                setTimeout(() => {
+                    saveText.textContent = originalText;
+                }, 2000);
+            }
+        }
+        
+        // Function to initialize auto-expanding editors
+        function initAutoExpand(element) {
+            // Set initial height if content exists
+            adjustHeight(element);
+            
+            // Add input event listener to adjust height as user types
+            element.addEventListener('input', function() {
+                adjustHeight(this);
+            });
+            
+            // Also adjust on window resize
+            window.addEventListener('resize', function() {
+                adjustHeight(element);
+            });
+        }
+        
+        // Function to adjust element height based on content
+        function adjustHeight(element) {
+            // Reset height to auto so we can calculate the new height
+            element.style.height = 'auto';
+            
+            // Get scrollHeight (full content height) and add a small buffer
+            const newHeight = element.scrollHeight;
+            
+            // Set new height
+            element.style.height = newHeight + 'px';
+            
+            // Ensure minimum height
+            if (element.id === 'titleEditor' && newHeight < 60) {
+                element.style.height = '60px';
+            } else if (element.id === 'descriptionEditor' && newHeight < 40) {
+                element.style.height = '40px';
+            }
+        }
         
         // Show save status
         function showSaveStatus(status, message) {
@@ -930,6 +1093,9 @@
                     if (postId === '0' && data.postId) {
                         document.getElementById('postId').value = data.postId;
                     }
+                    
+                    // Since we successfully saved to server, update localStorage with new content
+                    saveToLocalStorage();
                 } else {
                     showSaveStatus('error', 'Failed to save');
                 }
@@ -938,13 +1104,16 @@
                 savingInProgress = false;
                 showSaveStatus('error', 'Error: Could not save');
                 console.error('Auto-save error:', error);
+                
+                // Save to localStorage when server save fails
+                saveToLocalStorage();
             });
         }
         
         // Save before user leaves the page
         window.addEventListener('beforeunload', () => {
             updateFormFields();
-            performAutoSave();
+            saveToLocalStorage();
         });
         
         // Preview button handler
@@ -992,34 +1161,23 @@
             e.preventDefault();
             updateFormFields();
             document.getElementById('formAction').value = 'publish';
-            document.getElementById('storyForm').submit();
+            
+            // Submit the form
+            const form = document.getElementById('storyForm');
+            form.addEventListener('submit', function() {
+                // Clear the local draft after successful submission
+                // This will run right before the form is submitted
+                if (localStorageDraft.clear()) {
+                    console.log('Successfully cleared local draft.');
+                } else {
+                    console.warn('Failed to clear local draft.');
+                }
+            }, { once: true });
+            
+            form.submit();
         });
         
-        // Image upload preview
-        document.getElementById('Image').addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Create image preview if it doesn't exist
-                    if (!document.querySelector('.current-image')) {
-                        const previewDiv = document.createElement('div');
-                        previewDiv.className = 'current-image mt-2';
-                        previewDiv.innerHTML = `
-                            <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;" />
-                            <small class="d-block mt-1 text-muted">Cover image preview</small>
-                        `;
-                        document.querySelector('.image-upload-area').appendChild(previewDiv);
-                    } else {
-                        // Update existing preview
-                        document.querySelector('.current-image img').src = e.target.result;
-                        document.querySelector('.current-image small').textContent = 'Cover image preview';
-                    }
-                };
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-        
-        // Formatting toolbar related code
+        // Formatting toolbar related code - Updated for minimalist design
         function initFormattingToolbar() {
             const toolbar = document.getElementById('formattingToolbar');
             const linkForm = document.getElementById('linkForm');
@@ -1029,25 +1187,32 @@
             const contentEditor = document.getElementById('contentEditor');
             
             let currentSelection = null;
+            let selectionTimeout = null;
             
-            // Check for text selection and show toolbar
+            // Check for text selection and show toolbar with a small delay
             document.addEventListener('selectionchange', function() {
-                const selection = window.getSelection();
+                clearTimeout(selectionTimeout);
                 
-                if (selection.rangeCount > 0 && selection.toString().trim() !== '') {
-                    const range = selection.getRangeAt(0);
+                selectionTimeout = setTimeout(() => {
+                    const selection = window.getSelection();
                     
-                    // Check if selection is within the content editor
-                    if (contentEditor.contains(range.commonAncestorContainer)) {
-                        currentSelection = selection;
-                        showToolbar(selection);
+                    if (selection.rangeCount > 0 && selection.toString().trim() !== '') {
+                        const range = selection.getRangeAt(0);
+                        
+                        // Check if selection is within the content editor
+                        if (contentEditor.contains(range.commonAncestorContainer)) {
+                            currentSelection = selection;
+                            showToolbar(selection);
+                        } else {
+                            hideToolbar();
+                        }
                     } else {
-                        hideToolbar();
+                        // Only hide toolbar if not interacting with it
+                        if (!toolbar.contains(document.activeElement)) {
+                            hideToolbar();
+                        }
                     }
-                } else {
-                    // Small delay to allow for button clicks
-                    setTimeout(hideToolbar, 100);
-                }
+                }, 100); // Small delay to prevent flashing
             });
             
             // Show the toolbar at the selection
@@ -1081,6 +1246,14 @@
             
             // Hide the toolbar
             function hideToolbar() {
+                // Don't hide if we're in the link form and it's focused
+                if (linkForm.classList.contains('visible') && 
+                    (document.activeElement === linkInput || 
+                     document.activeElement === applyLinkButton || 
+                     document.activeElement === cancelLinkButton)) {
+                    return;
+                }
+                
                 toolbar.classList.remove('visible');
                 hideLinkForm();
             }
@@ -1093,20 +1266,19 @@
                     button.classList.remove('active');
                     
                     const command = button.getAttribute('data-command');
-                    const value = button.getAttribute('data-value');
                     
                     if (command === 'bold' && document.queryCommandState('bold')) {
                         button.classList.add('active');
                     } else if (command === 'italic' && document.queryCommandState('italic')) {
                         button.classList.add('active');
-                    } else if (command === 'heading') {
-                        // Check if selection is within a heading
+                    } else if (command === 'link') {
+                        // Check if selection contains a link
                         const selection = window.getSelection();
                         if (selection.rangeCount > 0) {
                             const node = selection.getRangeAt(0).commonAncestorContainer;
-                            const headingElement = getClosestHeading(node);
+                            const linkElement = getClosestLink(node);
                             
-                            if (headingElement && headingElement.tagName.toLowerCase() === value) {
+                            if (linkElement) {
                                 button.classList.add('active');
                             }
                         }
@@ -1114,10 +1286,10 @@
                 });
             }
             
-            // Get closest heading element
-            function getClosestHeading(node) {
+            // Get closest link element
+            function getClosestLink(node) {
                 while (node && node !== contentEditor) {
-                    if (node.nodeType === 1 && /^h[1-6]$/i.test(node.tagName)) {
+                    if (node.nodeType === 1 && node.tagName.toLowerCase() === 'a') {
                         return node;
                     }
                     node = node.parentNode;
@@ -1129,7 +1301,6 @@
             toolbar.querySelectorAll('.toolbar-button').forEach(button => {
                 button.addEventListener('click', function() {
                     const command = this.getAttribute('data-command');
-                    const value = this.getAttribute('data-value');
                     
                     // Restore the selection before applying formatting
                     if (currentSelection) {
@@ -1138,7 +1309,7 @@
                         selection.addRange(currentSelection.getRangeAt(0));
                     }
                     
-                    applyFormatting(command, value);
+                    applyFormatting(command);
                     
                     // Update the hidden form fields after formatting
                     updateFormFields();
@@ -1146,7 +1317,7 @@
             });
             
             // Apply formatting based on command
-            function applyFormatting(command, value) {
+            function applyFormatting(command) {
                 switch (command) {
                     case 'bold':
                         document.execCommand('bold', false, null);
@@ -1157,80 +1328,10 @@
                     case 'link':
                         showLinkForm();
                         break;
-                    case 'heading':
-                        applyHeading(value);
-                        break;
-                    case 'quote':
-                        applyQuote();
-                        break;
-                    case 'highlight':
-                        document.execCommand('hiliteColor', false, 'rgba(212, 175, 55, 0.2)');
-                        break;
                 }
                 
                 // Update toolbar state after applying formatting
                 updateToolbarState();
-            }
-            
-            // Apply heading format
-            function applyHeading(headingType) {
-                const selection = window.getSelection();
-                if (selection.rangeCount === 0) return;
-                
-                const range = selection.getRangeAt(0);
-                const startNode = range.startContainer;
-                
-                // Find the nearest block-level parent
-                let currentBlock = startNode;
-                while (currentBlock && currentBlock !== contentEditor && 
-                      (currentBlock.nodeType !== 1 || 
-                       !['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(currentBlock.tagName))) {
-                    currentBlock = currentBlock.parentNode;
-                }
-                
-                if (!currentBlock || currentBlock === contentEditor) {
-                    // If no suitable block found, try to create one by executing a formatBlock command
-                    document.execCommand('formatBlock', false, headingType);
-                    return;
-                }
-                
-                // Check if we're already using this heading type
-                if (currentBlock.tagName.toLowerCase() === headingType) {
-                    // Convert back to paragraph
-                    document.execCommand('formatBlock', false, 'p');
-                } else {
-                    // Apply the heading
-                    document.execCommand('formatBlock', false, headingType);
-                }
-            }
-            
-            // Apply blockquote format
-            function applyQuote() {
-                const selection = window.getSelection();
-                if (selection.rangeCount === 0) return;
-                
-                const range = selection.getRangeAt(0);
-                const startNode = range.startContainer;
-                
-                // Find the nearest block-level parent
-                let currentBlock = startNode;
-                while (currentBlock && currentBlock !== contentEditor && 
-                       (currentBlock.nodeType !== 1 || 
-                        !['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(currentBlock.tagName))) {
-                    currentBlock = currentBlock.parentNode;
-                }
-                
-                if (!currentBlock || currentBlock === contentEditor) {
-                    document.execCommand('formatBlock', false, 'blockquote');
-                    return;
-                }
-                
-                // Toggle blockquote
-                if (currentBlock.tagName.toLowerCase() === 'blockquote') {
-                    document.execCommand('formatBlock', false, 'p');
-                } else {
-                    document.execCommand('formatBlock', false, 'blockquote');
-                }
             }
             
             // Show link input form
@@ -1253,17 +1354,6 @@
                 }
                 
                 linkInput.focus();
-            }
-            
-            // Get closest link element
-            function getClosestLink(node) {
-                while (node && node !== contentEditor) {
-                    if (node.nodeType === 1 && node.tagName.toLowerCase() === 'a') {
-                        return node;
-                    }
-                    node = node.parentNode;
-                }
-                return null;
             }
             
             // Hide link form
@@ -1297,12 +1387,13 @@
                 }
                 
                 hideLinkForm();
-                hideToolbar();
+                setTimeout(hideToolbar, 100);
             });
             
             // Cancel link button click
             cancelLinkButton.addEventListener('click', function() {
                 hideLinkForm();
+                setTimeout(hideToolbar, 100);
             });
             
             // Handle keyboard shortcuts
@@ -1331,18 +1422,28 @@
                 updateFormFields();
             });
             
-            // Additional handlers for clicking outside the toolbar
+            // Click outside handler to hide toolbar properly
             document.addEventListener('mousedown', function(e) {
-                if (!toolbar.contains(e.target) && toolbar.classList.contains('visible')) {
-                    // Don't hide immediately, allow for button clicks to register
-                    setTimeout(function() {
-                        // Check if link form is visible and clicked outside
-                        if (linkForm.classList.contains('visible') && !linkForm.contains(e.target)) {
-                            hideLinkForm();
-                        }
-                    }, 10);
+                // If clicking outside the toolbar and not in the editor selection
+                if (!toolbar.contains(e.target) && !isClickInsideSelection(e)) {
+                    setTimeout(hideToolbar, 100);
                 }
             });
+            
+            // Check if click is inside the current selection
+            function isClickInsideSelection(e) {
+                if (!currentSelection) return false;
+                
+                const range = currentSelection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                return (
+                    e.clientX >= rect.left &&
+                    e.clientX <= rect.right &&
+                    e.clientY >= rect.top &&
+                    e.clientY <= rect.bottom
+                );
+            }
         }
         
         // Initialize content addition button and media dialog
