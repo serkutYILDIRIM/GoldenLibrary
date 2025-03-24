@@ -23,7 +23,7 @@
         </div>
     </div>
     
-    <!-- Floating Formatting Toolbar -->
+    <!-- Simplified Minimalist Formatting Toolbar -->
     <div class="formatting-toolbar" id="formattingToolbar">
         <div class="toolbar-buttons">
             <button type="button" class="toolbar-button" data-command="bold" title="Bold (Ctrl+B)">
@@ -32,22 +32,8 @@
             <button type="button" class="toolbar-button" data-command="italic" title="Italic (Ctrl+I)">
                 <i class="bi bi-type-italic"></i>
             </button>
-            <span class="toolbar-divider"></span>
-            <button type="button" class="toolbar-button" data-command="heading" data-value="h2" title="Heading">
-                <i class="bi bi-type-h2"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="heading" data-value="h3" title="Subheading">
-                <i class="bi bi-type-h3"></i>
-            </button>
-            <span class="toolbar-divider"></span>
             <button type="button" class="toolbar-button" data-command="link" title="Link (Ctrl+K)">
                 <i class="bi bi-link-45deg"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="quote" title="Quote">
-                <i class="bi bi-blockquote-left"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="highlight" title="Highlight">
-                <i class="bi bi-pencil-fill"></i>
             </button>
         </div>
         
@@ -155,7 +141,7 @@
     
     <!-- Content Editing Area -->
     <div class="editor-content">
-        <form id="storyForm" asp-action="Create" method="post" enctype="multipart/form-data">
+        <form id="storyForm" asp-action="Create" method="post">
             <input type="hidden" asp-for="PostId" id="postId" />
             <input type="hidden" id="Title" name="Title" value="@Model?.Title" />
             <input type="hidden" id="Description" name="Description" value="@Model?.Description" />
@@ -174,21 +160,6 @@
             
             <div class="content-area">
                 <div id="contentEditor" class="editable-content" contenteditable="true" data-placeholder="Tell your story...">@Model?.Content</div>
-            </div>
-            
-            <div class="image-upload-area mt-4">
-                <label for="Image" class="image-upload-label">
-                    <i class="bi bi-image text-golden"></i>
-                    <span>Add cover image</span>
-                    <input type="file" id="Image" name="ImageFile" class="d-none">
-                </label>
-                @if (!string.IsNullOrEmpty(Model?.Image))
-                {
-                    <div class="current-image mt-2">
-                        <img src="~/img/@Model.Image" class="img-fluid rounded" style="max-height: 200px;" />
-                        <small class="d-block mt-1 text-muted">Current cover image</small>
-                    </div>
-                }
             </div>
         </form>
     </div>
@@ -253,7 +224,7 @@
         background-color: #dc3545;
     }
     
-    @keyframes pulse {
+    @@keyframes pulse {
         0% { opacity: 0.5; }
         50% { opacity: 1; }
         100% { opacity: 0.5; }
@@ -365,13 +336,13 @@
         display: none;
     }
     
-    /* Floating Formatting Toolbar */
+    /* Minimalist Formatting Toolbar - Updated Styles */
     .formatting-toolbar {
         position: absolute;
         background: white;
         border-radius: 4px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        padding: 6px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        padding: 4px;
         display: flex;
         align-items: center;
         transition: opacity 0.2s ease, transform 0.2s ease;
@@ -379,7 +350,7 @@
         transform: translateY(10px) scale(0.95);
         pointer-events: none;
         z-index: 1000;
-        border: 1px solid #e9ecef;
+        border: 1px solid rgba(0,0,0,0.08);
     }
     
     .formatting-toolbar.visible {
@@ -396,8 +367,8 @@
     .toolbar-button {
         background: transparent;
         border: none;
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: 4px;
         cursor: pointer;
         display: flex;
@@ -405,6 +376,7 @@
         justify-content: center;
         color: #495057;
         transition: all 0.15s ease;
+        margin: 0 2px;
     }
     
     .toolbar-button:hover {
@@ -417,17 +389,10 @@
         color: #d4af37;
     }
     
-    .toolbar-divider {
-        width: 1px;
-        height: 20px;
-        background-color: #e9ecef;
-        margin: 0 6px;
-    }
-    
-    /* Link Form */
+    /* Link Form - Updated for minimalist look */
     .link-form {
         display: none;
-        padding: 0 8px;
+        padding: 0 6px;
         align-items: center;
     }
     
@@ -439,7 +404,7 @@
         border: none;
         padding: 4px 8px;
         margin-right: 6px;
-        min-width: 240px;
+        min-width: 220px;
         font-size: 14px;
         border-bottom: 1px solid #e9ecef;
     }
@@ -452,8 +417,8 @@
     .link-form button {
         background: transparent;
         border: none;
-        font-size: 14px;
-        padding: 4px 8px;
+        font-size: 13px;
+        padding: 3px 6px;
         cursor: pointer;
         border-radius: 4px;
     }
@@ -469,44 +434,6 @@
     
     .link-form button:last-of-type:hover {
         background-color: #f8f9fa;
-    }
-    
-    /* Formatting styles for the content */
-    .editable-content h2 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 700;
-        font-size: 1.8rem;
-        margin: 1.5rem 0 1rem 0;
-    }
-    
-    .editable-content h3 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 600;
-        font-size: 1.4rem;
-        margin: 1.2rem 0 0.8rem 0;
-    }
-    
-    .editable-content blockquote {
-        border-left: 3px solid #d4af37;
-        padding-left: 20px;
-        margin-left: 0;
-        font-style: italic;
-        color: #495057;
-    }
-    
-    .editable-content a {
-        color: #d4af37;
-        text-decoration: none;
-        border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-    }
-    
-    .editable-content a:hover {
-        border-bottom-color: #d4af37;
-    }
-    
-    .editable-content mark {
-        background-color: rgba(212, 175, 55, 0.2);
-        padding: 0 2px;
     }
     
     /* Content Addition Button */
@@ -995,31 +922,7 @@
             document.getElementById('storyForm').submit();
         });
         
-        // Image upload preview
-        document.getElementById('Image').addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Create image preview if it doesn't exist
-                    if (!document.querySelector('.current-image')) {
-                        const previewDiv = document.createElement('div');
-                        previewDiv.className = 'current-image mt-2';
-                        previewDiv.innerHTML = `
-                            <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px;" />
-                            <small class="d-block mt-1 text-muted">Cover image preview</small>
-                        `;
-                        document.querySelector('.image-upload-area').appendChild(previewDiv);
-                    } else {
-                        // Update existing preview
-                        document.querySelector('.current-image img').src = e.target.result;
-                        document.querySelector('.current-image small').textContent = 'Cover image preview';
-                    }
-                };
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-        
-        // Formatting toolbar related code
+        // Formatting toolbar related code - Updated for minimalist design
         function initFormattingToolbar() {
             const toolbar = document.getElementById('formattingToolbar');
             const linkForm = document.getElementById('linkForm');
@@ -1029,25 +932,32 @@
             const contentEditor = document.getElementById('contentEditor');
             
             let currentSelection = null;
+            let selectionTimeout = null;
             
-            // Check for text selection and show toolbar
+            // Check for text selection and show toolbar with a small delay
             document.addEventListener('selectionchange', function() {
-                const selection = window.getSelection();
+                clearTimeout(selectionTimeout);
                 
-                if (selection.rangeCount > 0 && selection.toString().trim() !== '') {
-                    const range = selection.getRangeAt(0);
+                selectionTimeout = setTimeout(() => {
+                    const selection = window.getSelection();
                     
-                    // Check if selection is within the content editor
-                    if (contentEditor.contains(range.commonAncestorContainer)) {
-                        currentSelection = selection;
-                        showToolbar(selection);
+                    if (selection.rangeCount > 0 && selection.toString().trim() !== '') {
+                        const range = selection.getRangeAt(0);
+                        
+                        // Check if selection is within the content editor
+                        if (contentEditor.contains(range.commonAncestorContainer)) {
+                            currentSelection = selection;
+                            showToolbar(selection);
+                        } else {
+                            hideToolbar();
+                        }
                     } else {
-                        hideToolbar();
+                        // Only hide toolbar if not interacting with it
+                        if (!toolbar.contains(document.activeElement)) {
+                            hideToolbar();
+                        }
                     }
-                } else {
-                    // Small delay to allow for button clicks
-                    setTimeout(hideToolbar, 100);
-                }
+                }, 100); // Small delay to prevent flashing
             });
             
             // Show the toolbar at the selection
@@ -1081,6 +991,14 @@
             
             // Hide the toolbar
             function hideToolbar() {
+                // Don't hide if we're in the link form and it's focused
+                if (linkForm.classList.contains('visible') && 
+                    (document.activeElement === linkInput || 
+                     document.activeElement === applyLinkButton || 
+                     document.activeElement === cancelLinkButton)) {
+                    return;
+                }
+                
                 toolbar.classList.remove('visible');
                 hideLinkForm();
             }
@@ -1093,20 +1011,19 @@
                     button.classList.remove('active');
                     
                     const command = button.getAttribute('data-command');
-                    const value = button.getAttribute('data-value');
                     
                     if (command === 'bold' && document.queryCommandState('bold')) {
                         button.classList.add('active');
                     } else if (command === 'italic' && document.queryCommandState('italic')) {
                         button.classList.add('active');
-                    } else if (command === 'heading') {
-                        // Check if selection is within a heading
+                    } else if (command === 'link') {
+                        // Check if selection contains a link
                         const selection = window.getSelection();
                         if (selection.rangeCount > 0) {
                             const node = selection.getRangeAt(0).commonAncestorContainer;
-                            const headingElement = getClosestHeading(node);
+                            const linkElement = getClosestLink(node);
                             
-                            if (headingElement && headingElement.tagName.toLowerCase() === value) {
+                            if (linkElement) {
                                 button.classList.add('active');
                             }
                         }
@@ -1114,10 +1031,10 @@
                 });
             }
             
-            // Get closest heading element
-            function getClosestHeading(node) {
+            // Get closest link element
+            function getClosestLink(node) {
                 while (node && node !== contentEditor) {
-                    if (node.nodeType === 1 && /^h[1-6]$/i.test(node.tagName)) {
+                    if (node.nodeType === 1 && node.tagName.toLowerCase() === 'a') {
                         return node;
                     }
                     node = node.parentNode;
@@ -1129,7 +1046,6 @@
             toolbar.querySelectorAll('.toolbar-button').forEach(button => {
                 button.addEventListener('click', function() {
                     const command = this.getAttribute('data-command');
-                    const value = this.getAttribute('data-value');
                     
                     // Restore the selection before applying formatting
                     if (currentSelection) {
@@ -1138,7 +1054,7 @@
                         selection.addRange(currentSelection.getRangeAt(0));
                     }
                     
-                    applyFormatting(command, value);
+                    applyFormatting(command);
                     
                     // Update the hidden form fields after formatting
                     updateFormFields();
@@ -1146,7 +1062,7 @@
             });
             
             // Apply formatting based on command
-            function applyFormatting(command, value) {
+            function applyFormatting(command) {
                 switch (command) {
                     case 'bold':
                         document.execCommand('bold', false, null);
@@ -1157,80 +1073,10 @@
                     case 'link':
                         showLinkForm();
                         break;
-                    case 'heading':
-                        applyHeading(value);
-                        break;
-                    case 'quote':
-                        applyQuote();
-                        break;
-                    case 'highlight':
-                        document.execCommand('hiliteColor', false, 'rgba(212, 175, 55, 0.2)');
-                        break;
                 }
                 
                 // Update toolbar state after applying formatting
                 updateToolbarState();
-            }
-            
-            // Apply heading format
-            function applyHeading(headingType) {
-                const selection = window.getSelection();
-                if (selection.rangeCount === 0) return;
-                
-                const range = selection.getRangeAt(0);
-                const startNode = range.startContainer;
-                
-                // Find the nearest block-level parent
-                let currentBlock = startNode;
-                while (currentBlock && currentBlock !== contentEditor && 
-                      (currentBlock.nodeType !== 1 || 
-                       !['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(currentBlock.tagName))) {
-                    currentBlock = currentBlock.parentNode;
-                }
-                
-                if (!currentBlock || currentBlock === contentEditor) {
-                    // If no suitable block found, try to create one by executing a formatBlock command
-                    document.execCommand('formatBlock', false, headingType);
-                    return;
-                }
-                
-                // Check if we're already using this heading type
-                if (currentBlock.tagName.toLowerCase() === headingType) {
-                    // Convert back to paragraph
-                    document.execCommand('formatBlock', false, 'p');
-                } else {
-                    // Apply the heading
-                    document.execCommand('formatBlock', false, headingType);
-                }
-            }
-            
-            // Apply blockquote format
-            function applyQuote() {
-                const selection = window.getSelection();
-                if (selection.rangeCount === 0) return;
-                
-                const range = selection.getRangeAt(0);
-                const startNode = range.startContainer;
-                
-                // Find the nearest block-level parent
-                let currentBlock = startNode;
-                while (currentBlock && currentBlock !== contentEditor && 
-                       (currentBlock.nodeType !== 1 || 
-                        !['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE'].includes(currentBlock.tagName))) {
-                    currentBlock = currentBlock.parentNode;
-                }
-                
-                if (!currentBlock || currentBlock === contentEditor) {
-                    document.execCommand('formatBlock', false, 'blockquote');
-                    return;
-                }
-                
-                // Toggle blockquote
-                if (currentBlock.tagName.toLowerCase() === 'blockquote') {
-                    document.execCommand('formatBlock', false, 'p');
-                } else {
-                    document.execCommand('formatBlock', false, 'blockquote');
-                }
             }
             
             // Show link input form
@@ -1253,17 +1099,6 @@
                 }
                 
                 linkInput.focus();
-            }
-            
-            // Get closest link element
-            function getClosestLink(node) {
-                while (node && node !== contentEditor) {
-                    if (node.nodeType === 1 && node.tagName.toLowerCase() === 'a') {
-                        return node;
-                    }
-                    node = node.parentNode;
-                }
-                return null;
             }
             
             // Hide link form
@@ -1297,12 +1132,13 @@
                 }
                 
                 hideLinkForm();
-                hideToolbar();
+                setTimeout(hideToolbar, 100);
             });
             
             // Cancel link button click
             cancelLinkButton.addEventListener('click', function() {
                 hideLinkForm();
+                setTimeout(hideToolbar, 100);
             });
             
             // Handle keyboard shortcuts
@@ -1331,18 +1167,28 @@
                 updateFormFields();
             });
             
-            // Additional handlers for clicking outside the toolbar
+            // Click outside handler to hide toolbar properly
             document.addEventListener('mousedown', function(e) {
-                if (!toolbar.contains(e.target) && toolbar.classList.contains('visible')) {
-                    // Don't hide immediately, allow for button clicks to register
-                    setTimeout(function() {
-                        // Check if link form is visible and clicked outside
-                        if (linkForm.classList.contains('visible') && !linkForm.contains(e.target)) {
-                            hideLinkForm();
-                        }
-                    }, 10);
+                // If clicking outside the toolbar and not in the editor selection
+                if (!toolbar.contains(e.target) && !isClickInsideSelection(e)) {
+                    setTimeout(hideToolbar, 100);
                 }
             });
+            
+            // Check if click is inside the current selection
+            function isClickInsideSelection(e) {
+                if (!currentSelection) return false;
+                
+                const range = currentSelection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                return (
+                    e.clientX >= rect.left &&
+                    e.clientX <= rect.right &&
+                    e.clientY >= rect.top &&
+                    e.clientY <= rect.bottom
+                );
+            }
         }
         
         // Initialize content addition button and media dialog
