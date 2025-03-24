@@ -17,6 +17,12 @@
             <span class="save-text">Saved</span>
         </div>
         
+        <div class="draft-indicator" id="draftStatus" style="display: none;">
+            <button class="btn btn-sm btn-link text-muted" id="restoreDraftBtn">
+                <i class="bi bi-arrow-counterclockwise"></i> Restore unsaved draft
+            </button>
+        </div>
+        
         <div class="editor-actions">
             <button class="btn btn-outline-secondary btn-sm rounded-pill me-2" id="previewBtn">Preview</button>
             <button class="btn btn-golden btn-sm rounded-pill" id="publishBtn">Publish</button>
@@ -688,10 +694,86 @@
     <script>
         // Variables for auto-save
         let autoSaveTimer;
+        let localSaveTimer;
         const autoSaveDelay = 3000; // 3 seconds
+        const localSaveDelay = 1000; // 1 second
         let lastSavedContent = '';
         let savingInProgress = false;
         const saveStatus = document.querySelector('.save-indicator');
+        const draftStatus = document.getElementById('draftStatus');
+        const restoreDraftBtn = document.getElementById('restoreDraftBtn');
+        
+        // Get the post ID for storage keys
+        const getPostKey = () => {
+            const postId = document.getElementById('postId').value;
+            return postId !== '0' ? `post_draft_${postId}` : 'new_post_draft';
+        };
+        
+        // LocalStorage functions
+        const localStorageDraft = {
+            save: function() {
+                try {
+                    const draft = {
+                        title: document.getElementById('Title').value,
+                        description: document.getElementById('Description').value,
+                        content: document.getElementById('Content').value,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem(getPostKey(), JSON.stringify(draft));
+                    
+                    // Try to check storage quota
+                    if (navigator.storage && navigator.storage.estimate) {
+                        navigator.storage.estimate().then(estimate => {
+                            const percentUsed = Math.round((estimate.usage / estimate.quota) * 100);
+                            if (percentUsed > 90) {
+                                console.warn('LocalStorage is almost full (' + percentUsed + '%). Some drafts may not be saved.');
+                            }
+                        });
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('LocalStorage save error:', error);
+                    
+                    // Show error message if saving fails
+                    showSaveStatus('error', 'Failed to save locally');
+                    return false;
+                }
+            },
+            
+            load: function() {
+                try {
+                    const draftData = localStorage.getItem(getPostKey());
+                    if (!draftData) return null;
+                    
+                    return JSON.parse(draftData);
+                } catch (error) {
+                    console.error('LocalStorage load error:', error);
+                    return null;
+                }
+            },
+            
+            clear: function() {
+                try {
+                    localStorage.removeItem(getPostKey());
+                    return true;
+                } catch (error) {
+                    console.error('LocalStorage clear error:', error);
+                    return false;
+                }
+            },
+            
+            isNewer: function(serverUpdated) {
+                const draft = this.load();
+                if (!draft || !draft.lastUpdated) return false;
+                
+                // If no server timestamp provided, but we have a draft, consider it newer
+                if (!serverUpdated) return true;
+                
+                return new Date(draft.lastUpdated) > new Date(serverUpdated);
+            }
+        };
         
         // Update word and character count
         function updateWordCount() {
@@ -731,6 +813,79 @@
             const description = document.getElementById('Description').value;
             lastSavedContent = title + content + description;
             
+            // Check for local draft that's newer than server version
+            // Avoid directly accessing the UpdatedAt property which doesn't exist
+            let serverUpdated = null;
+            
+            // Get the post ID to handle draft storage
+            const postId = document.getElementById('postId').value;
+            
+            // See if we have a local draft for this post
+            const draft = localStorageDraft.load();
+            if (draft && draft.lastUpdated) {
+                // Calculate the time since the draft was saved
+                const draftDate = new Date(draft.lastUpdated);
+                const now = new Date();
+                const timeDiff = Math.floor((now - draftDate) / 1000 / 60); // minutes
+                
+                // Get formatted time string (e.g., "10 minutes ago" or "2 hours ago")
+                let timeAgo = timeDiff < 1 ? 'just now' : 
+                             timeDiff === 1 ? '1 minute ago' : 
+                             timeDiff < 60 ? `${timeDiff} minutes ago` :
+                             timeDiff < 120 ? '1 hour ago' : 
+                             `${Math.floor(timeDiff/60)} hours ago`;
+                
+                // Show restore button with time information
+                const restoreText = `Restore unsaved draft (saved ${timeAgo})`;
+                restoreDraftBtn.innerHTML = `<i class="bi bi-arrow-counterclockwise"></i> ${restoreText}`;
+                draftStatus.style.display = 'block';
+                
+                // Auto-restore if the form is empty but a draft exists
+                const title = document.getElementById('Title').value;
+                const content = document.getElementById('Content').value;
+                if (!title && !content && draft.title && draft.content) {
+                    // Wait briefly to allow the page to render before restoring
+                    setTimeout(() => {
+                        const shouldRestore = confirm("An unsaved draft was found. Would you like to restore it?");
+                        if (shouldRestore) {
+                            restoreDraft(draft);
+                        }
+                    }, 500);
+                }
+            }
+            
+            // Function to restore a draft
+            function restoreDraft(draft) {
+                titleEditor.innerHTML = draft.title || '';
+                descriptionEditor.innerHTML = draft.description || '';
+                contentEditor.innerHTML = draft.content || '';
+                
+                // Update the form fields
+                updateFormFields();
+                
+                // Update word count
+                updateWordCount();
+                
+                // Hide the restore button
+                draftStatus.style.display = 'none';
+                
+                // Show a success message
+                showSaveStatus('saved', 'Draft restored');
+                
+                // Adjust heights for auto-expanding
+                adjustHeight(titleEditor);
+                adjustHeight(descriptionEditor);
+                adjustHeight(contentEditor);
+            }
+            
+            // Restore draft button click handler
+            restoreDraftBtn.addEventListener('click', function() {
+                const draft = localStorageDraft.load();
+                if (draft) {
+                    restoreDraft(draft);
+                }
+            });
+            
             // Place cursor in title if empty
             if (!title) {
                 titleEditor.focus();
@@ -746,14 +901,19 @@
                     document.execCommand('insertText', false, text);
                 });
                 
-                // Update form fields on input
+                // Update form fields on input and save to localStorage
                 editor.addEventListener('input', function() {
                     updateFormFields();
                     if (this === contentEditor) {
                         updateWordCount();
                     }
                     
+                    // Clear existing timers
                     clearTimeout(autoSaveTimer);
+                    clearTimeout(localSaveTimer);
+                    
+                    // Set new timers
+                    localSaveTimer = setTimeout(saveToLocalStorage, localSaveDelay);
                     autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
                 });
                 
@@ -800,6 +960,27 @@
             // Initialize content addition functionality
             initContentAddButton();
         });
+        
+        // Function to save content to localStorage
+        function saveToLocalStorage() {
+            // Only save if there's actually content to save
+            const title = document.getElementById('Title').value;
+            const content = document.getElementById('Content').value;
+            
+            if (title.trim() === '' && content.trim() === '') return;
+            
+            if (localStorageDraft.save()) {
+                // Show a brief "Saved to device" message
+                const saveText = saveStatus.querySelector('.save-text');
+                const originalText = saveText.textContent;
+                saveText.textContent = 'Saved to device';
+                
+                // Revert back to original text after 2 seconds
+                setTimeout(() => {
+                    saveText.textContent = originalText;
+                }, 2000);
+            }
+        }
         
         // Function to initialize auto-expanding editors
         function initAutoExpand(element) {
@@ -912,6 +1093,9 @@
                     if (postId === '0' && data.postId) {
                         document.getElementById('postId').value = data.postId;
                     }
+                    
+                    // Since we successfully saved to server, update localStorage with new content
+                    saveToLocalStorage();
                 } else {
                     showSaveStatus('error', 'Failed to save');
                 }
@@ -920,13 +1104,16 @@
                 savingInProgress = false;
                 showSaveStatus('error', 'Error: Could not save');
                 console.error('Auto-save error:', error);
+                
+                // Save to localStorage when server save fails
+                saveToLocalStorage();
             });
         }
         
         // Save before user leaves the page
         window.addEventListener('beforeunload', () => {
             updateFormFields();
-            performAutoSave();
+            saveToLocalStorage();
         });
         
         // Preview button handler
@@ -974,7 +1161,20 @@
             e.preventDefault();
             updateFormFields();
             document.getElementById('formAction').value = 'publish';
-            document.getElementById('storyForm').submit();
+            
+            // Submit the form
+            const form = document.getElementById('storyForm');
+            form.addEventListener('submit', function() {
+                // Clear the local draft after successful submission
+                // This will run right before the form is submitted
+                if (localStorageDraft.clear()) {
+                    console.log('Successfully cleared local draft.');
+                } else {
+                    console.warn('Failed to clear local draft.');
+                }
+            }, { once: true });
+            
+            form.submit();
         });
         
         // Formatting toolbar related code - Updated for minimalist design
