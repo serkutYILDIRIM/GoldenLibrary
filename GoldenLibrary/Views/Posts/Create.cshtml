@@ -171,44 +171,17 @@
             
             <div class="mb-4"> 
                 <label class="form-label text-muted">Select Tags</label> 
-                <div class="d-flex flex-wrap gap-2"> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="1"> 
-                        <label class="form-check-label">Web Development</label> 
-                    </div> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="2"> 
-                        <label class="form-check-label">Cloud Computing</label> 
-                    </div> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="3"> 
-                        <label class="form-check-label">Machine Learning</label> 
-                    </div> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="4"> 
-                        <label class="form-check-label">DevOps</label> 
-                    </div> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="5"> 
-                        <label class="form-check-label">Mobile Development</label> 
-                    </div> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="6"> 
-                        <label class="form-check-label">Data Science</label> 
-                    </div> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="7"> 
-                        <label class="form-check-label">Cybersecurity</label> 
-                    </div> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="8"> 
-                        <label class="form-check-label">Blockchain</label> 
-                    </div> 
-                    <div class="form-check"> 
-                        <input type="checkbox" class="form-check-input tag-checkbox" name="tagIds" value="9"> 
-                        <label class="form-check-label">UI/UX Design</label> 
-                    </div> 
-                </div> 
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var tag in ViewBag.Tags)
+                    {
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input tag-checkbox"
+                                   name="tagIds" value="@tag.TagId"
+                                   @(Model?.Tags != null && Model.Tags.Any(t => t.TagId == tag.TagId) ? "checked" : "")>
+                            <label class="form-check-label">@tag.Text</label>
+                        </div>
+                    }
+                </div>
                 <div class="tags-hint mt-2">Add at least one tag to publish your story</div>
             </div>
         </form>
