@@ -153,6 +153,7 @@
             <input type="hidden" id="Description" name="Description" value="@Model?.Description" />
             <input type="hidden" id="Content" name="Content" value="@Model?.Content" />
             <input type="hidden" id="Url" name="Url" value="@Model?.Url">
+            <input type="hidden" id="Tags" name="Tags" value="@Model?.Tags">
             <input type="hidden" name="action" id="formAction" value="draft">
             @Html.AntiForgeryToken()
             
@@ -166,6 +167,22 @@
             
             <div class="content-area">
                 <div id="contentEditor" class="editable-content" contenteditable="true" data-placeholder="Tell your story...">@Model?.Content</div>
+            </div>
+            
+            <div class="mb-4"> 
+                <label class="form-label text-muted">Select Tags</label> 
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var tag in ViewBag.Tags)
+                    {
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input tag-checkbox"
+                                   name="tagIds" value="@tag.TagId"
+                                   @(Model?.Tags != null && Model.Tags.Any(t => t.TagId == tag.TagId) ? "checked" : "")>
+                            <label class="form-check-label">@tag.Text</label>
+                        </div>
+                    }
+                </div>
+                <div class="tags-hint mt-2">Add at least one tag to publish your story</div>
             </div>
         </form>
     </div>
@@ -688,6 +705,60 @@
         color: #adb5bd;
         font-size: 14px;
     }
+    
+    /* Tags Input Styling */
+    .tags-hint {
+        font-size: 13px;
+        color: #6c757d;
+    }
+    
+    /* Style for tag checkboxes */
+    .form-check {
+        margin-right: 8px;
+        margin-bottom: 8px;
+        background-color: rgba(212, 175, 55, 0.05);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        border-radius: 20px;
+        padding: 5px 12px;
+        transition: all 0.2s ease;
+    }
+    
+    .form-check:hover {
+        background-color: rgba(212, 175, 55, 0.1);
+    }
+    
+    .form-check-input:checked + .form-check-label {
+        font-weight: 500;
+        color: #d4af37;
+    }
+    
+    .form-check-input {
+        margin-top: 0.2em;
+    }
+    
+    .form-check-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        transition: color 0.2s ease;
+    }
+    
+    /* Publish button states */
+    .btn-golden.disabled {
+        background-color: rgba(212, 175, 55, 0.5);
+        border-color: rgba(212, 175, 55, 0.5);
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+    
+    .btn-golden.valid {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    
+    .btn-golden.valid:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
 </style>
 
 @section Scripts {
@@ -713,10 +784,16 @@
         const localStorageDraft = {
             save: function() {
                 try {
+                    // Get selected tag IDs
+                    const selectedTagIds = Array.from(document.querySelectorAll('.tag-checkbox'))
+                        .filter(checkbox => checkbox.checked)
+                        .map(checkbox => checkbox.value);
+                    
                     const draft = {
                         title: document.getElementById('Title').value,
                         description: document.getElementById('Description').value,
                         content: document.getElementById('Content').value,
+                        tagIds: selectedTagIds,
                         lastUpdated: new Date().toISOString()
                     };
                     
@@ -790,6 +867,13 @@
             document.getElementById('Title').value = document.getElementById('titleEditor').innerText.trim();
             document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
             document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
+            
+            // Get selected tag IDs
+            const selectedTagIds = Array.from(document.querySelectorAll('.tag-checkbox'))
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+            
+            document.getElementById('Tags').value = selectedTagIds.join(',');
         }
         
         // Initialize editor
@@ -797,6 +881,8 @@
             const titleEditor = document.getElementById('titleEditor');
             const descriptionEditor = document.getElementById('descriptionEditor');
             const contentEditor = document.getElementById('contentEditor');
+            const publishBtn = document.getElementById('publishBtn');
+            const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
             
             // Initial word count update
             updateWordCount();
@@ -860,6 +946,18 @@
                 descriptionEditor.innerHTML = draft.description || '';
                 contentEditor.innerHTML = draft.content || '';
                 
+                // Restore tags if available
+                if (draft.tagIds && draft.tagIds.length > 0) {
+                    // Clear all checkboxes first
+                    tagCheckboxes.forEach(checkbox => checkbox.checked = false);
+                    
+                    // Check the saved ones
+                    draft.tagIds.forEach(tagId => {
+                        const checkbox = document.querySelector(`.tag-checkbox[value="${tagId}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+                
                 // Update the form fields
                 updateFormFields();
                 
@@ -876,6 +974,9 @@
                 adjustHeight(titleEditor);
                 adjustHeight(descriptionEditor);
                 adjustHeight(contentEditor);
+                
+                // Update publish button state
+                updatePublishButtonState();
             }
             
             // Restore draft button click handler
@@ -959,6 +1060,52 @@
             
             // Initialize content addition functionality
             initContentAddButton();
+            
+            // Handle tag checkbox changes
+            tagCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateFormFields();
+                    updatePublishButtonState();
+                    
+                    // Trigger auto-save
+                    clearTimeout(autoSaveTimer);
+                    clearTimeout(localSaveTimer);
+                    localSaveTimer = setTimeout(saveToLocalStorage, localSaveDelay);
+                    autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
+                });
+            });
+            
+            // Update publish button state based on tag selection
+            function updatePublishButtonState() {
+                const hasSelectedTags = Array.from(tagCheckboxes).some(checkbox => checkbox.checked);
+                
+                if (hasSelectedTags) {
+                    publishBtn.classList.remove('disabled');
+                    publishBtn.classList.add('valid');
+                    publishBtn.disabled = false;
+                } else {
+                    publishBtn.classList.add('disabled');
+                    publishBtn.classList.remove('valid');
+                    publishBtn.disabled = true;
+                }
+            }
+            
+            // Initialize publish button state
+            updatePublishButtonState();
+            
+            // Update form fields on input
+            function updateFormFields() {
+                document.getElementById('Title').value = document.getElementById('titleEditor').innerText.trim();
+                document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
+                document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
+                
+                // Get selected tag IDs
+                const selectedTagIds = Array.from(tagCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+                
+                document.getElementById('Tags').value = selectedTagIds.join(',');
+            }
         });
         
         // Function to save content to localStorage
@@ -966,6 +1113,7 @@
             // Only save if there's actually content to save
             const title = document.getElementById('Title').value;
             const content = document.getElementById('Content').value;
+            const tags = document.getElementById('Tags').value;
             
             if (title.trim() === '' && content.trim() === '') return;
             
@@ -1042,11 +1190,12 @@
             const title = document.getElementById('Title').value;
             const content = document.getElementById('Content').value;
             const description = document.getElementById('Description').value;
+            const tags = document.getElementById('Tags').value;
             const url = document.getElementById('Url').value;
             const postId = document.getElementById('postId').value;
             
             // Don't save if nothing has changed or if both title and content are empty
-            const currentContent = title + content + description;
+            const currentContent = title + content + description + tags;
             if (currentContent === lastSavedContent || (title.trim() === '' && content.trim() === '')) {
                 return;
             }
@@ -1068,6 +1217,7 @@
             formData.append('Title', title);
             formData.append('Content', content);
             formData.append('Description', description);
+            formData.append('Tags', tags);
             formData.append('Url', document.getElementById('Url').value);
             formData.append('PostId', postId);
             
@@ -1122,6 +1272,11 @@
             updateFormFields();
             performAutoSave();
             
+            // Get selected tag names for preview
+            const selectedTags = Array.from(document.querySelectorAll('.tag-checkbox'))
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.nextElementSibling.textContent.trim());
+            
             // Simple preview in new window
             const title = document.getElementById('Title').value || 'Untitled';
             const content = document.getElementById('Content').value || '';
@@ -1142,6 +1297,8 @@
                         h1 { font-family: 'Montserrat', sans-serif; font-weight: 700; margin-bottom: 20px; }
                         .subtitle { font-size: 1.2rem; color: #6c757d; margin-bottom: 30px; }
                         .preview-banner { background-color: #f8f9fa; padding: 10px; text-align: center; margin-bottom: 30px; }
+                        .tags-container { margin-top: 30px; }
+                        .tag { display: inline-block; background-color: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: #6c757d; padding: 4px 10px; border-radius: 20px; margin-right: 8px; margin-bottom: 8px; font-size: 14px; font-family: 'Montserrat', sans-serif; }
                     </style>
                 </head>
                 <body>
@@ -1151,6 +1308,9 @@
                     <h1>${title}</h1>
                     <div class="subtitle">${description}</div>
                     <div class="content">${content.replace(/\n/g, '<br>')}</div>
+                    <div class="tags-container">
+                        ${selectedTags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
                 </body>
                 </html>
             `);
