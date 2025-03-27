@@ -1248,8 +1248,13 @@
             const url = document.getElementById('Url').value;
             const postId = document.getElementById('postId').value;
             
+            // Get selected tag IDs for comparison and saving
+            const selectedTagIds = getSelectedTagIds();
+            const tagString = selectedTagIds.join(',');
+            document.getElementById('Tags').value = tagString;
+            
             // Don't save if nothing has changed or if both title and content are empty
-            const currentContent = title + content + description + tags;
+            const currentContent = title + content + description + tagString;
             if (currentContent === lastSavedContent || (title.trim() === '' && content.trim() === '')) {
                 return;
             }
@@ -1271,9 +1276,14 @@
             formData.append('Title', title);
             formData.append('Content', content);
             formData.append('Description', description);
-            formData.append('Tags', tags);
+            formData.append('Tags', tagString);
             formData.append('Url', document.getElementById('Url').value);
             formData.append('PostId', postId);
+            
+            // Add individual tag IDs to ensure they're properly saved on the server
+            selectedTagIds.forEach(tagId => {
+                formData.append('tagIds', tagId);
+            });
             
             // Get the anti-forgery token
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
