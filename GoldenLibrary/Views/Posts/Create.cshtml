@@ -169,20 +169,26 @@
                 <div id="contentEditor" class="editable-content" contenteditable="true" data-placeholder="Tell your story...">@Model?.Content</div>
             </div>
             
-            <div class="mb-4">
-                <label class="form-label text-muted">Select Tags</label>
-                <div class="d-flex flex-wrap gap-2">
+            <div class="tag-selection-area">
+                <h4 class="mb-3">Select Tags for Your Story</h4>
+                <div class="tag-cloud">
                     @foreach (var tag in ViewBag.Tags)
                     {
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input tag-checkbox"
+                        <div class="tag-item">
+                            <input type="checkbox" id="tag-@tag.TagId" class="tag-checkbox"
                                    name="tagIds" value="@tag.TagId"
                                    @(Model?.Tags != null && Model.Tags.Any(t => t.TagId == tag.TagId) ? "checked" : "")>
-                            <label class="form-check-label">@tag.Text</label>
+                            <label for="tag-@tag.TagId" class="tag-label">
+                                <i class="bi bi-tag-fill"></i>
+                                @tag.Text
+                            </label>
                         </div>
                     }
                 </div>
-                <div class="tags-hint mt-2">Add at least one tag to publish your story</div>
+                <div class="tags-hint mt-2">
+                    <i class="bi bi-info-circle"></i>
+                    <span id="tagValidationMessage">Add at least one tag to publish your story</span>
+                </div>
             </div>
         </form>
     </div>
@@ -759,6 +765,44 @@
         background-color: #218838;
         border-color: #1e7e34;
     }
+    
+    /* Tag validation styling */
+    .tag-validation-error {
+        color: #dc3545;
+        font-weight: 500;
+        animation: fadeIn 0.3s ease-in;
+        padding: 5px 10px;
+        border-radius: 4px;
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 3px solid #dc3545;
+    }
+    
+    .tag-selection-area.error .tag-cloud {
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        background-color: rgba(220, 53, 69, 0.05);
+        border-radius: 6px;
+        padding: 10px;
+    }
+    
+    .tag-selection-area .tag-item:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
+    }
+    
+    .tags-hint i.error-icon {
+        color: #dc3545;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Tag selection success indicator */
+    .tag-selection-complete {
+        color: #28a745;
+        font-weight: 500;
+    }
 </style>
 
 @section Scripts {
@@ -1061,11 +1105,12 @@
             // Initialize content addition functionality
             initContentAddButton();
             
-            // Handle tag checkbox changes
+            // Handle tag checkbox changes - enhanced with validation
             tagCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     updateFormFields();
                     updatePublishButtonState();
+                    validateTagSelection();
                     
                     // Trigger auto-save
                     clearTimeout(autoSaveTimer);
@@ -1077,7 +1122,7 @@
             
             // Update publish button state based on tag selection
             function updatePublishButtonState() {
-                const hasSelectedTags = Array.from(tagCheckboxes).some(checkbox => checkbox.checked);
+                const hasSelectedTags = getSelectedTagIds().length > 0;
                 
                 if (hasSelectedTags) {
                     publishBtn.classList.remove('disabled');
@@ -1099,12 +1144,21 @@
                 document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
                 document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
                 
-                // Get selected tag IDs
+                // Get selected tag IDs - this updates the hidden Tags field but we'll use the actual checkboxes for submission
                 const selectedTagIds = Array.from(tagCheckboxes)
                     .filter(checkbox => checkbox.checked)
                     .map(checkbox => checkbox.value);
                 
                 document.getElementById('Tags').value = selectedTagIds.join(',');
+                
+                // Update visual cue for tag selection
+                if (selectedTagIds.length > 0) {
+                    document.getElementById('tagValidationMessage').textContent = 
+                        `${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selected`;
+                } else {
+                    document.getElementById('tagValidationMessage').textContent = 
+                        'Add at least one tag to publish your story';
+                }
             }
         });
         
@@ -1194,8 +1248,13 @@
             const url = document.getElementById('Url').value;
             const postId = document.getElementById('postId').value;
             
+            // Get selected tag IDs for comparison and saving
+            const selectedTagIds = getSelectedTagIds();
+            const tagString = selectedTagIds.join(',');
+            document.getElementById('Tags').value = tagString;
+            
             // Don't save if nothing has changed or if both title and content are empty
-            const currentContent = title + content + description + tags;
+            const currentContent = title + content + description + tagString;
             if (currentContent === lastSavedContent || (title.trim() === '' && content.trim() === '')) {
                 return;
             }
@@ -1217,9 +1276,14 @@
             formData.append('Title', title);
             formData.append('Content', content);
             formData.append('Description', description);
-            formData.append('Tags', tags);
+            formData.append('Tags', tagString);
             formData.append('Url', document.getElementById('Url').value);
             formData.append('PostId', postId);
+            
+            // Critical: Add each tag ID individually to ensure proper array format
+            selectedTagIds.forEach(tagId => {
+                formData.append('tagIds[]', tagId);
+            });
             
             // Get the anti-forgery token
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
@@ -1316,17 +1380,64 @@
             `);
         });
         
-        // Publish button handler
+        // Publish button handler - enhanced with better validation
         document.getElementById('publishBtn').addEventListener('click', function(e) {
             e.preventDefault();
             updateFormFields();
+            
+            // Validate tag selection and show appropriate UI feedback
+            if (!validateTagSelection()) {
+                // Scroll to tag selection area with a highlight effect
+                document.querySelector('.tag-selection-area').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                
+                // Add a temporary highlight effect to draw attention
+                const tagCloud = document.querySelector('.tag-cloud');
+                tagCloud.style.transition = 'background-color 0.3s ease';
+                tagCloud.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                
+                setTimeout(() => {
+                    tagCloud.style.backgroundColor = '';
+                }, 1000);
+                
+                return;
+            }
+            
             document.getElementById('formAction').value = 'publish';
             
             // Submit the form
             const form = document.getElementById('storyForm');
+            
+            // Get final list of selected tags
+            const selectedTagIds = getSelectedTagIds();
+            
+            // Ensure hidden tags input is updated with latest selections
+            document.getElementById('Tags').value = selectedTagIds.join(',');
+            
+            // Create hidden inputs for each selected tag
+            selectedTagIds.forEach(tagId => {
+                // First check if this hidden input already exists to avoid duplicates
+                const existingInput = form.querySelector(`input[name="tagIds"][value="${tagId}"]`);
+                if (!existingInput || existingInput.checked === undefined) {
+                    // Remove any old hidden input for this tag that might be unchecked now
+                    const oldInput = form.querySelector(`input[type="hidden"][name="tagIds"][value="${tagId}"]`);
+                    if (oldInput) {
+                        oldInput.remove();
+                    }
+                    
+                    // Create a new hidden input
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'tagIds';
+                    hiddenInput.value = tagId;
+                    form.appendChild(hiddenInput);
+                }
+            });
+            
             form.addEventListener('submit', function() {
                 // Clear the local draft after successful submission
-                // This will run right before the form is submitted
                 if (localStorageDraft.clear()) {
                     console.log('Successfully cleared local draft.');
                 } else {
@@ -1334,8 +1445,82 @@
                 }
             }, { once: true });
             
+            // Final verification that all selected tags have corresponding form entries
+            const formTagInputs = form.querySelectorAll('input[name="tagIds"]');
+            const formTagValues = Array.from(formTagInputs).map(input => input.value);
+            console.log(`Submitting form with ${formTagValues.length} tags: ${formTagValues.join(', ')}`);
+            
             form.submit();
         });
+        
+        // Helper function to get selected tag IDs - enhanced with validation
+        function getSelectedTagIds() {
+            try {
+                // Get all checked tag checkboxes
+                const checkedTagElements = document.querySelectorAll('.tag-checkbox:checked');
+                
+                // Convert to array and extract values
+                const tagIds = Array.from(checkedTagElements).map(checkbox => checkbox.value);
+                
+                return tagIds;
+            } catch (error) {
+                console.error('Error collecting tag IDs:', error);
+                // Return empty array in case of error to prevent breaking the form
+                return [];
+            }
+        }
+        
+        // Validate tag selection and show appropriate UI feedback
+        function validateTagSelection() {
+            const selectedTagIds = getSelectedTagIds();
+            const tagValidationMessage = document.getElementById('tagValidationMessage');
+            const tagSelectionArea = document.querySelector('.tag-selection-area');
+            const infoIcon = tagValidationMessage.previousElementSibling;
+            
+            if (selectedTagIds.length === 0) {
+                // No tags selected - show error
+                tagValidationMessage.innerHTML = '<span class="tag-validation-error">Please select at least one tag before publishing</span>';
+                tagSelectionArea.classList.add('error');
+                infoIcon.classList.add('error-icon');
+                return false;
+            } else {
+                // Tags selected - show success
+                tagValidationMessage.innerHTML = `<span class="tag-selection-complete">${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selected</span>`;
+                tagSelectionArea.classList.remove('error');
+                infoIcon.classList.remove('error-icon');
+                return true;
+            }
+        }
+        
+        // Update form fields function - enhanced with tag validation
+        function updateFormFields() {
+            document.getElementById('Title').value = document.getElementById('titleEditor').innerText.trim();
+            document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
+            document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
+            
+            // Get selected tag IDs using the helper function
+            const selectedTagIds = getSelectedTagIds();
+            
+            // Set the hidden Tags field with comma-separated tag IDs
+            document.getElementById('Tags').value = selectedTagIds.join(',');
+            
+            // Update visual cue for tag selection
+            const tagValidationMessage = document.getElementById('tagValidationMessage');
+            const tagSelectionArea = document.querySelector('.tag-selection-area');
+            const infoIcon = tagValidationMessage.previousElementSibling;
+            
+            if (selectedTagIds.length > 0) {
+                tagValidationMessage.textContent = 
+                    `${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selected`;
+                tagValidationMessage.classList.remove('text-danger');
+                tagSelectionArea.classList.remove('error');
+                infoIcon.classList.remove('error-icon');
+            } else {
+                tagValidationMessage.textContent = 'Add at least one tag to publish your story';
+                infoIcon.classList.remove('error-icon');
+                tagSelectionArea.classList.remove('error');
+            }
+        }
         
         // Formatting toolbar related code - Updated for minimalist design
         function initFormattingToolbar() {
