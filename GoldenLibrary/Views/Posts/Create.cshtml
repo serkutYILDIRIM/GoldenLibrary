@@ -1280,9 +1280,9 @@
             formData.append('Url', document.getElementById('Url').value);
             formData.append('PostId', postId);
             
-            // Add individual tag IDs to ensure they're properly saved on the server
+            // Critical: Add each tag ID individually to ensure proper array format
             selectedTagIds.forEach(tagId => {
-                formData.append('tagIds', tagId);
+                formData.append('tagIds[]', tagId);
             });
             
             // Get the anti-forgery token
