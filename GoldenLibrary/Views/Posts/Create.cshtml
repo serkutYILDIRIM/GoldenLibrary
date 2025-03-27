@@ -1337,10 +1337,9 @@
             updateFormFields();
             
             // Check if at least one tag is selected
-            const hasSelectedTags = Array.from(document.querySelectorAll('.tag-checkbox'))
-                .some(checkbox => checkbox.checked);
-                
-            if (!hasSelectedTags) {
+            const selectedTagIds = getSelectedTagIds();
+            
+            if (selectedTagIds.length === 0) {
                 const tagValidationMessage = document.getElementById('tagValidationMessage');
                 tagValidationMessage.innerHTML = '<strong class="text-danger">Please select at least one tag before publishing</strong>';
                 
@@ -1353,6 +1352,23 @@
             
             // Submit the form
             const form = document.getElementById('storyForm');
+            
+            // Ensure hidden tags input is updated with latest selections
+            document.getElementById('Tags').value = selectedTagIds.join(',');
+            
+            // Create hidden inputs for each selected tag if they don't exist
+            // This ensures the tagIds array is properly passed to the controller
+            selectedTagIds.forEach(tagId => {
+                const existingInput = form.querySelector(`input[name="tagIds"][value="${tagId}"]`);
+                if (!existingInput) {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'tagIds';
+                    hiddenInput.value = tagId;
+                    form.appendChild(hiddenInput);
+                }
+            });
+            
             form.addEventListener('submit', function() {
                 // Clear the local draft after successful submission
                 if (localStorageDraft.clear()) {
@@ -1361,6 +1377,127 @@
                     console.warn('Failed to clear local draft.');
                 }
             }, { once: true });
+            
+            form.submit();
+        });
+        
+        // Helper function to get selected tag IDs - enhanced with verification
+        function getSelectedTagIds() {
+            try {
+                // Get all checked tag checkboxes
+                const checkedTagElements = document.querySelectorAll('.tag-checkbox:checked');
+                
+                // Convert to array and extract values
+                const tagIds = Array.from(checkedTagElements).map(checkbox => checkbox.value);
+                
+                // Optional: Log for debugging
+                console.log(`Selected ${tagIds.length} tags: ${tagIds.join(', ')}`);
+                
+                return tagIds;
+            } catch (error) {
+                console.error('Error collecting tag IDs:', error);
+                // Return empty array in case of error to prevent breaking the form
+                return [];
+            }
+        }
+        
+        // Update form fields function - enhanced with tag verification
+        function updateFormFields() {
+            document.getElementById('Title').value = document.getElementById('titleEditor').innerText.trim();
+            document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
+            document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
+            
+            // Get selected tag IDs using the helper function
+            const selectedTagIds = getSelectedTagIds();
+            
+            // Set the hidden Tags field with comma-separated tag IDs
+            document.getElementById('Tags').value = selectedTagIds.join(',');
+            
+            // Verify that all tags are actually included by checking each one
+            if (selectedTagIds.length > 0) {
+                // Extra verification: check if all tags are actually in the DOM and checked
+                const verifiedTags = selectedTagIds.filter(tagId => {
+                    const checkbox = document.querySelector(`.tag-checkbox[value="${tagId}"]`);
+                    return checkbox && checkbox.checked;
+                });
+                
+                // If verification failed, log an error
+                if (verifiedTags.length !== selectedTagIds.length) {
+                    console.error('Tag verification failed: Some selected tags are missing in the DOM');
+                    // Try to recover by using only verified tags
+                    document.getElementById('Tags').value = verifiedTags.join(',');
+                }
+            }
+            
+            // Update visual cue for tag selection
+            const tagValidationMessage = document.getElementById('tagValidationMessage');
+            if (selectedTagIds.length > 0) {
+                tagValidationMessage.textContent = 
+                    `${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selected`;
+                tagValidationMessage.classList.remove('text-danger');
+            } else {
+                tagValidationMessage.textContent = 'Add at least one tag to publish your story';
+            }
+        }
+        
+        // Publish button handler - enhanced with additional tag verification
+        document.getElementById('publishBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            updateFormFields();
+            
+            // Check if at least one tag is selected
+            const selectedTagIds = getSelectedTagIds();
+            
+            if (selectedTagIds.length === 0) {
+                const tagValidationMessage = document.getElementById('tagValidationMessage');
+                tagValidationMessage.innerHTML = '<strong class="text-danger">Please select at least one tag before publishing</strong>';
+                
+                // Scroll to tag selection area
+                document.querySelector('.tag-selection-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            
+            document.getElementById('formAction').value = 'publish';
+            
+            // Submit the form
+            const form = document.getElementById('storyForm');
+            
+            // Ensure hidden tags input is updated with latest selections
+            document.getElementById('Tags').value = selectedTagIds.join(',');
+            
+            // Create hidden inputs for each selected tag
+            selectedTagIds.forEach(tagId => {
+                // First check if this hidden input already exists to avoid duplicates
+                const existingInput = form.querySelector(`input[name="tagIds"][value="${tagId}"]`);
+                if (!existingInput || existingInput.checked === undefined) {
+                    // Remove any old hidden input for this tag that might be unchecked now
+                    const oldInput = form.querySelector(`input[type="hidden"][name="tagIds"][value="${tagId}"]`);
+                    if (oldInput) {
+                        oldInput.remove();
+                    }
+                    
+                    // Create a new hidden input
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'tagIds';
+                    hiddenInput.value = tagId;
+                    form.appendChild(hiddenInput);
+                }
+            });
+            
+            form.addEventListener('submit', function() {
+                // Clear the local draft after successful submission
+                if (localStorageDraft.clear()) {
+                    console.log('Successfully cleared local draft.');
+                } else {
+                    console.warn('Failed to clear local draft.');
+                }
+            }, { once: true });
+            
+            // Final verification that all selected tags have corresponding form entries
+            const formTagInputs = form.querySelectorAll('input[name="tagIds"]');
+            const formTagValues = Array.from(formTagInputs).map(input => input.value);
+            console.log(`Submitting form with ${formTagValues.length} tags: ${formTagValues.join(', ')}`);
             
             form.submit();
         });
