@@ -169,20 +169,26 @@
                 <div id="contentEditor" class="editable-content" contenteditable="true" data-placeholder="Tell your story...">@Model?.Content</div>
             </div>
             
-            <div class="mb-4">
-                <label class="form-label text-muted">Select Tags</label>
-                <div class="d-flex flex-wrap gap-2">
+            <div class="tag-selection-area">
+                <h4 class="mb-3">Select Tags for Your Story</h4>
+                <div class="tag-cloud">
                     @foreach (var tag in ViewBag.Tags)
                     {
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input tag-checkbox"
+                        <div class="tag-item">
+                            <input type="checkbox" id="tag-@tag.TagId" class="tag-checkbox"
                                    name="tagIds" value="@tag.TagId"
                                    @(Model?.Tags != null && Model.Tags.Any(t => t.TagId == tag.TagId) ? "checked" : "")>
-                            <label class="form-check-label">@tag.Text</label>
+                            <label for="tag-@tag.TagId" class="tag-label">
+                                <i class="bi bi-tag-fill"></i>
+                                @tag.Text
+                            </label>
                         </div>
                     }
                 </div>
-                <div class="tags-hint mt-2">Add at least one tag to publish your story</div>
+                <div class="tags-hint mt-2">
+                    <i class="bi bi-info-circle"></i>
+                    <span id="tagValidationMessage">Add at least one tag to publish your story</span>
+                </div>
             </div>
         </form>
     </div>
@@ -1099,12 +1105,21 @@
                 document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
                 document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
                 
-                // Get selected tag IDs
+                // Get selected tag IDs - this updates the hidden Tags field but we'll use the actual checkboxes for submission
                 const selectedTagIds = Array.from(tagCheckboxes)
                     .filter(checkbox => checkbox.checked)
                     .map(checkbox => checkbox.value);
                 
                 document.getElementById('Tags').value = selectedTagIds.join(',');
+                
+                // Update visual cue for tag selection
+                if (selectedTagIds.length > 0) {
+                    document.getElementById('tagValidationMessage').textContent = 
+                        `${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selected`;
+                } else {
+                    document.getElementById('tagValidationMessage').textContent = 
+                        'Add at least one tag to publish your story';
+                }
             }
         });
         
@@ -1320,13 +1335,26 @@
         document.getElementById('publishBtn').addEventListener('click', function(e) {
             e.preventDefault();
             updateFormFields();
+            
+            // Check if at least one tag is selected
+            const hasSelectedTags = Array.from(document.querySelectorAll('.tag-checkbox'))
+                .some(checkbox => checkbox.checked);
+                
+            if (!hasSelectedTags) {
+                const tagValidationMessage = document.getElementById('tagValidationMessage');
+                tagValidationMessage.innerHTML = '<strong class="text-danger">Please select at least one tag before publishing</strong>';
+                
+                // Scroll to tag selection area
+                document.querySelector('.tag-selection-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            
             document.getElementById('formAction').value = 'publish';
             
             // Submit the form
             const form = document.getElementById('storyForm');
             form.addEventListener('submit', function() {
                 // Clear the local draft after successful submission
-                // This will run right before the form is submitted
                 if (localStorageDraft.clear()) {
                     console.log('Successfully cleared local draft.');
                 } else {
