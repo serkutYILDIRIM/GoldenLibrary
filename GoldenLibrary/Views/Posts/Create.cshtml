@@ -838,7 +838,8 @@
                         description: document.getElementById('Description').value,
                         content: document.getElementById('Content').value,
                         tagIds: selectedTagIds,
-                        lastUpdated: new Date().toISOString()
+                        lastUpdated: new Date().toISOString(),
+                        published: false // Add a published flag to track state
                     };
                     
                     localStorage.setItem(getPostKey(), JSON.stringify(draft));
@@ -885,14 +886,61 @@
                 }
             },
             
-            isNewer: function(serverUpdated) {
-                const draft = this.load();
-                if (!draft || !draft.lastUpdated) return false;
-                
-                // If no server timestamp provided, but we have a draft, consider it newer
-                if (!serverUpdated) return true;
-                
-                return new Date(draft.lastUpdated) > new Date(serverUpdated);
+            markAsPublished: function() {
+                try {
+                    // First clear this draft completely
+                    this.clear();
+                    
+                    // Then store this post ID in a list of published posts
+                    const publishedPosts = JSON.parse(localStorage.getItem('published_posts') || '[]');
+                    const postId = document.getElementById('postId').value;
+                    if (postId && !publishedPosts.includes(postId)) {
+                        publishedPosts.push(postId);
+                        localStorage.setItem('published_posts', JSON.stringify(publishedPosts));
+                    }
+                    
+                    // Also store the timestamp of the last publication
+                    localStorage.setItem('last_published_timestamp', new Date().toISOString());
+                    localStorage.setItem('last_published_post_id', postId);
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Error marking draft as published:', error);
+                    return false;
+                }
+            },
+            
+            isPublished: function(postId) {
+                try {
+                    if (!postId) {
+                        postId = document.getElementById('postId').value;
+                    }
+                    
+                    // Check if this post ID is in the published posts list
+                    const publishedPosts = JSON.parse(localStorage.getItem('published_posts') || '[]');
+                    return publishedPosts.includes(postId);
+                } catch (error) {
+                    return false;
+                }
+            },
+            
+            clearAllDrafts: function() {
+                // This function clears all drafts when a new post is created
+                try {
+                    const keys = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && (key.startsWith('post_draft_') || key === 'new_post_draft')) {
+                            keys.push(key);
+                        }
+                    }
+                    keys.forEach(key => localStorage.removeItem(key));
+                    console.log(`Cleared ${keys.length} drafts from local storage`);
+                    return true;
+                } catch (error) {
+                    console.error('Error clearing all drafts:', error);
+                    return false;
+                }
             }
         };
         
@@ -943,16 +991,47 @@
             const description = document.getElementById('Description').value;
             lastSavedContent = title + content + description;
             
-            // Check for local draft that's newer than server version
-            // Avoid directly accessing the UpdatedAt property which doesn't exist
-            let serverUpdated = null;
+            // Check if we just came from publishing a post (within the last minute)
+            const lastPublishedTime = localStorage.getItem('last_published_timestamp');
+            let justPublished = false;
             
-            // Get the post ID to handle draft storage
+            if (lastPublishedTime) {
+                const pubTime = new Date(lastPublishedTime);
+                const now = new Date();
+                const timeDiffSeconds = Math.floor((now - pubTime) / 1000);
+                
+                // If we published less than 60 seconds ago, consider we just published
+                if (timeDiffSeconds < 60) {
+                    justPublished = true;
+                    console.log("Just published a post. Clearing all drafts.");
+                    localStorageDraft.clearAllDrafts();
+                }
+            }
+            
+            // Check if this is truly a new post (empty ID and fields)
             const postId = document.getElementById('postId').value;
+            const isNewPost = postId === '0' && !title && !content;
+            
+            // If this is a brand new post or we just published, clear any previous drafts to prevent confusion
+            if (isNewPost || justPublished) {
+                localStorageDraft.clearAllDrafts();
+            }
+            
+            // See if this is a previously published post
+            if (postId !== '0' && localStorageDraft.isPublished(postId)) {
+                // This is a published post, make sure there's no draft for it
+                localStorageDraft.clear(); 
+                console.log(`Post ${postId} was already published, cleared any drafts.`);
+            }
             
             // See if we have a local draft for this post
             const draft = localStorageDraft.load();
-            if (draft && draft.lastUpdated) {
+            
+            // Only show restore option if:
+            // 1. We have a draft
+            // 2. It's not a post we just published
+            // 3. The post ID is not in our published posts list
+            if (draft && draft.lastUpdated && !justPublished && !localStorageDraft.isPublished(postId)) {
                 // Calculate the time since the draft was saved
                 const draftDate = new Date(draft.lastUpdated);
                 const now = new Date();
@@ -960,10 +1039,10 @@
                 
                 // Get formatted time string (e.g., "10 minutes ago" or "2 hours ago")
                 let timeAgo = timeDiff < 1 ? 'just now' : 
-                             timeDiff === 1 ? '1 minute ago' : 
-                             timeDiff < 60 ? `${timeDiff} minutes ago` :
-                             timeDiff < 120 ? '1 hour ago' : 
-                             `${Math.floor(timeDiff/60)} hours ago`;
+                            timeDiff === 1 ? '1 minute ago' : 
+                            timeDiff < 60 ? `${timeDiff} minutes ago` :
+                            timeDiff < 120 ? '1 hour ago' : 
+                            `${Math.floor(timeDiff/60)} hours ago`;
                 
                 // Show restore button with time information
                 const restoreText = `Restore unsaved draft (saved ${timeAgo})`;
@@ -971,17 +1050,22 @@
                 draftStatus.style.display = 'block';
                 
                 // Auto-restore if the form is empty but a draft exists
-                const title = document.getElementById('Title').value;
-                const content = document.getElementById('Content').value;
                 if (!title && !content && draft.title && draft.content) {
                     // Wait briefly to allow the page to render before restoring
                     setTimeout(() => {
                         const shouldRestore = confirm("An unsaved draft was found. Would you like to restore it?");
                         if (shouldRestore) {
                             restoreDraft(draft);
+                        } else {
+                            // If user declines to restore, clear the draft
+                            localStorageDraft.clear();
+                            draftStatus.style.display = 'none';
                         }
                     }, 500);
                 }
+            } else {
+                // No valid draft to restore
+                draftStatus.style.display = 'none';
             }
             
             // Function to restore a draft
@@ -1436,13 +1520,19 @@
                 }
             });
             
+            // Mark draft as published BEFORE submitting
+            localStorageDraft.markAsPublished();
+            
+            // Set up a success flag to clear localStorage after submission
+            const publishedPostId = document.getElementById('postId').value;
+            
+            // Add event listener for successful form submission
             form.addEventListener('submit', function() {
-                // Clear the local draft after successful submission
-                if (localStorageDraft.clear()) {
-                    console.log('Successfully cleared local draft.');
-                } else {
-                    console.warn('Failed to clear local draft.');
-                }
+                // Clear ALL drafts when publishing is successful
+                setTimeout(() => {
+                    localStorageDraft.clearAllDrafts();
+                    console.log('Cleared all drafts after successful publish');
+                }, 200);
             }, { once: true });
             
             // Final verification that all selected tags have corresponding form entries
