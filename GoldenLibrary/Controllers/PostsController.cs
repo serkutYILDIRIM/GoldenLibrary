@@ -80,6 +80,10 @@ namespace GoldenLibrary.Controllers
                 var draft = _postRepository.GetDraft(id.Value, userId);
                 if (draft != null)
                 {
+                    // Get the IDs of tags associated with this draft
+                    var selectedTagIds = draft.Tags?.Select(t => t.TagId).ToList() ?? new List<int>();
+                    ViewBag.SelectedTagIds = selectedTagIds;
+                    
                     // Return existing draft for editing
                     ViewBag.Tags = _tagRepository.Tags.ToList();
                     return View(new PostCreateViewModel
@@ -96,6 +100,7 @@ namespace GoldenLibrary.Controllers
             
             // Start a new draft
             ViewBag.Tags = _tagRepository.Tags.ToList();
+            ViewBag.SelectedTagIds = new List<int>(); // Empty list for new drafts
             return View();
         }
 
