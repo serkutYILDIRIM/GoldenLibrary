@@ -313,6 +313,45 @@ namespace GoldenLibrary.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePost([FromBody] PostStatusViewModel model)
+        {
+            try
+            {
+                if (model == null || model.Id <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid post ID" });
+                }
+
+                // Get the post to verify it exists
+                var post = await _postRepository.Posts
+                            .FirstOrDefaultAsync(p => p.PostId == model.Id);
+                
+                if (post == null)
+                {
+                    return Json(new { success = false, message = "Post not found" });
+                }
+                
+                // Delete the post
+                _postRepository.DeletePost(model.Id);
+                
+                // Return success response
+                return Json(new { 
+                    success = true, 
+                    message = "Post has been successfully deleted"
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log the error for debugging
+                Debug.WriteLine($"Error in DeletePost: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         [Authorize]
         public IActionResult Edit(int? id)
         {
