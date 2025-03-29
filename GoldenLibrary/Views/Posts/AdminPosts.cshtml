@@ -39,6 +39,10 @@
                                     </button>
                                     <a href="/posts/details/@post.Url" class="btn btn-sm btn-outline-primary ms-1">Details</a>
                                     <a href="/posts/edit/@post.PostId" class="btn btn-sm btn-outline-secondary ms-1">Edit</a>
+                                    <button class="btn btn-sm btn-outline-danger ms-1 delete-post" 
+                                            data-post-id="@post.PostId" data-post-title="@post.Title">
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -117,13 +121,62 @@
                         });
                     });
                     
+                    // Delete post functionality
+                    $('.delete-post').on('click', function() {
+                        const button = $(this);
+                        const postId = button.data('post-id');
+                        const postTitle = button.data('post-title');
+                        
+                        // Show confirmation dialog
+                        if (confirm(`Are you sure you want to delete the post "${postTitle}"? This action cannot be undone.`)) {
+                            // Show feedback to user
+                            button.prop('disabled', true).text('Deleting...');
+                            
+                            // Get the token
+                            const token = $('input[name="__RequestVerificationToken"]').val();
+                            
+                            // Send delete request
+                            $.ajax({
+                                url: '/Posts/DeletePost',
+                                type: 'POST',
+                                data: JSON.stringify({ id: postId }),
+                                contentType: 'application/json; charset=utf-8',
+                                dataType: 'json',
+                                headers: {
+                                    'RequestVerificationToken': token
+                                },
+                                success: function(data) {
+                                    console.log('Response:', data);
+                                    if (data.success) {
+                                        // Remove the row from the table
+                                        button.closest('tr').fadeOut(400, function() {
+                                            $(this).remove();
+                                        });
+                                        
+                                        // Show success message
+                                        console.log('Delete successful:', data.message);
+                                    } else {
+                                        alert('Failed to delete post: ' + data.message);
+                                        console.error('Server error:', data.message);
+                                        button.prop('disabled', false).text('Delete');
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('AJAX error:', xhr.status, xhr.responseText);
+                                    alert('Error occurred while deleting post. Check console for details.');
+                                    button.prop('disabled', false).text('Delete');
+                                }
+                            });
+                        }
+                    });
+                    
                     console.log('Anti-forgery token element exists:', $('input[name="__RequestVerificationToken"]').length > 0);
                 });
             } else {
                 console.error('jQuery is not loaded! Using plain JavaScript instead.');
                 
                 // Plain JS fallback for critical functionality
-                document.querySelectorAll('.toggle-status').forEach(function(button) {
+                document.querySelectorAll('.toggle-status, .delete-post').forEach(function(button) {
                     button.addEventListener('click', function() {
                         alert('jQuery is required for this functionality. Please check the console for errors.');
                         console.error('jQuery is required for AJAX functionality.');
