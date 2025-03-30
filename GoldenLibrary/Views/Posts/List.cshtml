@@ -73,12 +73,12 @@
                     <h5 class="mb-0">All stories (@Model.Count())</h5>
                     <div class="dropdown">
                         <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            Sort by: Recent
+                            Sort by: @(ViewBag.CurrentSort ?? "Recent")
                         </button>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Recent</a></li>
-                            <li><a class="dropdown-item" href="#">Title A-Z</a></li>
-                            <li><a class="dropdown-item" href="#">Most views</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("List", new { sort = "recent", tag = ViewBag.SelectedTag })">Recent</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("List", new { sort = "title", tag = ViewBag.SelectedTag })">Title A-Z</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("List", new { sort = "views", tag = ViewBag.SelectedTag })">Most views</a></li>
                         </ul>
                     </div>
                 </div>
