@@ -14,12 +14,35 @@ namespace GoldenLibrary.Data.Concrete.EfCore
         }
         public IQueryable<Post> Posts => _context.Posts;
 
+        // Repository Seviyesinde Yapılan İşlemler:
+
+        // 1. CreatePost - İki versiyonu vardır:
         public void CreatePost(Post post)
         {
+            // Bu metot tag ilişkilerini yönetmez, sadece gönderiyi kaydeder
             _context.Posts.Add(post);
             _context.SaveChanges();
         }
 
+        public void CreatePost(Post post, int[] tagIds)
+        {
+            // When a new post is created:
+            if (tagIds != null && tagIds.Length > 0)
+            {
+                // 1. Fetch all Tag entities whose IDs are in the tagIds array
+                // 2. Assign these Tag entities to the post.Tags collection
+                post.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
+                
+                // 3. When SaveChanges() is called, EF Core will:
+                //    - Insert the new Post entity
+                //    - Insert entries in the join table (PostTag) to connect the post with each tag
+            }
+            
+            _context.Posts.Add(post);
+            _context.SaveChanges();
+        }
+
+        // 2. EditPost - Tag ilişkilerini yöneten versiyon:
         public void EditPost(Post post)
         {
             var entity = _context.Posts.FirstOrDefault(i => i.PostId == post.PostId);
@@ -48,12 +71,20 @@ namespace GoldenLibrary.Data.Concrete.EfCore
                 entity.Url = post.Url;
                 entity.IsActive = post.IsActive;
 
+                // 1. Include(i => i.Tags) loads the current tag relationships
+                // 2. Completely replace the Tags collection with new tags
                 entity.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
+                
+                // 3. When SaveChanges() is called, EF Core will:
+                //    - Delete all existing entries from the join table for this post
+                //    - Insert new join table entries for the new tag relationships
+                //    - This effectively replaces all tag associations in one operation
 
                 _context.SaveChanges();
             }
         }
 
+        // 3. SaveDraft - Tag ilişkilerini de yönetir:
         public void SaveDraft(Post post, int[]? tagIds = null)
         {
             try
@@ -79,7 +110,9 @@ namespace GoldenLibrary.Data.Concrete.EfCore
                         entity.IsDraft = true;
                         entity.LastModified = DateTime.Now;
                         
-                        // Update tags if provided
+                        // Çok-a-Çok İlişki Yönetimi:
+                        // Taslak kaydetme sırasında da tagIds dizisi alır ve 
+                        // etiketleri gönderi ile ilişkilendirir
                         if (tagIds != null && tagIds.Length > 0)
                         {
                             entity.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
@@ -165,33 +198,21 @@ namespace GoldenLibrary.Data.Concrete.EfCore
         {
             try
             {
-                // Find the post entity
+                // When a post is deleted:
                 var post = _context.Posts.Find(postId);
                 if (post != null)
                 {
-                    // Explicitly load the related tags
+                    // 1. Explicitly load the related tags to ensure they're tracked
                     _context.Entry(post).Collection(p => p.Tags).Load();
                     
-                    // Explicitly load the related comments
-                    _context.Entry(post).Collection(p => p.Comments).Load();
-                    
-                    // Remove the tags association (if any)
+                    // 2. Clear the Tags collection to remove all relationships
                     if (post.Tags != null)
                     {
                         post.Tags.Clear();
-                        _context.SaveChanges(); // Save to update the tag relationships
+                        _context.SaveChanges(); // Save to delete all join table entries
                     }
                     
-                    // Remove related comments (if any)
-                    if (post.Comments != null && post.Comments.Any())
-                    {
-                        foreach (var comment in post.Comments.ToList())
-                        {
-                            _context.Comments.Remove(comment);
-                        }
-                    }
-                    
-                    // Now remove the post
+                    // 3. Then remove the post itself
                     _context.Posts.Remove(post);
                     _context.SaveChanges();
                 }
