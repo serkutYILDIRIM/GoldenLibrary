@@ -144,7 +144,8 @@ namespace GoldenLibrary.Controllers
                     }
                     else
                     {
-                        _postRepository.CreatePost(post);
+                        // Create new post with tags
+                        _postRepository.CreatePost(post, tagIds);
                     }
                     TempData["Message"] = "Your story has been published successfully.";
                     return RedirectToAction("Index");

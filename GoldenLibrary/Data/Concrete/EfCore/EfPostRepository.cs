@@ -20,6 +20,18 @@ namespace GoldenLibrary.Data.Concrete.EfCore
             _context.SaveChanges();
         }
 
+        public void CreatePost(Post post, int[] tagIds)
+        {
+            // Assign tags to the post if provided
+            if (tagIds != null && tagIds.Length > 0)
+            {
+                post.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
+            }
+            
+            _context.Posts.Add(post);
+            _context.SaveChanges();
+        }
+
         public void EditPost(Post post)
         {
             var entity = _context.Posts.FirstOrDefault(i => i.PostId == post.PostId);

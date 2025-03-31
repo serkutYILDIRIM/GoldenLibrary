@@ -7,6 +7,7 @@ namespace GoldenLibrary.Data.Abstract
     {
         IQueryable<Post> Posts { get; }
         void CreatePost(Post post);
+        void CreatePost(Post post, int[] tagIds);
         void EditPost(Post post);
         void EditPost(Post post, int[] tagIds);
         
@@ -15,6 +16,7 @@ namespace GoldenLibrary.Data.Abstract
         Post? GetDraft(int draftId, int userId);
         List<Post> GetUserDrafts(int userId);
         bool AutoSaveDraft(Post post);
+        Post? GetDraft(int userId);
         void DeletePost(int postId);
     }
 }
