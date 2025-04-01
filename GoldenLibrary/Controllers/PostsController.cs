@@ -112,23 +112,22 @@ namespace GoldenLibrary.Controllers
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
             
             if (ModelState.IsValid)
-
+            {
                 var post = new Post
                 {
-                    PostId = model.PostId, // Yeni gönderiler için 0, mevcut taslaklar için taslak ID'si
-                    Title = model.Title, // Başlık
-                    Description = model.Description, // Açıklama
-                    Content = model.Content, // İçerik
-                    Url = model.Url, // URL slug
-                    UserId = userId, // Mevcut kullanıcının ID'si
-                    PublishedOn = DateTime.Now, // Yayınlanma tarihi
-                    LastModified = DateTime.Now, // Son düzenleme tarihi
-                    Image = "1.jpg" // Varsayılan görsel
+                    PostId = model.PostId, 
+                    Title = model.Title, 
+                    Description = model.Description, 
+                    Content = model.Content, 
+                    Url = model.Url, 
+                    UserId = userId, 
+                    PublishedOn = DateTime.Now, 
+                    LastModified = DateTime.Now, 
+                    Image = "1.jpg" 
                 };
 
                 if (action == "draft")
                 {
-                    // Taslak olarak kaydet - tagleri de dahil et
                     _postRepository.SaveDraft(post, tagIds);
                     TempData["Message"] = "Your draft has been saved successfully.";
                     return RedirectToAction("Drafts");
@@ -140,12 +139,10 @@ namespace GoldenLibrary.Controllers
                     
                     if (model.PostId > 0)
                     {
-                        // Bu bir taslaktı, şimdi yayınlanıyor - tagleri de dahil et
                         _postRepository.EditPost(post, tagIds);
                     }
                     else
                     {
-                        // Yeni bir gönderi oluştur - tagleri de dahil et
                         _postRepository.CreatePost(post, tagIds);
                     }
                     TempData["Message"] = "Your story has been published successfully.";
@@ -159,7 +156,7 @@ namespace GoldenLibrary.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken] // Add this attribute to validate the token
+        [ValidateAntiForgeryToken] 
         public JsonResult AutoSave(PostCreateViewModel model)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
