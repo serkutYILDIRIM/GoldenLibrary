@@ -19,7 +19,6 @@ namespace GoldenLibrary.Models
         [Display(Name = "İçerik")]
         public string? Content { get; set; }
 
-        [Required]
         [Display(Name = "Url")]
         public string? Url { get; set; }
         public bool IsActive { get; set; }

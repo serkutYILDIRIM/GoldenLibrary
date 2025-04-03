@@ -108,11 +108,11 @@ namespace GoldenLibrary.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult Create(PostCreateViewModel model, int[] tagIds, string action)
-        {            
+        {           
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
+
                 var post = new Post
                 {
                     PostId = model.PostId, 
