@@ -6,7 +6,7 @@ namespace GoldenLibrary.Models
 {
     public class PostCreateViewModel
     {
-        public int PostId { get; set; }
+        public int? PostId { get; set; }
         [Required]
         [Display(Name = "Başlık")]
         public string? Title { get; set; }
