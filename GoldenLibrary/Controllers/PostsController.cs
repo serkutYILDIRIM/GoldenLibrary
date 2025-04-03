@@ -110,7 +110,7 @@ namespace GoldenLibrary.Controllers
         public IActionResult Create(PostCreateViewModel model, int[] tagIds, string action)
         {           
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
 
                 var post = new Post
@@ -150,6 +150,20 @@ namespace GoldenLibrary.Controllers
                 }
             }
             
+    var errors = ModelState
+        .Where(x => x.Value.Errors.Count > 0)
+        .Select(x => new { 
+            Property = x.Key, 
+            Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList() 
+        })
+        .ToList();
+        
+    // Log or inspect errors
+    foreach (var error in errors)
+    {
+        System.Diagnostics.Debug.WriteLine($"Property: {error.Property}, Errors: {string.Join(", ", error.Errors)}");
+    }
+
             ViewBag.Tags = _tagRepository.Tags.ToList();
             return View(model);
         }
