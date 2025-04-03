@@ -108,14 +108,20 @@ namespace GoldenLibrary.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult Create(PostCreateViewModel model, int[] tagIds, string action)
-        {            
+        {           
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            
             if (ModelState.IsValid)
             {
+                // Ensure PostId is properly handled - if empty/invalid, default to 0
+                int postId = 0;
+                if (model.PostId.HasValue)
+                {
+                    postId = model.PostId.Value;
+                }
+
                 var post = new Post
                 {
-                    PostId = model.PostId, 
+                    PostId = postId, 
                     Title = model.Title, 
                     Description = model.Description, 
                     Content = model.Content, 
@@ -137,7 +143,7 @@ namespace GoldenLibrary.Controllers
                     post.IsActive = true;
                     post.IsDraft = false;
                     
-                    if (model.PostId > 0)
+                    if (postId > 0)
                     {
                         _postRepository.EditPost(post, tagIds);
                     }
@@ -150,6 +156,20 @@ namespace GoldenLibrary.Controllers
                 }
             }
             
+    var errors = ModelState
+        .Where(x => x.Value.Errors.Count > 0)
+        .Select(x => new { 
+            Property = x.Key, 
+            Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList() 
+        })
+        .ToList();
+        
+    // Log or inspect errors
+    foreach (var error in errors)
+    {
+        System.Diagnostics.Debug.WriteLine($"Property: {error.Property}, Errors: {string.Join(", ", error.Errors)}");
+    }
+
             ViewBag.Tags = _tagRepository.Tags.ToList();
             return View(model);
         }
@@ -168,7 +188,7 @@ namespace GoldenLibrary.Controllers
             
             var post = new Post
             {
-                PostId = model.PostId,
+                PostId = model.PostId ?? 0, // Fix: Handle nullable PostId by using null-coalescing operator
                 Title = model.Title ?? "Untitled",
                 Description = model.Description,
                 Content = model.Content,
@@ -386,7 +406,7 @@ namespace GoldenLibrary.Controllers
             {
                 var entityToUpdate = new Post
                 {
-                    PostId = model.PostId,
+                    PostId = model.PostId ?? 0, // Fix: Handle nullable PostId by using null-coalescing operator
                     Title = model.Title,
                     Description = model.Description,
                     Content = model.Content,
