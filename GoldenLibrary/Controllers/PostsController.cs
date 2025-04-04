@@ -140,7 +140,7 @@ namespace GoldenLibrary.Controllers
                 }
                 else
                 {
-                    post.IsActive = true;
+                    post.IsActive = false;
                     post.IsDraft = false;
                     
                     if (postId > 0)
