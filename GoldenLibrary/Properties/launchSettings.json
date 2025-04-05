@@ -23,7 +23,9 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "nativeDebugging": true,
+      "jsWebView2Debugging": true
     }
   },
   "iisSettings": {

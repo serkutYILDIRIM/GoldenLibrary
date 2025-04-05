@@ -817,6 +817,23 @@
         const saveStatus = document.querySelector('.save-indicator');
         const draftStatus = document.getElementById('draftStatus');
         const restoreDraftBtn = document.getElementById('restoreDraftBtn');
+        const DEBUG = true; // Enable debug logging
+        let localStorageAvailable = false;
+        
+        // Check if localStorage is available and working
+        function checkStorageAvailability() {
+            try {
+                const storage = window.localStorage;
+                const testKey = "__storage_test__";
+                storage.setItem(testKey, testKey);
+                storage.removeItem(testKey);
+                if (DEBUG) console.log("localStorage is available");
+                return true;
+            } catch (e) {
+                if (DEBUG) console.error("localStorage is not available:", e);
+                return false;
+            }
+        }
         
         // Get the post ID for storage keys
         const getPostKey = () => {
@@ -824,9 +841,14 @@
             return postId !== '0' ? `post_draft_${postId}` : 'new_post_draft';
         };
         
-        // LocalStorage functions
+        // LocalStorage functions with enhanced error handling
         const localStorageDraft = {
             save: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot save draft: localStorage unavailable");
+                    return false;
+                }
+                
                 try {
                     // Get selected tag IDs
                     const selectedTagIds = Array.from(document.querySelectorAll('.tag-checkbox'))
@@ -842,7 +864,18 @@
                         published: false // Add a published flag to track state
                     };
                     
-                    localStorage.setItem(getPostKey(), JSON.stringify(draft));
+                    const draftKey = getPostKey();
+                    const draftValue = JSON.stringify(draft);
+                    
+                    if (DEBUG) console.log(`Saving draft to key: ${draftKey}, size: ${draftValue.length} bytes`);
+                    localStorage.setItem(draftKey, draftValue);
+                    
+                    // Verify the save was successful
+                    const saved = localStorage.getItem(draftKey);
+                    if (!saved) {
+                        if (DEBUG) console.error("Save verification failed: Item not found after saving");
+                        return false;
+                    }
                     
                     // Try to check storage quota
                     if (navigator.storage && navigator.storage.estimate) {
@@ -854,6 +887,7 @@
                         });
                     }
                     
+                    if (DEBUG) console.log("Draft saved successfully");
                     return true;
                 } catch (error) {
                     console.error('LocalStorage save error:', error);
@@ -865,11 +899,24 @@
             },
             
             load: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot load draft: localStorage unavailable");
+                    return null;
+                }
+                
                 try {
-                    const draftData = localStorage.getItem(getPostKey());
-                    if (!draftData) return null;
+                    const draftKey = getPostKey();
+                    if (DEBUG) console.log(`Loading draft from key: ${draftKey}`);
+                    const draftData = localStorage.getItem(draftKey);
                     
-                    return JSON.parse(draftData);
+                    if (!draftData) {
+                        if (DEBUG) console.log("No draft found for key:", draftKey);
+                        return null;
+                    }
+                    
+                    const draft = JSON.parse(draftData);
+                    if (DEBUG) console.log("Draft loaded successfully:", draft);
+                    return draft;
                 } catch (error) {
                     console.error('LocalStorage load error:', error);
                     return null;
@@ -877,8 +924,15 @@
             },
             
             clear: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot clear draft: localStorage unavailable");
+                    return false;
+                }
+                
                 try {
-                    localStorage.removeItem(getPostKey());
+                    const draftKey = getPostKey();
+                    if (DEBUG) console.log(`Clearing draft for key: ${draftKey}`);
+                    localStorage.removeItem(draftKey);
                     return true;
                 } catch (error) {
                     console.error('LocalStorage clear error:', error);
@@ -887,6 +941,11 @@
             },
             
             markAsPublished: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot mark draft as published: localStorage unavailable");
+                    return false;
+                }
+                
                 try {
                     // First clear this draft completely
                     this.clear();
@@ -911,6 +970,11 @@
             },
             
             isPublished: function(postId) {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot check if draft is published: localStorage unavailable");
+                    return false;
+                }
+                
                 try {
                     if (!postId) {
                         postId = document.getElementById('postId').value;
@@ -925,7 +989,11 @@
             },
             
             clearAllDrafts: function() {
-                // This function clears all drafts when a new post is created
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot clear all drafts: localStorage unavailable");
+                    return false;
+                }
+                
                 try {
                     const keys = [];
                     for (let i = 0; i < localStorage.length; i++) {
@@ -946,12 +1014,27 @@
         
         // Update word and character count
         function updateWordCount() {
-            const text = document.getElementById('contentEditor').innerText;
-            const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-            const charCount = text.length;
-            
-            document.getElementById('wordCount').textContent = `${wordCount} words`;
-            document.getElementById('characterCount').textContent = `${charCount} characters`;
+            try {
+                const contentEditor = document.getElementById('contentEditor');
+                const wordCountElement = document.getElementById('wordCount');
+                const charCountElement = document.getElementById('characterCount');
+                
+                if (contentEditor && wordCountElement && charCountElement) {
+                    const text = contentEditor.innerText || contentEditor.textContent || '';
+                    const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+                    const charCount = text.length;
+                    
+                    wordCountElement.textContent = `${wordCount} words`;
+                    charCountElement.textContent = `${charCount} characters`;
+                    
+                    // Debug info - can be removed after fixing
+                    console.log(`Word count: ${wordCount}, Char count: ${charCount}`);
+                } else {
+                    console.error('Required elements not found for word/character count');
+                }
+            } catch (error) {
+                console.error('Error updating word/character count:', error);
+            }
         }
         
         // Update hidden form fields with contenteditable content
@@ -968,13 +1051,25 @@
             document.getElementById('Tags').value = selectedTagIds.join(',');
         }
         
-        // Initialize editor
+        // Initialize editor with enhanced error handling
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if localStorage is available
+            localStorageAvailable = checkStorageAvailability();
+            
+            if (!localStorageAvailable) {
+                console.warn("localStorage is not available. Draft functionality will be limited.");
+                // Hide draft restoration UI since it won't work
+                if (draftStatus) draftStatus.style.display = 'none';
+            }
+            
             const titleEditor = document.getElementById('titleEditor');
             const descriptionEditor = document.getElementById('descriptionEditor');
             const contentEditor = document.getElementById('contentEditor');
             const publishBtn = document.getElementById('publishBtn');
             const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+            
+            // Ensure character count is initialized properly
+            setTimeout(updateWordCount, 100);
             
             // Initial word count update
             updateWordCount();
@@ -1024,89 +1119,142 @@
                 console.log(`Post ${postId} was already published, cleared any drafts.`);
             }
             
-            // See if we have a local draft for this post
-            const draft = localStorageDraft.load();
-            
-            // Only show restore option if:
-            // 1. We have a draft
-            // 2. It's not a post we just published
-            // 3. The post ID is not in our published posts list
-            if (draft && draft.lastUpdated && !justPublished && !localStorageDraft.isPublished(postId)) {
-                // Calculate the time since the draft was saved
-                const draftDate = new Date(draft.lastUpdated);
-                const now = new Date();
-                const timeDiff = Math.floor((now - draftDate) / 1000 / 60); // minutes
-                
-                // Get formatted time string (e.g., "10 minutes ago" or "2 hours ago")
-                let timeAgo = timeDiff < 1 ? 'just now' : 
-                            timeDiff === 1 ? '1 minute ago' : 
-                            timeDiff < 60 ? `${timeDiff} minutes ago` :
-                            timeDiff < 120 ? '1 hour ago' : 
-                            `${Math.floor(timeDiff/60)} hours ago`;
-                
-                // Show restore button with time information
-                const restoreText = `Restore unsaved draft (saved ${timeAgo})`;
-                restoreDraftBtn.innerHTML = `<i class="bi bi-arrow-counterclockwise"></i> ${restoreText}`;
-                draftStatus.style.display = 'block';
-                
-                // Auto-restore if the form is empty but a draft exists
-                if (!title && !content && draft.title && draft.content) {
-                    // Wait briefly to allow the page to render before restoring
-                    setTimeout(() => {
-                        const shouldRestore = confirm("An unsaved draft was found. Would you like to restore it?");
-                        if (shouldRestore) {
-                            restoreDraft(draft);
-                        } else {
-                            // If user declines to restore, clear the draft
-                            localStorageDraft.clear();
-                            draftStatus.style.display = 'none';
-                        }
-                    }, 500);
-                }
-            } else {
-                // No valid draft to restore
-                draftStatus.style.display = 'none';
+            // See if we have a local draft for this post - with enhanced timing
+            if (localStorageAvailable) {
+                // Delay draft check slightly to ensure DOM is fully processed
+                setTimeout(() => {
+                    checkForDraft();
+                }, 300);
             }
             
-            // Function to restore a draft
-            function restoreDraft(draft) {
-                titleEditor.innerHTML = draft.title || '';
-                descriptionEditor.innerHTML = draft.description || '';
-                contentEditor.innerHTML = draft.content || '';
-                
-                // Restore tags if available
-                if (draft.tagIds && draft.tagIds.length > 0) {
-                    // Clear all checkboxes first
-                    tagCheckboxes.forEach(checkbox => checkbox.checked = false);
+            function checkForDraft() {
+                try {
+                    const draft = localStorageDraft.load();
+                    const title = document.getElementById('Title').value;
+                    const content = document.getElementById('Content').value;
+                    const postId = document.getElementById('postId').value;
                     
-                    // Check the saved ones
-                    draft.tagIds.forEach(tagId => {
-                        const checkbox = document.querySelector(`.tag-checkbox[value="${tagId}"]`);
-                        if (checkbox) checkbox.checked = true;
-                    });
+                    // Check if we just came from publishing a post (within the last minute)
+                    const lastPublishedTime = localStorage.getItem('last_published_timestamp');
+                    let justPublished = false;
+                    
+                    if (lastPublishedTime) {
+                        const pubTime = new Date(lastPublishedTime);
+                        const now = new Date();
+                        const timeDiffSeconds = Math.floor((now - pubTime) / 1000);
+                        
+                        // If we published less than 60 seconds ago, consider we just published
+                        if (timeDiffSeconds < 60) {
+                            justPublished = true;
+                            if (DEBUG) console.log("Just published a post. Clearing all drafts.");
+                            localStorageDraft.clearAllDrafts();
+                        }
+                    }
+                    
+                    // Only show restore option if:
+                    // 1. We have a draft
+                    // 2. It's not a post we just published
+                    // 3. The post ID is not in our published posts list
+                    if (draft && draft.lastUpdated && !justPublished && !localStorageDraft.isPublished(postId)) {
+                        // Calculate the time since the draft was saved
+                        const draftDate = new Date(draft.lastUpdated);
+                        const now = new Date();
+                        const timeDiff = Math.floor((now - draftDate) / 1000 / 60); // minutes
+                        
+                        // Get formatted time string (e.g., "10 minutes ago" or "2 hours ago")
+                        let timeAgo = timeDiff < 1 ? 'just now' : 
+                                    timeDiff === 1 ? '1 minute ago' : 
+                                    timeDiff < 60 ? `${timeDiff} minutes ago` :
+                                    timeDiff < 120 ? '1 hour ago' : 
+                                    `${Math.floor(timeDiff/60)} hours ago`;
+                        
+                        // Show restore button with time information
+                        const restoreText = `Restore unsaved draft (saved ${timeAgo})`;
+                        if (DEBUG) console.log("Found draft from", timeAgo);
+                        
+                        if (restoreDraftBtn) {
+                            restoreDraftBtn.innerHTML = `<i class="bi bi-arrow-counterclockwise"></i> ${restoreText}`;
+                            draftStatus.style.display = 'block';
+                        }
+                        
+                        // Auto-restore if the form is empty but a draft exists
+                        if (!title && !content && draft.title && draft.content) {
+                            // Wait briefly to allow the page to render before restoring
+                            setTimeout(() => {
+                                const shouldRestore = confirm("An unsaved draft was found. Would you like to restore it?");
+                                if (shouldRestore) {
+                                    restoreDraft(draft);
+                                } else {
+                                    // If user declines to restore, clear the draft
+                                    localStorageDraft.clear();
+                                    draftStatus.style.display = 'none';
+                                }
+                            }, 500);
+                        }
+                    } else {
+                        // No valid draft to restore
+                        if (draftStatus) draftStatus.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error("Error checking for draft:", error);
+                    // Hide draft UI in case of error
+                    if (draftStatus) draftStatus.style.display = 'none';
                 }
-                
-                // Update the form fields
-                updateFormFields();
-                
-                // Update word count
-                updateWordCount();
-                
-                // Hide the restore button
-                draftStatus.style.display = 'none';
-                
-                // Show a success message
-                showSaveStatus('saved', 'Draft restored');
-                
-                // Adjust heights for auto-expanding
-                adjustHeight(titleEditor);
-                adjustHeight(descriptionEditor);
-                adjustHeight(contentEditor);
-                
-                // Update publish button state
-                updatePublishButtonState();
             }
             
+            // Function to restore a draft with enhanced error handling
+            function restoreDraft(draft) {
+                try {
+                    if (DEBUG) console.log("Restoring draft:", draft);
+                    
+                    if (!titleEditor || !descriptionEditor || !contentEditor) {
+                        console.error("Editor elements not found");
+                        return;
+                    }
+                    
+                    titleEditor.innerHTML = draft.title || '';
+                    descriptionEditor.innerHTML = draft.description || '';
+                    contentEditor.innerHTML = draft.content || '';
+                    
+                    // Restore tags if available
+                    if (draft.tagIds && draft.tagIds.length > 0) {
+                        // Clear all checkboxes first
+                        tagCheckboxes.forEach(checkbox => checkbox.checked = false);
+                        
+                        // Check the saved ones
+                        draft.tagIds.forEach(tagId => {
+                            const checkbox = document.querySelector(`.tag-checkbox[value="${tagId}"]`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
+                    
+                    // Update the form fields
+                    updateFormFields();
+                    
+                    // Update word count
+                    updateWordCount();
+                    
+                    // Hide the restore button
+                    if (draftStatus) draftStatus.style.display = 'none';
+                    
+                    // Show a success message
+                    showSaveStatus('saved', 'Draft restored');
+                    
+                    // Adjust heights for auto-expanding
+                    adjustHeight(titleEditor);
+                    adjustHeight(descriptionEditor);
+                    adjustHeight(contentEditor);
+                    
+                    // Update publish button state
+                    updatePublishButtonState();
+                    
+                    if (DEBUG) console.log("Draft successfully restored");
+                } catch (error) {
+                    console.error("Error restoring draft:", error);
+                    showSaveStatus('error', 'Error restoring draft');
+                }
+            }
+        
             // Restore draft button click handler
             restoreDraftBtn.addEventListener('click', function() {
                 const draft = localStorageDraft.load();
@@ -1183,6 +1331,15 @@
                 }
             });
             
+            // Handle input in content editor with explicit character count update
+            contentEditor.addEventListener('input', function() {
+                updateFormFields();
+                updateWordCount(); // Always update word count when content changes
+            });
+            
+            // As a fallback, periodically update the word count
+            setInterval(updateWordCount, 2000);
+            
             // Initialize formatting toolbar
             initFormattingToolbar();
             
@@ -1246,25 +1403,41 @@
             }
         });
         
-        // Function to save content to localStorage
+        // Function to save content to localStorage with enhanced error handling
         function saveToLocalStorage() {
-            // Only save if there's actually content to save
-            const title = document.getElementById('Title').value;
-            const content = document.getElementById('Content').value;
-            const tags = document.getElementById('Tags').value;
+            if (!localStorageAvailable) {
+                return false;
+            }
             
-            if (title.trim() === '' && content.trim() === '') return;
-            
-            if (localStorageDraft.save()) {
-                // Show a brief "Saved to device" message
-                const saveText = saveStatus.querySelector('.save-text');
-                const originalText = saveText.textContent;
-                saveText.textContent = 'Saved to device';
+            try {
+                // Only save if there's actually content to save
+                const title = document.getElementById('Title').value;
+                const content = document.getElementById('Content').value;
+                const tags = document.getElementById('Tags').value;
                 
-                // Revert back to original text after 2 seconds
-                setTimeout(() => {
-                    saveText.textContent = originalText;
-                }, 2000);
+                if (title.trim() === '' && content.trim() === '') {
+                    if (DEBUG) console.log("Nothing to save - empty content");
+                    return false;
+                }
+                
+                if (localStorageDraft.save()) {
+                    // Show a brief "Saved to device" message
+                    const saveText = saveStatus.querySelector('.save-text');
+                    if (saveText) {
+                        const originalText = saveText.textContent;
+                        saveText.textContent = 'Saved to device';
+                        
+                        // Revert back to original text after 2 seconds
+                        setTimeout(() => {
+                            saveText.textContent = originalText;
+                        }, 2000);
+                    }
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error("Error saving to localStorage:", error);
+                return false;
             }
         }
         
