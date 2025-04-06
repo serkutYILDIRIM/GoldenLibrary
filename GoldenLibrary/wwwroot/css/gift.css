@@ -1,0 +1,392 @@
+/* Main styles */
+body {
+    overflow-x: hidden;
+    background: linear-gradient(135deg, #7b1fa2, #FF69B4, #4CAF50, #FFC107); /* Purple, Pink, Green, Yellow colors */
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    position: relative;
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    25% {
+        background-position: 33% 50%;
+    }
+
+    50% {
+        background-position: 66% 50%;
+    }
+
+    75% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.gift-container {
+    padding: 3rem 1rem;
+    text-align: center;
+    position: relative;
+    min-height: 100vh;
+    z-index: 1;
+}
+
+.title {
+    color: #7b1fa2; /* Purple IWD color */
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    animation: fadeInUp 1.5s ease-out;
+}
+
+.subtitle {
+    color: #4CAF50; /* Green IWD color */
+    font-size: 1.5rem;
+    margin-bottom: 3rem;
+    animation: fadeInUp 1.8s ease-out;
+}
+
+.message {
+    background: rgba(255,255,255,0.8);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1), 0 0 0 5px rgba(76, 175, 80, 0.1); /* Green glow */
+    margin-bottom: 2rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    animation: fadeIn 2s ease-out;
+    border-left: 4px solid #7b1fa2; /* Purple accent */
+    border-right: 4px solid #FFC107; /* Yellow accent */
+}
+
+/* Floating elements */
+.floating-element {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.flower {
+    width: 30px;
+    height: 30px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.symbol {
+    font-size: 24px;
+    opacity: 0.7;
+}
+
+/* Achievement icons */
+.achievement-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    font-size: 30px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+    .achievement-icon::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(123, 31, 162, 0.3), rgba(255, 105, 180, 0.3), rgba(76, 175, 80, 0.3), rgba(255, 193, 7, 0.3));
+        background-size: 400% 400%;
+        animation: gradientBG 5s ease infinite;
+        border-radius: 50%;
+        z-index: -1;
+    }
+
+    .achievement-icon:hover {
+        transform: translateY(-5px);
+    }
+
+    .achievement-icon .tooltip {
+        position: absolute;
+        bottom: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(123, 31, 162, 0.9);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.3s, bottom 0.3s;
+        pointer-events: none;
+        width: max-content;
+        max-width: 150px;
+        z-index: 10;
+    }
+
+    .achievement-icon:hover .tooltip {
+        opacity: 1;
+        bottom: -45px;
+    }
+
+.achievement-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 2rem 0;
+    animation: fadeIn 2.5s ease-out;
+}
+
+/* Falling flowers */
+.falling-flower {
+    position: fixed;
+    color: rgba(255, 105, 180, 0.7);
+    font-size: 20px;
+    user-select: none;
+    z-index: 0;
+    pointer-events: none;
+    animation: fallingFlower linear infinite;
+}
+
+/* Microsoft MVP Buttercup */
+.mvp-buttercup {
+    position: fixed;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+    pointer-events: none;
+    animation: flyAcross 15s linear infinite;
+    opacity: 0;
+    font-size: 30px;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+    transform: translateZ(0);
+}
+
+.mvp-buttercup .buttercup {
+    display: inline-block;
+    animation: buttercupFlap 0.5s ease-in-out infinite alternate;
+    transform-origin: center;
+}
+
+.mvp-buttercup .medal {
+    display: inline-block;
+    position: relative;
+    animation: medalSpin 3s linear infinite;
+    transform-origin: center;
+    font-size: 20px;
+}
+
+.mvp-buttercup .mvp-text {
+    display: inline-block;
+    background: linear-gradient(90deg, #7b1fa2, #FF69B4, #4CAF50, #FFC107);
+    background-size: 300% 100%;
+    animation: gradientBG 5s ease infinite;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+    font-size: 16px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 3px;
+    border-radius: 20px;
+}
+
+/* Animations */
+@keyframes float {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(10deg);
+    }
+
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fallingFlower {
+    0% {
+        transform: translateY(-10%) translateX(0) rotate(0deg);
+    }
+
+    25% {
+        transform: translateY(25%) translateX(5%) rotate(45deg);
+    }
+
+    50% {
+        transform: translateY(50%) translateX(-5%) rotate(90deg);
+    }
+
+    75% {
+        transform: translateY(75%) translateX(5%) rotate(135deg);
+    }
+
+    100% {
+        transform: translateY(110%) translateX(-5%) rotate(180deg);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes shine {
+    0% {
+        background-position: -100% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes flyAcross {
+    0% {
+        left: -100px;
+        top: 30%;
+        opacity: 0;
+        transform: translateY(0) scale(0.8) rotate(5deg);
+    }
+    5% {
+        opacity: 1;
+    }
+    25% {
+        left: 30%;
+        top: 15%;
+        transform: translateY(-20px) scale(1) rotate(-5deg);
+    }
+    50% {
+        left: 50%;
+        top: 40%;
+        transform: translateY(20px) scale(1.2) rotate(5deg);
+    }
+    75% {
+        left: 70%;
+        top: 20%;
+        transform: translateY(-10px) scale(1) rotate(-5deg);
+    }
+    95% {
+        opacity: 1;
+    }
+    100% {
+        left: calc(100% + 100px);
+        top: 30%;
+        opacity: 0;
+        transform: translateY(0) scale(0.8) rotate(5deg);
+    }
+}
+
+@keyframes buttercupFlap {
+    0% {
+        transform: rotateY(0) translateY(0);
+    }
+    100% {
+        transform: rotateY(30deg) translateY(-5px);
+    }
+}
+
+@keyframes medalSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.venus-symbol {
+    display: inline-block;
+    font-size: 2rem;
+    color: #7b1fa2; /* Purple IWD color */
+    margin: 0 10px;
+    animation: pulse 2s infinite;
+}
+
+/* Animation for achievement icons */
+@keyframes iconFloat {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.achievement-icon:nth-child(odd) {
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+.achievement-icon:nth-child(even) {
+    animation: iconFloat 3.5s ease-in-out 0.5s infinite;
+}
+
+/* IWD themed colors */
+.purple-iwd {
+    color: #7b1fa2;
+}
+
+.pink-iwd {
+    color: #FF69B4;
+}
+
+.green-iwd {
+    color: #4CAF50;
+}
+
+.yellow-iwd {
+    color: #FFC107;
+}
