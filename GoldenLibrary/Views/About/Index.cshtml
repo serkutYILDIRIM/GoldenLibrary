@@ -1,104 +1,354 @@
 @{
-    ViewData["Title"] = "About Golden Library";
+    ViewData["Title"] = "International Women's Day";
 }
 
-<div class="container mt-5 pt-3">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="bg-white p-5 shadow-sm rounded mb-5">
-                <h1 class="display-4 fw-bold mb-4 text-center text-golden">About Golden Library</h1>
-                
-                <div class="text-center mb-5">
-                    <img src="~/img/about-image.jpg" class="img-fluid rounded" alt="About Golden Library" 
-                         style="max-height: 300px; object-fit: cover;">
-                </div>
-                
-                <div class="content-container">
-                    <h2 class="mb-4">Our Story</h2>
-                    <p>
-                        Golden Library was founded in 2023 with a simple but powerful mission: to create a space where 
-                        ideas and knowledge can flourish. We believe that everyone has a story to tell, insights to 
-                        share, and wisdom to impart.
-                    </p>
-                    
-                    <p>
-                        Our platform is designed to be a sanctuary for writers and readers alike – a place where 
-                        thoughtful discourse is celebrated, creativity is nurtured, and connections are formed around 
-                        the shared love of great writing.
-                    </p>
-                    
-                    <h2 class="mb-4 mt-5">Our Values</h2>
-                    
-                    <div class="row mb-4">
-                        <div class="col-md-4 mb-4">
-                            <div class="text-center">
-                                <div class="mb-3">
-                                    <i class="bi bi-lightbulb text-golden" style="font-size: 2.5rem;"></i>
-                                </div>
-                                <h5 class="mb-2">Knowledge</h5>
-                                <p class="text-muted">We believe in the power of ideas to transform lives and societies.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="text-center">
-                                <div class="mb-3">
-                                    <i class="bi bi-people text-golden" style="font-size: 2.5rem;"></i>
-                                </div>
-                                <h5 class="mb-2">Community</h5>
-                                <p class="text-muted">We foster connection through shared stories and experiences.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="text-center">
-                                <div class="mb-3">
-                                    <i class="bi bi-star text-golden" style="font-size: 2.5rem;"></i>
-                                </div>
-                                <h5 class="mb-2">Excellence</h5>
-                                <p class="text-muted">We strive for quality in every story, every feature, every interaction.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <h2 class="mb-4 mt-5">Meet Our Team</h2>
-                    <p>
-                        Golden Library is made possible by a dedicated team of writers, editors, developers, and 
-                        dreamers who share a passion for great storytelling and the written word.
-                    </p>
-                    
-                    <div class="row mt-4">
-                        <div class="col-md-6 mb-4">
-                            <div class="d-flex align-items-center">
-                                <img src="~/img/team-1.jpg" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;" alt="Team Member">
-                                <div>
-                                    <h5 class="mb-1">Jane Smith</h5>
-                                    <p class="text-golden mb-1">Founder & CEO</p>
-                                    <p class="text-muted mb-0 small">Passionate about making great writing accessible to everyone.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-4">
-                            <div class="d-flex align-items-center">
-                                <img src="~/img/team-2.jpg" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;" alt="Team Member">
-                                <div>
-                                    <h5 class="mb-1">John Davis</h5>
-                                    <p class="text-golden mb-1">Head of Content</p>
-                                    <p class="text-muted mb-0 small">Dedicated to discovering and nurturing writing talent.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <h2 class="mb-4 mt-5">Join Our Community</h2>
-                    <p>
-                        Golden Library is more than just a platform—it's a community. We invite you to be a part of our 
-                        growing family of writers and readers who are passionate about the power of words.
-                    </p>
-                    
-                    <div class="text-center mt-5">
-                        <a href="/users/register" class="btn btn-golden btn-lg rounded-pill px-5">Get Started Today</a>
-                    </div>
-                </div>
-            </div>
+<link rel="stylesheet" href="~/css/womens-day.css" />
+<!-- Font Awesome for achievement icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+<div class="gift-container">
+    <h1 class="title">Celebrating Women's Achievements</h1>
+    <h2 class="subtitle">Empowerment <span class="venus-symbol">♀</span> Equity <span class="venus-symbol">♀</span> Excellence</h2>
+    
+    <div class="message">
+        <p>Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</p>
+        <p>Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</p>
+    </div>
+    
+    <!-- Achievement Icons Container -->
+    <div class="achievement-container">
+        <div class="achievement-icon">
+            <i class="fas fa-book purple-iwd"></i>
+            <div class="tooltip">Literature & Arts</div>
+        </div>
+        <div class="achievement-icon">
+            <i class="fas fa-flask green-iwd"></i>
+            <div class="tooltip">Science & Research</div>
+        </div>
+        <div class="achievement-icon">
+            <i class="fas fa-gavel yellow-iwd"></i>
+            <div class="tooltip">Law & Justice</div>
+        </div>
+        <div class="achievement-icon">
+            <i class="fas fa-stethoscope purple-iwd"></i>
+            <div class="tooltip">Medicine & Healthcare</div>
+        </div>
+        <div class="achievement-icon">
+            <i class="fas fa-laptop-code green-iwd"></i>
+            <div class="tooltip">Technology & Innovation</div>
+        </div>
+        <div class="achievement-icon">
+            <i class="fas fa-hands-helping yellow-iwd"></i>
+            <div class="tooltip">Social Justice & Activism</div>
+        </div>
+        <div class="achievement-icon">
+            <i class="fas fa-palette pink-iwd"></i>
+            <div class="tooltip">Art & Creativity</div>
         </div>
     </div>
+    
+    <!-- Microsoft MVP Buttercup -->
+    <div class="mvp-buttercup">
+        <div class="mvp-container">
+            <span class="mvp-text">Microsoft MVP</span>
+            <span class="buttercup">
+                <img src="~/img/buttercup.gif" alt="Buttercup" class="buttercup-gif" />
+            </span>
+        </div>
+        <span class="medal">🏅</span>
+    </div>
+
+    <!-- Floating elements container -->
+    <div id="floating-elements-container"></div>
+    
+    <!-- Falling flowers container -->
+    <div id="falling-flowers-container"></div>
 </div>
+
+<script>
+    // Create floating elements
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('floating-elements-container');
+        const symbols = ['🧝🏻‍♀', '✨', '💪', '📚', '❤️', '🔆', '🌟', '🎓', '🏆', '🏅MS'];
+        const iwdColors = ['#7b1fa2', '#FF69B4', '#4CAF50', '#FFC107']; // Purple, Pink, Green, Yellow IWD colors
+        
+        // Create 15 random floating elements
+        for (let i = 0; i < 15; i++) {
+            createFloatingElement(container, 
+                                symbols[Math.floor(Math.random() * symbols.length)],
+                                iwdColors[i % 4]);
+        }
+        
+        // Create falling flowers
+        createFallingFlowers();
+        
+        // Add hover effects to achievement icons
+        addIconInteractions();
+        
+        // Start the MVP buttercup flying animation
+        initMVPButtercup();
+    });
+    
+    function createFloatingElement(container, content, color) {
+        const element = document.createElement('div');
+        element.className = 'floating-element symbol';
+        element.textContent = content;
+        element.style.color = color;
+        
+        // Random position
+        const posX = Math.random() * 100;
+        const posY = Math.random() * 100;
+        element.style.left = posX + 'vw';
+        element.style.top = posY + 'vh';
+        
+        // Random animation duration and delay
+        const duration = 15 + Math.random() * 20;
+        const delay = Math.random() * 5;
+        element.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+        
+        container.appendChild(element);
+    }
+    
+    function createFallingFlowers() {
+        const container = document.getElementById('falling-flowers-container');
+        const flowerEmojis = ['🌸', '🌷', '🌹', '🌻', '🌺', '💐', '🪷', '🌼'];
+        const iwdColors = ['#7b1fa2', '#FF69B4', '#4CAF50', '#FFC107']; // Purple, Pink, Green, Yellow IWD colors
+        
+        // Create 30 falling flowers
+        for (let i = 0; i < 30; i++) {
+            setTimeout(() => {
+                const flower = document.createElement('div');
+                flower.className = 'falling-flower';
+                
+                // Random flower and color
+                flower.textContent = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
+                flower.style.color = iwdColors[i % 4];
+                
+                // Random size
+                const size = 15 + Math.random() * 15;
+                flower.style.fontSize = `${size}px`;
+                
+                // Random position
+                const startPosX = Math.random() * 100;
+                flower.style.left = `${startPosX}vw`;
+                flower.style.top = '-20px';
+                
+                // Random animation duration
+                const duration = 8 + Math.random() * 10;
+                flower.style.animationDuration = `${duration}s`;
+                
+                container.appendChild(flower);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    flower.remove();
+                }, duration * 1000);
+                
+            }, i * 300); // Stagger the creation
+        }
+        
+        // Continue creating flowers periodically
+        setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                const flower = document.createElement('div');
+                flower.className = 'falling-flower';
+                
+                const randomIndex = Math.floor(Math.random() * flowerEmojis.length);
+                flower.textContent = flowerEmojis[randomIndex];
+                flower.style.color = iwdColors[Math.floor(Math.random() * iwdColors.length)];
+                
+                const size = 15 + Math.random() * 15;
+                flower.style.fontSize = `${size}px`;
+                
+                const startPosX = Math.random() * 100;
+                flower.style.left = `${startPosX}vw`;
+                flower.style.top = '-20px';
+                
+                const duration = 8 + Math.random() * 10;
+                flower.style.animationDuration = `${duration}s`;
+                
+                container.appendChild(flower);
+                
+                setTimeout(() => {
+                    flower.remove();
+                }, duration * 1000);
+            }
+        }, 800);
+    }
+    
+    function addIconInteractions() {
+        const icons = document.querySelectorAll('.achievement-icon');
+        
+        icons.forEach(icon => {
+            icon.addEventListener('click', () => {
+                // Create a "pop" animation effect
+                icon.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    icon.style.transform = '';
+                }, 300);
+            });
+        });
+    }
+    
+    function initMVPButtercup() {
+        const mvpButtercup = document.querySelector('.mvp-buttercup');
+        
+        // Set initial delay
+        setTimeout(() => {
+            // Start the animation
+            animateMVPButtercup();
+            
+            // Repeat the animation periodically
+            setInterval(animateMVPButtercup, 20000); // Fly every 20 seconds
+        }, 3000); // Initial delay of 3 seconds
+        
+        function animateMVPButtercup() {
+            // Reset the animation by cloning and replacing the element
+            const parent = mvpButtercup.parentNode;
+            const mvpClone = mvpButtercup.cloneNode(true);
+            parent.replaceChild(mvpClone, mvpButtercup);
+            
+            // Add a click handler to make the buttercup "sparkle" when clicked
+            mvpClone.addEventListener('click', function() {
+                const sparkle = document.createElement('div');
+                sparkle.innerHTML = '✨';
+                sparkle.style.position = 'absolute';
+                sparkle.style.left = '50%';
+                sparkle.style.top = '50%';
+                sparkle.style.transform = 'translate(-50%, -50%)';
+                sparkle.style.fontSize = '40px';
+                sparkle.style.zIndex = '20';
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.animation = 'fadeOut 1s forwards';
+                
+                this.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    sparkle.remove();
+                }, 1000);
+            });
+        }
+    }
+</script>
+
+<style>
+/* Add any missing styles for the MVP buttercup here */
+.mvp-buttercup {
+    position: fixed;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+    cursor: pointer;
+    animation: flyAcross 15s linear infinite;
+    opacity: 0;
+    font-size: 30px;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+    transform: translateZ(0);
+}
+
+.mvp-buttercup .mvp-container {
+    position: relative;
+    display: inline-block;
+}
+
+.mvp-buttercup .mvp-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(90deg, #7b1fa2, #FF69B4, #4CAF50, #FFC107);
+    background-size: 300% 100%;
+    animation: gradientBG 5s ease infinite;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+    font-size: 22px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 3px;
+    border-radius: 20px;
+    z-index: 1;
+}
+
+.mvp-buttercup .buttercup {
+    position: relative;
+    display: inline-block;
+    animation: buttercupFlap 0.5s ease-in-out infinite alternate;
+    transform-origin: center;
+    z-index: 2;
+}
+
+.mvp-buttercup .buttercup-gif {
+    width: 120px;
+    height: 120px;
+}
+
+.mvp-buttercup .medal {
+    display: inline-block;
+    position: relative;
+    animation: medalSpin 3s linear infinite;
+    transform-origin: center;
+    font-size: 20px;
+}
+
+@* CSS keyframes animations *@
+@@keyframes flyAcross {
+    0% {
+        left: -100px;
+        top: 30%;
+        opacity: 0;
+        transform: translateY(0) scale(0.8) rotate(5deg);
+    }
+    5% {
+        opacity: 1;
+    }
+    25% {
+        left: 30%;
+        top: 15%;
+        transform: translateY(-20px) scale(1) rotate(-5deg);
+    }
+    50% {
+        left: 50%;
+        top: 40%;
+        transform: translateY(20px) scale(1.2) rotate(5deg);
+    }
+    75% {
+        left: 70%;
+        top: 20%;
+        transform: translateY(-10px) scale(1) rotate(-5deg);
+    }
+    95% {
+        opacity: 1;
+    }
+    100% {
+        left: calc(100% + 100px);
+        top: 30%;
+        opacity: 0;
+        transform: translateY(0) scale(0.8) rotate(5deg);
+    }
+}
+
+@@keyframes buttercupFlap {
+    0% {
+        transform: rotateY(0) translateY(0);
+    }
+    100% {
+        transform: rotateY(30deg) translateY(-5px);
+    }
+}
+
+@@keyframes medalSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@@keyframes fadeOut {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
+}
+</style>
