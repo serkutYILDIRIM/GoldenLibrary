@@ -10,17 +10,28 @@
     position: relative;
     width: 100%;
     padding-bottom: 62%; /* Aspect ratio for envelope */
-    background-color: #f8dae9; /* Light pink for envelope */
+    background-color: #f8dae9; /* Light pink for envelope base */
     border-radius: 5px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15), inset 0 0 30px rgba(0,0,0,0.05);
     transform-style: preserve-3d;
     animation: waveEffect 6s ease-in-out infinite;
     cursor: pointer;
-    overflow: hidden;
+    overflow: hidden; /* Hide overflow to keep card inside until opened */
+}
+
+/* Main envelope body */
+.envelope-body {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f8dae9; /* Light pink background */
+    z-index: 1;
 }
 
 /* Envelope texture */
-.envelope::before {
+.envelope-body::before {
     content: '';
     position: absolute;
     top: 0;
@@ -37,7 +48,7 @@
 }
 
 /* Envelope border details */
-.envelope::after {
+.envelope-body::after {
     content: '';
     position: absolute;
     top: 0;
@@ -61,7 +72,7 @@
     transform-origin: top;
     transform: rotateX(0deg);
     transition: transform 0.8s ease;
-    z-index: 2;
+    z-index: 5; /* Highest z-index to be on top */
     clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
 }
 
@@ -77,29 +88,105 @@
     text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Envelope inner part */
-.envelope-content {
+/* Envelope bottom part */
+.envelope-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    background-color: #f6b5d8; /* Slightly different shade for depth */
+    z-index: 4; /* Above the card but below the flap */
+    clip-path: polygon(0 40%, 50% 0, 100% 40%, 100% 100%, 0 100%);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Left side of envelope */
+.envelope-left-side {
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 50%;
     height: 100%;
+    background-color: #f7c7e3;
+    clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 100%);
+    z-index: 2;
+    transform-origin: left;
+    transform: rotateY(5deg);
+    box-shadow: inset -2px 0 5px rgba(0,0,0,0.05);
+}
+
+/* Right side of envelope */
+.envelope-right-side {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background-color: #f7c7e3;
+    clip-path: polygon(0 20%, 100% 0, 100% 100%, 0 100%);
+    z-index: 2;
+    transform-origin: right;
+    transform: rotateY(-5deg);
+    box-shadow: inset 2px 0 5px rgba(0,0,0,0.05);
+}
+
+/* Envelope folded edges */
+.envelope-fold {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, 
+        transparent, 
+        rgba(123, 31, 162, 0.3) 20%, 
+        rgba(123, 31, 162, 0.3) 80%, 
+        transparent);
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* Vertical fold line */
+.envelope-fold-vertical {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, 
+        transparent, 
+        rgba(123, 31, 162, 0.3) 20%, 
+        rgba(123, 31, 162, 0.3) 80%, 
+        transparent);
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* Envelope inner part */
+.envelope-content {
+    position: absolute;
+    top: 10%; /* Position starts a bit lower inside the envelope */
+    left: 5%;
+    width: 90%;
+    height: 80%;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
+    z-index: 1; /* Below the envelope parts */
+    overflow: hidden;
 }
 
 /* Valentine card */
 .valentine-card {
-    width: 90%;
-    height: 80%;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(135deg, #ff69b4, #ff98d4); /* Pink gradient */
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     padding: 20px;
-    transform: translateY(0);
-    transition: transform 1s ease;
+    transform: translateY(60%); /* Start mostly hidden inside the envelope */
+    transition: transform 1s ease 0.4s; /* Delay card animation until after flap opens */
     color: white;
     text-align: center;
     overflow-y: auto;
@@ -113,6 +200,8 @@
 /* Card content */
 .card-content {
     margin: 0 auto;
+    opacity: 0.6; /* Make text less visible until card emerges */
+    transition: opacity 1s ease 0.6s;
 }
 
 /* Card decoration */
@@ -164,12 +253,16 @@
 
 /* Classes for the open animation */
 .envelope.open .envelope-flap {
-    transform: rotateX(180deg);
+    transform: rotateX(180deg); /* Flip the flap completely up */
 }
 
 .envelope.open .valentine-card {
-    transform: translateY(-40%);
+    transform: translateY(0); /* Move card up and out of envelope */
     opacity: 1;
+}
+
+.envelope.open .card-content {
+    opacity: 1; /* Make text fully visible when card emerges */
 }
 
 /* Responsive adjustments */
