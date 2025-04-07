@@ -3,6 +3,7 @@
 }
 
 <link rel="stylesheet" href="~/css/womens-day.css" />
+<link rel="stylesheet" href="~/css/valentine-day.css" />
 <!-- Font Awesome for achievement icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
@@ -10,9 +11,19 @@
     <h1 class="title">Celebrating Women's Achievements</h1>
     <h2 class="subtitle">Empowerment <span class="venus-symbol">♀</span> Equity <span class="venus-symbol">♀</span> Excellence</h2>
     
-    <div class="message">
-        <p>Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</p>
-        <p>Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</p>
+    <!-- Valentine's Day Themed Envelope replaces the message area -->
+    <div class="valentine-envelope-container">
+        <div id="valentine-envelope" class="envelope">
+            <div class="envelope-flap"></div>
+            <div class="envelope-content">
+                <div class="valentine-card">
+                    <div class="card-content">
+                        <p>Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</p>
+                        <p>Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Achievement Icons Container -->
@@ -71,8 +82,16 @@
 </div>
 
 <script>
-    // Create floating elements
+    // Valentine Envelope Animation
     document.addEventListener('DOMContentLoaded', function() {
+        const envelope = document.getElementById('valentine-envelope');
+        
+        // Add click event to envelope
+        envelope.addEventListener('click', function() {
+            this.classList.toggle('open');
+        });
+        
+        // Create floating elements
         const container = document.getElementById('floating-elements-container');
         const symbols = ['🧝🏻‍♀', '✨', '💪', '📚', '❤️', '🔆', '🌟', '🎓', '🏆', '🏅MS'];
         const iwdColors = ['#7b1fa2', '#FF69B4', '#4CAF50', '#FFC107']; // Purple, Pink, Green, Yellow IWD colors
