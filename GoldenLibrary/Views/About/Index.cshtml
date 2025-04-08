@@ -11,77 +11,83 @@
     <h1 class="title">Celebrating Women's Achievements</h1>
     <h2 class="subtitle">Empowerment <span class="venus-symbol">♀</span> Equity <span class="venus-symbol">♀</span> Excellence</h2>
     
-    <!-- Valentine's Day Themed Envelope replaces the message area -->
-    <div class="valentine-envelope-container">
-        <!-- Heart decorations -->
-        <div class="heart-decoration heart-1">❤️</div>
-        <div class="heart-decoration heart-2">❤️</div>
-        
-        <!-- Main envelope element -->
-        <div id="valentine-envelope" class="envelope">
-            <!-- Envelope flap (top part that opens) -->
-            <div class="envelope-flap"></div>
-            
-            <!-- Envelope bottom portion -->
-            <div class="envelope-bottom"></div>
-            
-            <!-- Side flaps (internal structure) -->
-            <div class="envelope-side-flap-left"></div>
-            <div class="envelope-side-flap-right"></div>
-            
-            <!-- Outside message area -->
-            <div class="envelope-outside-message">
-                <textarea placeholder="Write your Valentine's greeting here..." maxlength="250">Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</textarea>
-            </div>
-            
-            <!-- Letter inside envelope -->
-            <div class="envelope-letter">
-                <div class="envelope-inside-message">
-                    <textarea placeholder="Write your special message inside...">Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</textarea>
+    <div class="content-grid">
+        <!-- Left column with Valentine's Day Themed Envelope -->
+        <div class="content-column envelope-column">
+            <div class="valentine-envelope-container">
+                <!-- Heart decorations -->
+                <div class="heart-decoration heart-1">❤️</div>
+                <div class="heart-decoration heart-2">❤️</div>
+                
+                <!-- Main envelope element -->
+                <div id="valentine-envelope" class="envelope">
+                    <!-- Envelope flap (top part that opens) -->
+                    <div class="envelope-flap"></div>
+                    
+                    <!-- Envelope bottom portion -->
+                    <div class="envelope-bottom"></div>
+                    
+                    <!-- Side flaps (internal structure) -->
+                    <div class="envelope-side-flap-left"></div>
+                    <div class="envelope-side-flap-right"></div>
+                    
+                    <!-- Outside message area -->
+                    <div class="envelope-outside-message">
+                        <textarea placeholder="Write your Valentine's greeting here..." maxlength="250">Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</textarea>
+                    </div>
+                    
+                    <!-- Letter inside envelope -->
+                    <div class="envelope-letter">
+                        <div class="envelope-inside-message">
+                            <textarea placeholder="Write your special message inside...">Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Instructions for users -->
+                <div class="text-center mt-3">
+                    <small class="text-muted">Click the envelope to open it 💌</small>
                 </div>
             </div>
         </div>
         
-        <!-- Instructions for users -->
-        <div class="text-center mt-3">
-            <small class="text-muted">Click the envelope to open it 💌</small>
-        </div>
-    </div>
-    
-    <!-- Achievement Icons Container -->
-    <div class="achievement-container">
-        <div class="achievement-icon">
-            <img src="~/img/typescript.svg" alt="TypeScript" class="tech-icon purple-iwd">
-            <div class="tooltip">TypeScript</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/redis.svg" alt="Redis" class="tech-icon green-iwd">
-            <div class="tooltip">Redis</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/azure.svg" alt="Microsoft Azure" class="tech-icon yellow-iwd">
-            <div class="tooltip">Microsoft Azure</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/javascript.svg" alt="JavaScript" class="tech-icon pink-iwd">
-            <div class="tooltip">JavaScript</div>
-        </div>
-        <!-- Yeni teknoloji ikonları -->
-        <div class="achievement-icon">
-            <img src="~/img/openai.png" alt="OpenAI" class="tech-icon green-iwd">
-            <div class="tooltip">OpenAI</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/React.svg" alt="React" class="tech-icon purple-iwd">
-            <div class="tooltip">New Relic</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/dotnet.png" alt=".NET" class="tech-icon pink-iwd">
-            <div class="tooltip">.NET</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/python.svg" alt="AI Tech" class="tech-icon yellow-iwd">
-            <div class="tooltip">AI Technology</div>
+        <!-- Right column with Achievement Icons -->
+        <div class="content-column icons-column">
+            <!-- Achievement Icons Container -->
+            <div class="achievement-container">
+                <div class="achievement-icon">
+                    <img src="~/img/typescript.svg" alt="TypeScript" class="tech-icon purple-iwd">
+                    <div class="tooltip">TypeScript</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/redis.svg" alt="Redis" class="tech-icon green-iwd">
+                    <div class="tooltip">Redis</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/azure.svg" alt="Microsoft Azure" class="tech-icon yellow-iwd">
+                    <div class="tooltip">Microsoft Azure</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/javascript.svg" alt="JavaScript" class="tech-icon pink-iwd">
+                    <div class="tooltip">JavaScript</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/openai.png" alt="OpenAI" class="tech-icon green-iwd">
+                    <div class="tooltip">OpenAI</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/React.svg" alt="React" class="tech-icon purple-iwd">
+                    <div class="tooltip">New Relic</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/dotnet.png" alt=".NET" class="tech-icon pink-iwd">
+                    <div class="tooltip">.NET</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/python.svg" alt="AI Tech" class="tech-icon yellow-iwd">
+                    <div class="tooltip">AI Technology</div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -278,7 +284,42 @@
 </script>
 
 <style>
-/* Add any missing styles for the MVP buttercup here */
+/* New Grid Layout Styles */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 1rem;
+    min-height: 400px;
+}
+
+.content-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.envelope-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icons-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive adjustments for the grid */
+@@media (max-width: 992px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Existing MVP Buttercup styles */
 .mvp-buttercup {
     position: fixed;
     z-index: 10;
@@ -339,14 +380,17 @@
 }
 
 /* Styling for achievement icons with SVG images */
-.achievement-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    margin: 2rem 0;
-    animation: fadeIn 2.5s ease-out;
-}
+    .achievement-container {
+        position: relative;
+        top: -100px; /* Negatif değer yukarı taşır */
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        margin: 2rem 0;
+        animation: fadeIn 2.5s ease-out;
+        z-index: 2; /* Diğer elementlerin üzerinde görünmesi için */
+    }
 
 .achievement-icon {
     display: inline-flex;
@@ -417,7 +461,7 @@
     animation: iconFloat 3.5s ease-in-out 0.5s infinite;
 }
 
-@* CSS keyframes animations *@
+/* CSS keyframes animations */
 @@keyframes flyAcross {
     0% {
         left: -100px;
