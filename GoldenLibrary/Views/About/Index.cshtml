@@ -30,7 +30,7 @@
                     <!-- NEW: Letter inside envelope -->
                     <div class="envelope-letter">
                         <div class="envelope-inside-message">
-                            <h3>Happy Women's Day!</h3>
+                            <h3>Selamlaaar :)</h3>
                             <p>Celebrating the strength, innovation, and accomplishments of women in technology.</p>
                             <p>Join us for an exclusive event at Golden Library to honor remarkable achievements in the tech industry.</p>
                             <div class="signature">Golden Library Team</div>
@@ -113,7 +113,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Create floating elements
         const container = document.getElementById('floating-elements-container');
-        const symbols = ['🧝🏻‍♀', '✨', '💪', '📚', '❤️', '🔆', '🌟', '🎓', '🏆', '🏅MS'];
+        const symbols = ['🧝🏻‍♀', '✨', '💪', '📚', '❤️', '🔆', '🌟', '🎓', '🏆','<img src="/img/MVPLogo.png" class="floating-image" alt="MVP Logo" style="width: 30px; height: 30px;" />'];
         const iwdColors = ['#7b1fa2', '#FF69B4', '#4CAF50', '#FFC107']; // Purple, Pink, Green, Yellow IWD colors
         
         // Create random floating elements
@@ -142,8 +142,14 @@
     function createFloatingElement(container, content, color) {
         const element = document.createElement('div');
         element.className = 'floating-element symbol';
-        element.textContent = content;
-        element.style.color = color;
+        
+        // Check if content contains HTML tag
+        if (content.includes('<img')) {
+            element.innerHTML = content;
+        } else {
+            element.textContent = content;
+            element.style.color = color;
+        }
         
         // Random position
         const posX = Math.random() * 100;
