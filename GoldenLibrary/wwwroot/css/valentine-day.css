@@ -1,235 +1,253 @@
 /* Valentine's Day Envelope Styles */
 .valentine-envelope-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 450px; /* Reduced from 600px */
     margin: 2rem auto;
     perspective: 1000px;
+    position: relative;
+    min-height: 450px; /* Reduced from 550px */
 }
 
+/* Heart decorations */
+.heart-decoration {
+    position: absolute;
+    font-size: 2rem;
+    animation: floating 3s ease-in-out infinite;
+    z-index: 2;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.1));
+}
+
+.heart-1 {
+    top: -15px;
+    left: 10%;
+    animation-delay: 0.5s;
+}
+
+.heart-2 {
+    top: -20px;
+    right: 10%;
+    animation-delay: 1.5s;
+    font-size: 2.5rem;
+}
+
+/* Main envelope styling */
 .envelope {
     position: relative;
     width: 100%;
-    padding-bottom: 62%; /* Aspect ratio for envelope */
-    background-color: #f8dae9; /* Light pink for envelope base */
-    border-radius: 5px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15), inset 0 0 30px rgba(0,0,0,0.05);
+    padding-bottom: 60%; /* Slightly reduced aspect ratio */
+    background-color: #f8dae9; /* Light pink envelope base */
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     transform-style: preserve-3d;
     animation: waveEffect 6s ease-in-out infinite;
     cursor: pointer;
-    overflow: hidden; /* Hide overflow to keep card inside until opened */
-}
-
-/* Main envelope body */
-.envelope-body {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #f8dae9; /* Light pink background */
+    overflow: visible;
     z-index: 1;
+    transition: transform 0.5s ease;
 }
 
-/* Envelope texture */
-.envelope-body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        repeating-linear-gradient(45deg, 
-            rgba(255, 255, 255, 0.1) 0px, 
-            rgba(255, 255, 255, 0.1) 2px,
-            transparent 2px, 
-            transparent 4px);
-    pointer-events: none;
+.envelope:hover {
+    transform: translateY(-5px) scale(1.02);
 }
 
-/* Envelope border details */
-.envelope-body::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: calc(100% - 20px);
-    height: calc(100% - 20px);
-    margin: 10px;
-    border: 2px dashed rgba(123, 31, 162, 0.3); /* Purple from the existing theme */
-    border-radius: 3px;
-    pointer-events: none;
-}
-
-/* Envelope flap */
+/* Envelope flap (top part that opens) */
 .envelope-flap {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 50%;
-    background-color: #f8c1e0; /* Slightly darker pink for flap */
+    background-color: #f6b5d8; /* Slightly darker pink for depth */
     transform-origin: top;
     transform: rotateX(0deg);
-    transition: transform 0.8s ease;
-    z-index: 5; /* Highest z-index to be on top */
-    clip-path: polygon(0 0, 100% 0, 50% 100%, 0 0);
+    transition: transform 0.8s ease-in-out;
+    z-index: 5;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
-/* Seal on the envelope */
+/* Envelope flap design */
 .envelope-flap::after {
     content: '♥';
     position: absolute;
     left: 50%;
-    bottom: 30%;
+    bottom: 35%;
     transform: translateX(-50%);
-    color: #7b1fa2; /* Purple heart seal */
-    font-size: 40px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: #ca5191; /* Darker pink heart */
+    font-size: 2.5rem;
 }
 
-/* Envelope bottom part */
+/* Envelope bottom portion */
 .envelope-bottom {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     height: 60%;
-    background-color: #f6b5d8; /* Slightly different shade for depth */
-    z-index: 4; /* Above the card but below the flap */
+    background-color: #f1a4c2; /* Different shade for depth */
+    z-index: 4;
     clip-path: polygon(0 40%, 50% 0, 100% 40%, 100% 100%, 0 100%);
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
-/* Left side of envelope */
-.envelope-left-side {
+/* Side flaps (internal structure) */
+.envelope-side-flap-left {
     position: absolute;
     top: 0;
     left: 0;
-    width: 50%;
+    width: 51%;
     height: 100%;
-    background-color: #f7c7e3;
-    clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 100%);
+    background-color: #f3b5d3;
+    clip-path: polygon(0 0, 100% 30%, 100% 100%, 0 100%);
     z-index: 2;
-    transform-origin: left;
-    transform: rotateY(5deg);
-    box-shadow: inset -2px 0 5px rgba(0,0,0,0.05);
 }
 
-/* Right side of envelope */
-.envelope-right-side {
+.envelope-side-flap-right {
     position: absolute;
     top: 0;
     right: 0;
-    width: 50%;
+    width: 51%;
     height: 100%;
-    background-color: #f7c7e3;
-    clip-path: polygon(0 20%, 100% 0, 100% 100%, 0 100%);
+    background-color: #f3b5d3;
+    clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 100%);
     z-index: 2;
-    transform-origin: right;
-    transform: rotateY(-5deg);
-    box-shadow: inset 2px 0 5px rgba(0,0,0,0.05);
 }
 
-/* Envelope folded edges */
-.envelope-fold {
+/* Outside message area with the textarea */
+.envelope-outside-message {
     position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(to right, 
-        transparent, 
-        rgba(123, 31, 162, 0.3) 20%, 
-        rgba(123, 31, 162, 0.3) 80%, 
-        transparent);
-    z-index: 3;
-    pointer-events: none;
-}
-
-/* Vertical fold line */
-.envelope-fold-vertical {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(to bottom, 
-        transparent, 
-        rgba(123, 31, 162, 0.3) 20%, 
-        rgba(123, 31, 162, 0.3) 80%, 
-        transparent);
-    z-index: 3;
-    pointer-events: none;
-}
-
-/* Envelope inner part */
-.envelope-content {
-    position: absolute;
-    top: 10%; /* Position starts a bit lower inside the envelope */
+    top: 15%;
     left: 5%;
     width: 90%;
-    height: 80%;
+    height: 70%;
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1; /* Below the envelope parts */
-    overflow: hidden;
+    opacity: 0.9;
+    transition: opacity 0.5s ease;
 }
 
-/* Valentine card */
-.valentine-card {
+.envelope-outside-message textarea {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #ff69b4, #ff98d4); /* Pink gradient */
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    padding: 20px;
-    transform: translateY(60%); /* Start mostly hidden inside the envelope */
-    transition: transform 1s ease 0.4s; /* Delay card animation until after flap opens */
-    color: white;
+    resize: none;
+    background-color: white;
+    background-image: linear-gradient(#f0f0f0 1px, transparent 1px);
+    background-size: 100% 2em;
+    line-height: 2em;
+    border: none;
+    padding: 1rem;
+    font-family: 'Brush Script MT', cursive;
+    color: #7b1fa2; /* Purple from theme */
+    font-size: 1.1rem;
     text-align: center;
-    overflow-y: auto;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.envelope-outside-message textarea:focus {
+    outline: none;
+    box-shadow: 0 3px 15px rgba(123, 31, 162, 0.3);
+}
+
+/* Inside letter styling */
+.envelope-letter {
+    position: absolute;
+    top: 5%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
+    background: linear-gradient(135deg, #FF69B4, #ff98d4);
+    border-radius: 5px;
+    padding: 20px;
+    transform: translateY(0);
+    transition: transform 1s ease 0.4s;
+    z-index: 0;
+    opacity: 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.envelope-inside-message {
+    width: 100%;
+    height: 100%;
     display: flex;
-    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    opacity: 0.8;
-    position: relative;
 }
 
-/* Card content */
-.card-content {
-    margin: 0 auto;
-    opacity: 0.6; /* Make text less visible until card emerges */
-    transition: opacity 1s ease 0.6s;
+.envelope-inside-message textarea {
+    width: 100%;
+    height: 100%;
+    resize: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    padding: 2rem;
+    border-radius: 5px;
+    font-family: 'Brush Script MT', cursive;
+    color: #7b1fa2; /* Purple from theme */
+    font-size: 1.2rem;
+    text-align: center;
+    line-height: 1.8;
 }
 
-/* Card decoration */
-.valentine-card::before,
-.valentine-card::after {
+.envelope-inside-message textarea:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+/* Heart decorations on letter */
+.envelope-letter::before,
+.envelope-letter::after {
     content: '❤';
     position: absolute;
     color: rgba(255, 255, 255, 0.5);
-    font-size: 60px;
+    font-size: 3rem;
     z-index: -1;
 }
 
-.valentine-card::before {
+.envelope-letter::before {
     top: 10px;
     left: 10px;
 }
 
-.valentine-card::after {
+.envelope-letter::after {
     bottom: 10px;
     right: 10px;
 }
 
-/* Card text */
-.valentine-card p {
-    margin-bottom: 1rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+/* Instruction text */
+.text-center {
+    text-align: center;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+
+.text-muted {
+    color: #9e9e9e;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+/* Animation for opening the envelope */
+.envelope.open .envelope-flap {
+    transform: rotateX(180deg);
+    z-index: 1;
+}
+
+.envelope.open .envelope-outside-message {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.envelope.open .envelope-letter {
+    transform: translateY(-90%);
+    opacity: 1;
+    z-index: 20;
 }
 
 /* Animation for the envelope waving effect */
@@ -251,18 +269,17 @@
     }
 }
 
-/* Classes for the open animation */
-.envelope.open .envelope-flap {
-    transform: rotateX(180deg); /* Flip the flap completely up */
-}
-
-.envelope.open .valentine-card {
-    transform: translateY(0); /* Move card up and out of envelope */
-    opacity: 1;
-}
-
-.envelope.open .card-content {
-    opacity: 1; /* Make text fully visible when card emerges */
+/* Animation for floating hearts */
+@keyframes floating {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-15px) rotate(10deg);
+    }
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
 }
 
 /* Responsive adjustments */
@@ -272,20 +289,22 @@
     }
     
     .envelope-flap::after {
-        font-size: 30px;
+        font-size: 2rem;
     }
     
-    .valentine-card p {
+    .envelope-outside-message textarea,
+    .envelope-inside-message textarea {
         font-size: 0.9rem;
+        padding: 0.8rem;
     }
 }
 
 @media (max-width: 480px) {
-    .valentine-card {
+    .envelope-letter {
         padding: 15px;
     }
     
     .envelope-flap::after {
-        font-size: 25px;
+        font-size: 1.8rem;
     }
 }

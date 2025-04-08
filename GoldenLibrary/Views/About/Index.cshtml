@@ -13,31 +13,38 @@
     
     <!-- Valentine's Day Themed Envelope replaces the message area -->
     <div class="valentine-envelope-container">
+        <!-- Heart decorations -->
+        <div class="heart-decoration heart-1">❤️</div>
+        <div class="heart-decoration heart-2">❤️</div>
+        
+        <!-- Main envelope element -->
         <div id="valentine-envelope" class="envelope">
-            <!-- Main envelope body -->
-            <div class="envelope-body"></div>
-            
-            <!-- Envelope flap (top part) -->
+            <!-- Envelope flap (top part that opens) -->
             <div class="envelope-flap"></div>
             
-            <!-- Envelope sides and bottom -->
+            <!-- Envelope bottom portion -->
             <div class="envelope-bottom"></div>
-            <div class="envelope-left-side"></div>
-            <div class="envelope-right-side"></div>
             
-            <!-- Envelope fold lines -->
-            <div class="envelope-fold"></div>
-            <div class="envelope-fold-vertical"></div>
+            <!-- Side flaps (internal structure) -->
+            <div class="envelope-side-flap-left"></div>
+            <div class="envelope-side-flap-right"></div>
             
-            <!-- Card inside envelope -->
-            <div class="envelope-content">
-                <div class="valentine-card">
-                    <div class="card-content">
-                        <p>Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</p>
-                        <p>Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</p>
-                    </div>
+            <!-- Outside message area -->
+            <div class="envelope-outside-message">
+                <textarea placeholder="Write your Valentine's greeting here..." maxlength="250">Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</textarea>
+            </div>
+            
+            <!-- Letter inside envelope -->
+            <div class="envelope-letter">
+                <div class="envelope-inside-message">
+                    <textarea placeholder="Write your special message inside...">Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</textarea>
                 </div>
             </div>
+        </div>
+        
+        <!-- Instructions for users -->
+        <div class="text-center mt-3">
+            <small class="text-muted">Click the envelope to open it 💌</small>
         </div>
     </div>
     
