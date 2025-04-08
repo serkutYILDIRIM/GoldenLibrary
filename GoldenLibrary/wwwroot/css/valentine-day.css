@@ -1,224 +1,289 @@
 /* Valentine's Day Envelope Styles */
 .valentine-envelope-container {
     width: 100%;
-    max-width: 450px; /* Reduced from 600px */
+    max-width: 450px;
     margin: 2rem auto;
-    perspective: 1000px;
+    perspective: 1200px;
     position: relative;
-    min-height: 450px; /* Reduced from 550px */
+    min-height: 450px;
+    transform-style: preserve-3d;
 }
 
-/* Heart decorations */
+/* Heart decorations - replacing with subtle elements */
 .heart-decoration {
-    position: absolute;
-    font-size: 2rem;
-    animation: floating 3s ease-in-out infinite;
-    z-index: 2;
-    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.1));
+    display: none; /* Hide heart decorations for clean elegant look */
 }
 
-.heart-1 {
-    top: -15px;
-    left: 10%;
-    animation-delay: 0.5s;
-}
-
-.heart-2 {
-    top: -20px;
-    right: 10%;
-    animation-delay: 1.5s;
-    font-size: 2.5rem;
-}
-
-/* Main envelope styling */
+/* Main envelope styling - updated with pastel color */
 .envelope {
     position: relative;
     width: 100%;
-    padding-bottom: 60%; /* Slightly reduced aspect ratio */
-    background-color: #f8dae9; /* Light pink envelope base */
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    padding-bottom: 70%;
+    background: linear-gradient(135deg, #e8d4d9 40%, #d8c4c9 100%);
+    border-radius: 10px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12), 0 5px 15px rgba(0,0,0,0.08);
     transform-style: preserve-3d;
-    animation: waveEffect 6s ease-in-out infinite;
+    animation: subtleWave 12s ease-in-out infinite;
     cursor: pointer;
-    overflow: visible;
+    overflow: hidden; /* Ensures no content spills out */
     z-index: 1;
-    transition: transform 0.5s ease;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(218, 190, 200, 0.5); /* Subtle border color */
 }
 
-.envelope:hover {
-    transform: translateY(-5px) scale(1.02);
+.envelope.open {
+    overflow: visible !important;
 }
 
-/* Envelope flap (top part that opens) */
+/* Add subtle texture to the envelope */
+.envelope::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/png;base64,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');
+    opacity: 0.04;
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+/* Enhanced soft lighting effect */
+.envelope::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 100%);
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+/* Envelope flap (top part) - improved to fully seal */
 .envelope-flap {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 50%;
-    background-color: #f6b5d8; /* Slightly darker pink for depth */
+    height: 48%;
+    background: linear-gradient(to bottom, #e8d4d9, #d8c4c9); /* Match envelope color */
     transform-origin: top;
     transform: rotateX(0deg);
-    transition: transform 0.8s ease-in-out;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 5;
     clip-path: polygon(0 0, 100% 0, 50% 100%);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    box-shadow: 0 -3px 6px rgba(0,0,0,0.05) inset;
 }
 
-/* Envelope flap design */
+/* Add decorative wax seal */
 .envelope-flap::after {
-    content: '♥';
+    content: '';
     position: absolute;
     left: 50%;
-    bottom: 35%;
+    bottom: 25%;
     transform: translateX(-50%);
-    color: #ca5191; /* Darker pink heart */
-    font-size: 2.5rem;
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, #c02942 0%, #8c1c2b 100%); /* Deep burgundy wax seal */
+    border-radius: 50%;
+    box-shadow: 
+        0 2px 4px rgba(0,0,0,0.2),
+        0 1px 2px rgba(0,0,0,0.3) inset;
 }
 
-/* Envelope bottom portion */
+/* Add seal embossed detail */
+.envelope-flap::before {
+    content: '✦'; /* Star symbol for seal emboss */
+    position: absolute;
+    left: 50%;
+    bottom: 25%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.5rem;
+    z-index: 6;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
+
+/* Envelope bottom portion - improved with more dimension */
 .envelope-bottom {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     height: 60%;
-    background-color: #f1a4c2; /* Different shade for depth */
+    background: linear-gradient(to bottom, #e0c8ce, #d0b8be); /* Slightly darker for dimension */
     z-index: 4;
-    clip-path: polygon(0 40%, 50% 0, 100% 40%, 100% 100%, 0 100%);
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+    clip-path: polygon(0 38%, 50% 0, 100% 38%, 100% 100%, 0 100%);
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    box-shadow: 
+        0 4px 6px -2px rgba(0,0,0,0.06) inset,
+        0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Side flaps (internal structure) */
+/* Side flaps - enhanced to completely seal the envelope with no gaps */
 .envelope-side-flap-left {
     position: absolute;
     top: 0;
     left: 0;
-    width: 51%;
+    width: 52%;
     height: 100%;
-    background-color: #f3b5d3;
-    clip-path: polygon(0 0, 100% 30%, 100% 100%, 0 100%);
-    z-index: 2;
+    background: linear-gradient(to right, #e8d4d9, #d8c4c9); /* Match envelope color */
+    clip-path: polygon(0 0, 100% 32%, 100% 100%, 0 100%);
+    z-index: 3; /* Increased z-index to ensure proper layering */
+    box-shadow: 2px 0 4px rgba(0,0,0,0.05) inset;
 }
 
 .envelope-side-flap-right {
     position: absolute;
     top: 0;
     right: 0;
-    width: 51%;
+    width: 52%;
     height: 100%;
-    background-color: #f3b5d3;
-    clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 100%);
-    z-index: 2;
+    background: linear-gradient(to left, #e8d4d9, #d8c4c9); /* Match envelope color */
+    clip-path: polygon(0 32%, 100% 0, 100% 100%, 0 100%);
+    z-index: 3; /* Increased z-index to ensure proper layering */
+    box-shadow: -2px 0 4px rgba(0,0,0,0.05) inset;
 }
 
-/* Outside message area with the textarea */
-.envelope-outside-message {
+/* Add subtle edge shadows where flaps meet - for improved depth perception */
+.envelope::after {
+    content: '';
     position: absolute;
-    top: 15%;
-    left: 5%;
-    width: 90%;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
     height: 70%;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.9;
-    transition: opacity 0.5s ease;
+    background: rgba(0,0,0,0.03);
+    z-index: 4;
+    opacity: 0.5;
 }
 
-.envelope-outside-message textarea {
-    width: 100%;
-    height: 100%;
-    resize: none;
-    background-color: white;
-    background-image: linear-gradient(#f0f0f0 1px, transparent 1px);
-    background-size: 100% 2em;
-    line-height: 2em;
-    border: none;
-    padding: 1rem;
-    font-family: 'Brush Script MT', cursive;
-    color: #7b1fa2; /* Purple from theme */
-    font-size: 1.1rem;
-    text-align: center;
-    border-radius: 5px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+/* Inner seam line to enhance the sealed appearance */
+.envelope-bottom::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 25%;
+    background: rgba(0,0,0,0.04);
+    z-index: 5;
 }
 
-.envelope-outside-message textarea:focus {
-    outline: none;
-    box-shadow: 0 3px 15px rgba(123, 31, 162, 0.3);
+/* Hide internal components when envelope is closed */
+.envelope-outside-message {
+    display: none; /* Hide the message area for a clean sealed envelope */
 }
 
-/* Inside letter styling */
+.envelope-letter {
+    display: block; /* Changed from 'none' to allow for transition */
+    opacity: 0;
+    transform: translateY(0);
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition-delay: 0.2s;
+}
+
+/* Open state transformations for the envelope */
+.envelope.open .envelope-flap {
+    transform: rotateX(180deg);
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1; /* Move behind when open */
+}
+
+/* Letter styling and animation */
 .envelope-letter {
     position: absolute;
-    top: 5%;
     left: 10%;
+    bottom: 0;
     width: 80%;
-    height: 80%;
-    background: linear-gradient(135deg, #FF69B4, #ff98d4);
+    height: 75%;
+    background: #fff;
+    z-index: 2;
     border-radius: 5px;
-    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition-delay: 0.2s; /* Slight delay after flap opens */
     transform: translateY(0);
-    transition: transform 1s ease 0.4s;
-    z-index: 0;
     opacity: 0;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    padding: 20px;
+    display: block; /* Override the previous display: none */
+    pointer-events: none; /* Prevent interaction when hidden */
 }
 
+/* Letter animation when envelope is open */
+.envelope.open .envelope-letter {
+    display: block !important; /* Force display when envelope is open */
+    opacity: 1 !important; /* Force full opacity when envelope is open */
+    transform: translateY(-120%); /* Increase this value to move the letter higher */
+    pointer-events: auto;
+    z-index: 10; /* Increased z-index to ensure it appears above everything */
+}
+
+/* Inside message styling */
 .envelope-inside-message {
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.envelope-inside-message textarea {
-    width: 100%;
-    height: 100%;
-    resize: none;
-    background-color: rgba(255, 255, 255, 0.9);
-    border: none;
-    padding: 2rem;
-    border-radius: 5px;
-    font-family: 'Brush Script MT', cursive;
-    color: #7b1fa2; /* Purple from theme */
-    font-size: 1.2rem;
+    padding: 15px;
+    overflow-y: auto;
+    color: #333;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
     text-align: center;
-    line-height: 1.8;
 }
 
-.envelope-inside-message textarea:focus {
-    outline: none;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+.envelope-inside-message h3 {
+    color: #c02942;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
 }
 
-/* Heart decorations on letter */
-.envelope-letter::before,
-.envelope-letter::after {
-    content: '❤';
+.envelope-inside-message p {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.envelope-inside-message .signature {
+    margin-top: 20px;
+    font-style: italic;
+    text-align: right;
+    color: #555;
+}
+
+/* Outside message styling - only visible when envelope is closed */
+.envelope-outside-message {
     position: absolute;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 3rem;
-    z-index: -1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    text-align: center;
+    font-size: 1rem;
+    pointer-events: none;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+    display: block; /* Override the previous display: none */
+    opacity: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 5px 10px;
+    border-radius: 15px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.envelope-letter::before {
-    top: 10px;
-    left: 10px;
+/* Show outside message on envelope hover */
+.envelope:not(.open):hover .envelope-outside-message {
+    opacity: 1;
 }
 
-.envelope-letter::after {
-    bottom: 10px;
-    right: 10px;
-}
-
-/* Instruction text */
+/* Text instruction styles */
 .text-center {
     text-align: center;
 }
@@ -228,83 +293,48 @@
 }
 
 .text-muted {
-    color: #9e9e9e;
+    color: #7d736a;
     font-size: 0.9rem;
     transition: color 0.3s ease;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
 }
 
-/* Animation for opening the envelope */
-.envelope.open .envelope-flap {
-    transform: rotateX(180deg);
-    z-index: 1;
-}
-
-.envelope.open .envelope-outside-message {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.envelope.open .envelope-letter {
-    transform: translateY(-90%);
-    opacity: 1;
-    z-index: 20;
-}
-
-/* Animation for the envelope waving effect */
-@keyframes waveEffect {
+/* Animation for subtle movement */
+@keyframes subtleWave {
     0% {
-        transform: rotateY(0deg) rotateX(0deg);
+        transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg);
     }
     25% {
-        transform: rotateY(2deg) rotateX(1deg);
+        transform: rotateY(0.5deg) rotateX(0.3deg) rotateZ(0.1deg);
     }
     50% {
-        transform: rotateY(0deg) rotateX(0deg);
+        transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg);
     }
     75% {
-        transform: rotateY(-2deg) rotateX(-1deg);
+        transform: rotateY(-0.5deg) rotateX(-0.3deg) rotateZ(-0.1deg);
     }
     100% {
-        transform: rotateY(0deg) rotateX(0deg);
-    }
-}
-
-/* Animation for floating hearts */
-@keyframes floating {
-    0% {
-        transform: translateY(0) rotate(0deg);
-    }
-    50% {
-        transform: translateY(-15px) rotate(10deg);
-    }
-    100% {
-        transform: translateY(0) rotate(0deg);
+        transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg);
     }
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .valentine-envelope-container {
-        max-width: 90%;
-    }
-    
-    .envelope-flap::after {
-        font-size: 2rem;
-    }
-    
-    .envelope-outside-message textarea,
-    .envelope-inside-message textarea {
-        font-size: 0.9rem;
-        padding: 0.8rem;
+        width: 100%;
+        max-width: 450px;
+        margin: 2rem auto;
+        perspective: 1200px;
+        position: relative;
+        min-height: 450px;
+        transform-style: preserve-3d;
+        overflow: visible; /* Allow elements to be visible outside the container */
     }
 }
 
 @media (max-width: 480px) {
-    .envelope-letter {
-        padding: 15px;
-    }
-    
     .envelope-flap::after {
-        font-size: 1.8rem;
+        width: 30px;
+        height: 30px;
     }
 }

@@ -12,39 +12,38 @@
     <h2 class="subtitle">Empowerment <span class="venus-symbol">♀</span> Equity <span class="venus-symbol">♀</span> Excellence</h2>
     
     <div class="content-grid">
-        <!-- Left column with Valentine's Day Themed Envelope -->
+        <!-- Left column with elegant sealed 3D envelope -->
         <div class="content-column envelope-column">
             <div class="valentine-envelope-container">
-                <!-- Heart decorations -->
-                <div class="heart-decoration heart-1">❤️</div>
-                <div class="heart-decoration heart-2">❤️</div>
-                
-                <!-- Main envelope element -->
+                <!-- Main envelope element - completely sealed with wax seal -->
                 <div id="valentine-envelope" class="envelope">
-                    <!-- Envelope flap (top part that opens) -->
+                    <!-- Envelope flap (top part that's sealed) -->
                     <div class="envelope-flap"></div>
                     
                     <!-- Envelope bottom portion -->
                     <div class="envelope-bottom"></div>
                     
-                    <!-- Side flaps (internal structure) -->
+                    <!-- Side flaps (fully sealed) -->
                     <div class="envelope-side-flap-left"></div>
                     <div class="envelope-side-flap-right"></div>
                     
-                    <!-- Outside message area -->
-                    <div class="envelope-outside-message">
-                        <textarea placeholder="Write your Valentine's greeting here..." maxlength="250">Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</textarea>
-                    </div>
-                    
-                    <!-- Letter inside envelope -->
+                    <!-- NEW: Letter inside envelope -->
                     <div class="envelope-letter">
                         <div class="envelope-inside-message">
-                            <textarea placeholder="Write your special message inside...">Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</textarea>
+                            <h3>Happy Women's Day!</h3>
+                            <p>Celebrating the strength, innovation, and accomplishments of women in technology.</p>
+                            <p>Join us for an exclusive event at Golden Library to honor remarkable achievements in the tech industry.</p>
+                            <div class="signature">Golden Library Team</div>
                         </div>
+                    </div>
+                    
+                    <!-- NEW: Outside message (visible when envelope is closed) -->
+                    <div class="envelope-outside-message">
+                        <span>Click to open</span>
                     </div>
                 </div>
                 
-                <!-- Instructions for users -->
+                <!-- Caption for the elegant envelope -->
                 <div class="text-center mt-3">
                     <small class="text-muted">Click the envelope to open it 💌</small>
                 </div>
@@ -110,21 +109,14 @@
 </div>
 
 <script>
-    // Valentine Envelope Animation
+    // Document ready function
     document.addEventListener('DOMContentLoaded', function() {
-        const envelope = document.getElementById('valentine-envelope');
-        
-        // Add click event to envelope
-        envelope.addEventListener('click', function() {
-            this.classList.toggle('open');
-        });
-        
         // Create floating elements
         const container = document.getElementById('floating-elements-container');
         const symbols = ['🧝🏻‍♀', '✨', '💪', '📚', '❤️', '🔆', '🌟', '🎓', '🏆', '🏅MS'];
         const iwdColors = ['#7b1fa2', '#FF69B4', '#4CAF50', '#FFC107']; // Purple, Pink, Green, Yellow IWD colors
         
-        // Create 15 random floating elements
+        // Create random floating elements
         for (let i = 0; i < 15; i++) {
             createFloatingElement(container, 
                                 symbols[Math.floor(Math.random() * symbols.length)],
@@ -139,6 +131,12 @@
         
         // Start the MVP buttercup flying animation
         initMVPButtercup();
+        
+        // Add subtle 3D envelope animation
+        animateEnvelope();
+        
+        // Initialize envelope interaction
+        initEnvelopeInteraction();
     });
     
     function createFloatingElement(container, content, color) {
@@ -166,7 +164,7 @@
         const flowerEmojis = ['🌸', '🌷', '🌹', '🌻', '🌺', '💐', '🪷', '🌼'];
         const iwdColors = ['#7b1fa2', '#FF69B4', '#4CAF50', '#FFC107']; // Purple, Pink, Green, Yellow IWD colors
         
-        // Create 30 falling flowers
+        // Create falling flowers
         for (let i = 0; i < 30; i++) {
             setTimeout(() => {
                 const flower = document.createElement('div');
@@ -280,6 +278,45 @@
                 }, 1000);
             });
         }
+    }
+    
+    // Function to add subtle 3D animation to the envelope
+    function animateEnvelope() {
+        const envelope = document.getElementById('valentine-envelope');
+        
+        // Add a subtle hover effect
+        envelope.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element
+            const y = e.clientY - rect.top;  // y position within the element
+            
+            // Calculate rotation based on mouse position
+            const xRotation = ((y / rect.height) - 0.5) * 5; // Max 5 degrees
+            const yRotation = ((x / rect.width) - 0.5) * -5; // Max 5 degrees
+            
+            // Apply the rotation
+            this.style.transform = `perspective(1000px) rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
+        });
+        
+        // Reset when mouse leaves
+        envelope.addEventListener('mouseleave', function() {
+            this.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+        });
+    }
+
+    // Function to add envelope opening/closing interaction
+    function initEnvelopeInteraction() {
+        const envelope = document.getElementById('valentine-envelope');
+        
+        // Add click event listener to toggle envelope open/close
+        envelope.addEventListener('click', function() {
+            this.classList.toggle('open');
+            
+            // Optional: Add sound effect for envelope opening/closing
+            // const sound = new Audio('/sounds/paper-sound.mp3');
+            // sound.volume = 0.5;
+            // sound.play();
+        });
     }
 </script>
 
@@ -530,6 +567,19 @@
     }
     100% {
         transform: translateY(0);
+    }
+}
+
+/* Add gradient background animation */
+@@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
     }
 }
 </style>
