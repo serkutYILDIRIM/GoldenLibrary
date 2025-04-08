@@ -11,55 +11,82 @@
     <h1 class="title">Celebrating Women's Achievements</h1>
     <h2 class="subtitle">Empowerment <span class="venus-symbol">♀</span> Equity <span class="venus-symbol">♀</span> Excellence</h2>
     
-    <!-- Valentine's Day Themed Envelope replaces the message area -->
-    <div class="valentine-envelope-container">
-        <div id="valentine-envelope" class="envelope">
-            <div class="envelope-flap"></div>
-            <div class="envelope-content">
-                <div class="valentine-card">
-                    <div class="card-content">
-                        <p>Today we celebrate International Women's Day across the globe. This day marks a call to action for accelerating women's equality and recognizing their incredible achievements.</p>
-                        <p>Golden Library honors the extraordinary contributions women have made to literature, science, arts, and all fields of human achievement.</p>
+    <div class="content-grid">
+        <!-- Left column with elegant sealed 3D envelope -->
+        <div class="content-column envelope-column">
+            <div class="valentine-envelope-container">
+                <!-- Main envelope element - completely sealed with wax seal -->
+                <div id="valentine-envelope" class="envelope">
+                    <!-- Envelope flap (top part that's sealed) -->
+                    <div class="envelope-flap"></div>
+                    
+                    <!-- Envelope bottom portion -->
+                    <div class="envelope-bottom"></div>
+                    
+                    <!-- Side flaps (fully sealed) -->
+                    <div class="envelope-side-flap-left"></div>
+                    <div class="envelope-side-flap-right"></div>
+                    
+                    <!-- NEW: Letter inside envelope -->
+                    <div class="envelope-letter">
+                        <div class="envelope-inside-message">
+                            <h3>Selamlaaar :)</h3>
+                            <p>Celebrating the strength, innovation, and accomplishments of women in technology.</p>
+                            <p>Join us for an exclusive event at Golden Library to honor remarkable achievements in the tech industry.</p>
+                            <div class="signature">Golden Library Team</div>
+                        </div>
                     </div>
+                    
+                    <!-- NEW: Outside message (visible when envelope is closed) -->
+                    <div class="envelope-outside-message">
+                        <span>Click to open</span>
+                    </div>
+                </div>
+                
+                <!-- Caption for the elegant envelope -->
+                <div class="text-center mt-3">
+                    <small class="text-muted">Click the envelope to open it 💌</small>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Achievement Icons Container -->
-    <div class="achievement-container">
-        <div class="achievement-icon">
-            <img src="~/img/typescript.svg" alt="TypeScript" class="tech-icon purple-iwd">
-            <div class="tooltip">TypeScript</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/redis.svg" alt="Redis" class="tech-icon green-iwd">
-            <div class="tooltip">Redis</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/azure.svg" alt="Microsoft Azure" class="tech-icon yellow-iwd">
-            <div class="tooltip">Microsoft Azure</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/javascript.svg" alt="JavaScript" class="tech-icon pink-iwd">
-            <div class="tooltip">JavaScript</div>
-        </div>
-        <!-- Yeni teknoloji ikonları -->
-        <div class="achievement-icon">
-            <img src="~/img/openai.png" alt="OpenAI" class="tech-icon green-iwd">
-            <div class="tooltip">OpenAI</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/React.svg" alt="React" class="tech-icon purple-iwd">
-            <div class="tooltip">New Relic</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/dotnet.png" alt=".NET" class="tech-icon pink-iwd">
-            <div class="tooltip">.NET</div>
-        </div>
-        <div class="achievement-icon">
-            <img src="~/img/python.svg" alt="AI Tech" class="tech-icon yellow-iwd">
-            <div class="tooltip">AI Technology</div>
+        
+        <!-- Right column with Achievement Icons -->
+        <div class="content-column icons-column">
+            <!-- Achievement Icons Container -->
+            <div class="achievement-container">
+                <div class="achievement-icon">
+                    <img src="~/img/typescript.svg" alt="TypeScript" class="tech-icon purple-iwd">
+                    <div class="tooltip">TypeScript</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/redis.svg" alt="Redis" class="tech-icon green-iwd">
+                    <div class="tooltip">Redis</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/azure.svg" alt="Microsoft Azure" class="tech-icon yellow-iwd">
+                    <div class="tooltip">Microsoft Azure</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/javascript.svg" alt="JavaScript" class="tech-icon pink-iwd">
+                    <div class="tooltip">JavaScript</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/openai.png" alt="OpenAI" class="tech-icon green-iwd">
+                    <div class="tooltip">OpenAI</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/React.svg" alt="React" class="tech-icon purple-iwd">
+                    <div class="tooltip">New Relic</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/dotnet.png" alt=".NET" class="tech-icon pink-iwd">
+                    <div class="tooltip">.NET</div>
+                </div>
+                <div class="achievement-icon">
+                    <img src="~/img/python.svg" alt="AI Tech" class="tech-icon yellow-iwd">
+                    <div class="tooltip">AI Technology</div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -82,21 +109,14 @@
 </div>
 
 <script>
-    // Valentine Envelope Animation
+    // Document ready function
     document.addEventListener('DOMContentLoaded', function() {
-        const envelope = document.getElementById('valentine-envelope');
-        
-        // Add click event to envelope
-        envelope.addEventListener('click', function() {
-            this.classList.toggle('open');
-        });
-        
         // Create floating elements
         const container = document.getElementById('floating-elements-container');
-        const symbols = ['🧝🏻‍♀', '✨', '💪', '📚', '❤️', '🔆', '🌟', '🎓', '🏆', '🏅MS'];
+        const symbols = ['🧝🏻‍♀', '✨', '💪', '📚', '❤️', '🔆', '🌟', '🎓', '🏆','<img src="/img/MVPLogo.png" class="floating-image" alt="MVP Logo" style="width: 30px; height: 30px;" />'];
         const iwdColors = ['#7b1fa2', '#FF69B4', '#4CAF50', '#FFC107']; // Purple, Pink, Green, Yellow IWD colors
         
-        // Create 15 random floating elements
+        // Create random floating elements
         for (let i = 0; i < 15; i++) {
             createFloatingElement(container, 
                                 symbols[Math.floor(Math.random() * symbols.length)],
@@ -111,13 +131,25 @@
         
         // Start the MVP buttercup flying animation
         initMVPButtercup();
+        
+        // Add subtle 3D envelope animation
+        animateEnvelope();
+        
+        // Initialize envelope interaction
+        initEnvelopeInteraction();
     });
     
     function createFloatingElement(container, content, color) {
         const element = document.createElement('div');
         element.className = 'floating-element symbol';
-        element.textContent = content;
-        element.style.color = color;
+        
+        // Check if content contains HTML tag
+        if (content.includes('<img')) {
+            element.innerHTML = content;
+        } else {
+            element.textContent = content;
+            element.style.color = color;
+        }
         
         // Random position
         const posX = Math.random() * 100;
@@ -138,7 +170,7 @@
         const flowerEmojis = ['🌸', '🌷', '🌹', '🌻', '🌺', '💐', '🪷', '🌼'];
         const iwdColors = ['#7b1fa2', '#FF69B4', '#4CAF50', '#FFC107']; // Purple, Pink, Green, Yellow IWD colors
         
-        // Create 30 falling flowers
+        // Create falling flowers
         for (let i = 0; i < 30; i++) {
             setTimeout(() => {
                 const flower = document.createElement('div');
@@ -253,10 +285,84 @@
             });
         }
     }
+    
+    // Function to add subtle 3D animation to the envelope
+    function animateEnvelope() {
+        const envelope = document.getElementById('valentine-envelope');
+        
+        // Add a subtle hover effect
+        envelope.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element
+            const y = e.clientY - rect.top;  // y position within the element
+            
+            // Calculate rotation based on mouse position
+            const xRotation = ((y / rect.height) - 0.5) * 5; // Max 5 degrees
+            const yRotation = ((x / rect.width) - 0.5) * -5; // Max 5 degrees
+            
+            // Apply the rotation
+            this.style.transform = `perspective(1000px) rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
+        });
+        
+        // Reset when mouse leaves
+        envelope.addEventListener('mouseleave', function() {
+            this.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+        });
+    }
+
+    // Function to add envelope opening/closing interaction
+    function initEnvelopeInteraction() {
+        const envelope = document.getElementById('valentine-envelope');
+        
+        // Add click event listener to toggle envelope open/close
+        envelope.addEventListener('click', function() {
+            this.classList.toggle('open');
+            
+            // Optional: Add sound effect for envelope opening/closing
+            // const sound = new Audio('/sounds/paper-sound.mp3');
+            // sound.volume = 0.5;
+            // sound.play();
+        });
+    }
 </script>
 
 <style>
-/* Add any missing styles for the MVP buttercup here */
+/* New Grid Layout Styles */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 1rem;
+    min-height: 400px;
+}
+
+.content-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.envelope-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icons-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive adjustments for the grid */
+@@media (max-width: 992px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Existing MVP Buttercup styles */
 .mvp-buttercup {
     position: fixed;
     z-index: 10;
@@ -317,14 +423,17 @@
 }
 
 /* Styling for achievement icons with SVG images */
-.achievement-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    margin: 2rem 0;
-    animation: fadeIn 2.5s ease-out;
-}
+    .achievement-container {
+        position: relative;
+        top: -100px; /* Negatif değer yukarı taşır */
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        margin: 2rem 0;
+        animation: fadeIn 2.5s ease-out;
+        z-index: 2; /* Diğer elementlerin üzerinde görünmesi için */
+    }
 
 .achievement-icon {
     display: inline-flex;
@@ -395,7 +504,7 @@
     animation: iconFloat 3.5s ease-in-out 0.5s infinite;
 }
 
-@* CSS keyframes animations *@
+/* CSS keyframes animations */
 @@keyframes flyAcross {
     0% {
         left: -100px;
@@ -464,6 +573,19 @@
     }
     100% {
         transform: translateY(0);
+    }
+}
+
+/* Add gradient background animation */
+@@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
     }
 }
 </style>
