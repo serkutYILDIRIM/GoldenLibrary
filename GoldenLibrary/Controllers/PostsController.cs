@@ -448,5 +448,54 @@ namespace GoldenLibrary.Controllers
             // Redirect back to drafts page
             return RedirectToAction("Drafts");
         }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadArticleImage(IFormFile image)
+        {
+            if (image == null || image.Length == 0)
+            {
+                return Json(new { success = false, message = "No file was uploaded" });
+            }
+
+            // Validate file type
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+            if (!allowedTypes.Contains(image.ContentType))
+            {
+                return Json(new { success = false, message = "Invalid file type. Only JPG, PNG, GIF and WEBP are allowed." });
+            }
+            
+            try
+            {
+                // Generate a unique filename to prevent overwrites
+                string uniqueFileName = $"{Guid.NewGuid()}_{image.FileName}";
+                
+                // Create directory if it doesn't exist
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                
+                // Save the file
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+                
+                // Return success with the URL to the saved image
+                return Json(new { 
+                    success = true, 
+                    imageUrl = $"/uploads/{uniqueFileName}",
+                    message = "Image uploaded successfully" 
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error uploading image: {ex.Message}" });
+            }
+        }
     }
 }
