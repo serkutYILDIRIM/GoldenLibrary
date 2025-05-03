@@ -38,6 +38,21 @@
             <button type="button" class="toolbar-button" data-command="italic" title="Italic (Ctrl+I)">
                 <i class="bi bi-type-italic"></i>
             </button>
+            <button type="button" class="toolbar-button" data-command="heading" title="Heading">
+                <i class="bi bi-type-h1"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="subheading" title="Subheading">
+                <i class="bi bi-type-h2"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="orderedList" title="Numbered List">
+                <i class="bi bi-list-ol"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="unorderedList" title="Bullet List">
+                <i class="bi bi-list-ul"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="quote" title="Quote">
+                <i class="bi bi-blockquote-left"></i>
+            </button>
             <button type="button" class="toolbar-button" data-command="link" title="Link (Ctrl+K)">
                 <i class="bi bi-link-45deg"></i>
             </button>
@@ -85,59 +100,65 @@
         <div class="media-dialog-content">
             <div class="media-dialog-header">
                 <h5 id="mediaDialogTitle">Add Media</h5>
-                <button class="close-dialog" id="closeMediaDialog">
+                <button type="button" class="close-dialog" id="closeMediaDialog">
                     <i class="bi bi-x"></i>
                 </button>
             </div>
             <div class="media-dialog-body">
+                <!-- Image Upload Pane -->
                 <div id="imageUploadPane" class="media-pane">
                     <div class="upload-area" id="imageDropArea">
+                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
                         <i class="bi bi-cloud-arrow-up"></i>
-                        <p>Drag an image or click to upload</p>
-                        <input type="file" id="imageFileInput" accept="image/*" class="d-none">
+                        <h5>Drag and drop an image</h5>
+                        <p>or click here to upload</p>
                     </div>
                     <div class="mt-3">
-                        <label class="form-label">Or add image URL:</label>
+                        <p class="text-muted">Or insert from URL:</p>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="imageUrlInput" placeholder="https://example.com/image.jpg">
+                            <input type="text" id="imageUrlInput" class="form-control" placeholder="Paste image URL...">
                             <button class="btn btn-golden" id="insertImageUrlBtn">Insert</button>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Video Upload Pane -->
                 <div id="videoUploadPane" class="media-pane">
                     <div class="mb-3">
-                        <label class="form-label">Enter video URL (YouTube, Vimeo):</label>
-                        <input type="text" class="form-control" id="videoUrlInput" placeholder="https://www.youtube.com/watch?v=...">
+                        <label for="videoUrlInput" class="form-label">Enter a YouTube or Vimeo URL:</label>
+                        <input type="text" id="videoUrlInput" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
                     </div>
                     <button class="btn btn-golden" id="insertVideoBtn">Insert Video</button>
                 </div>
                 
+                <!-- Embed Upload Pane -->
                 <div id="embedUploadPane" class="media-pane">
                     <div class="mb-3">
-                        <label class="form-label">Paste embed code:</label>
-                        <textarea class="form-control" id="embedCodeInput" rows="5" placeholder="<iframe src='...'></iframe>"></textarea>
+                        <label for="embedCodeInput" class="form-label">Paste embed code:</label>
+                        <textarea id="embedCodeInput" class="form-control" rows="6" placeholder="<iframe src=..."></textarea>
                     </div>
                     <button class="btn btn-golden" id="insertEmbedBtn">Insert Embed</button>
                 </div>
                 
+                <!-- Code Block Pane -->
                 <div id="codeBlockPane" class="media-pane">
                     <div class="mb-3">
-                        <label class="form-label">Language:</label>
-                        <select class="form-select" id="codeLanguageSelect">
+                        <label for="codeInput" class="form-label">Enter your code:</label>
+                        <textarea id="codeInput" class="form-control" rows="10" placeholder="Write or paste your code here..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="codeLanguageSelect" class="form-label">Language (optional):</label>
+                        <select id="codeLanguageSelect" class="form-select">
+                            <option value="plain">Plain text</option>
                             <option value="javascript">JavaScript</option>
-                            <option value="python">Python</option>
                             <option value="csharp">C#</option>
-                            <option value="java">Java</option>
+                            <option value="python">Python</option>
                             <option value="html">HTML</option>
                             <option value="css">CSS</option>
                             <option value="sql">SQL</option>
-                            <option value="plaintext">Plain Text</option>
+                            <option value="json">JSON</option>
+                            <option value="xml">XML</option>
                         </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Code:</label>
-                        <textarea class="form-control" id="codeInput" rows="8" placeholder="Paste your code here..."></textarea>
                     </div>
                     <button class="btn btn-golden" id="insertCodeBtn">Insert Code</button>
                 </div>
@@ -806,6 +827,8 @@
 </style>
 
 @section Scripts {
+    <script src="~/js/rich-editor.js"></script>
+    <script src="~/js/rich-editor-media.js"></script>
     <script>
         // Variables for auto-save
         let autoSaveTimer;

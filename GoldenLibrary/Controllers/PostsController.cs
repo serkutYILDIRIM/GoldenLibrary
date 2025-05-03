@@ -497,5 +497,98 @@ namespace GoldenLibrary.Controllers
                 return Json(new { success = false, message = $"Error uploading image: {ex.Message}" });
             }
         }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadMedia(IFormFile mediaFile, string mediaType)
+        {
+            if (mediaFile == null || mediaFile.Length == 0)
+            {
+                return Json(new { success = false, message = "No file was uploaded" });
+            }
+
+            try
+            {
+                string uploadsFolder = "";
+                string uniqueFileName = "";
+                string fileUrl = "";
+                
+                // Handle different media types
+                switch (mediaType.ToLower())
+                {
+                    case "image":
+                        // Validate file type
+                        var allowedImageTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+                        if (!allowedImageTypes.Contains(mediaFile.ContentType))
+                        {
+                            return Json(new { success = false, message = "Invalid file type. Only JPG, PNG, GIF and WEBP are allowed." });
+                        }
+                        
+                        // Save to images directory
+                        uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "images");
+                        uniqueFileName = $"{Guid.NewGuid()}_{mediaFile.FileName}";
+                        fileUrl = $"/uploads/images/{uniqueFileName}";
+                        break;
+                        
+                    case "video":
+                        // Validate file type for videos
+                        var allowedVideoTypes = new[] { "video/mp4", "video/webm", "video/ogg" };
+                        if (!allowedVideoTypes.Contains(mediaFile.ContentType))
+                        {
+                            return Json(new { success = false, message = "Invalid file type. Only MP4, WebM, and OGG video formats are allowed." });
+                        }
+                        
+                        // Save to videos directory
+                        uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "videos");
+                        uniqueFileName = $"{Guid.NewGuid()}_{mediaFile.FileName}";
+                        fileUrl = $"/uploads/videos/{uniqueFileName}";
+                        break;
+                        
+                    case "document":
+                        // Validate file type for documents
+                        var allowedDocTypes = new[] { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
+                        if (!allowedDocTypes.Contains(mediaFile.ContentType))
+                        {
+                            return Json(new { success = false, message = "Invalid file type. Only PDF and Word documents are allowed." });
+                        }
+                        
+                        // Save to documents directory
+                        uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents");
+                        uniqueFileName = $"{Guid.NewGuid()}_{mediaFile.FileName}";
+                        fileUrl = $"/uploads/documents/{uniqueFileName}";
+                        break;
+                        
+                    default:
+                        return Json(new { success = false, message = "Invalid media type specified." });
+                }
+                
+                // Create directory if it doesn't exist
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                
+                // Save the file
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await mediaFile.CopyToAsync(fileStream);
+                }
+                
+                // Return success with the URL to the saved media
+                return Json(new { 
+                    success = true, 
+                    mediaUrl = fileUrl,
+                    mediaType = mediaType,
+                    fileName = mediaFile.FileName,
+                    message = $"{mediaType} uploaded successfully" 
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error uploading media: {ex.Message}" });
+            }
+        }
     }
 }
