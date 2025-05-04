@@ -843,9 +843,6 @@
         const DEBUG = true; // Enable debug logging
         let localStorageAvailable = false;
         
-        // Declare publishBtn globally for immediate access
-        const publishBtn = document.getElementById('publishBtn');
-        
         // Check if localStorage is available and working
         function checkStorageAvailability() {
             try {
@@ -867,26 +864,1576 @@
             return postId !== '0' ? `post_draft_${postId}` : 'new_post_draft';
         };
         
-        // Execute immediate check for tag selection on page load 
-        // This makes sure publish button state is correct even before DOMContentLoaded
-        (function() {
-            // Get all checked tag checkboxes
-            const checkedTagElements = document.querySelectorAll('.tag-checkbox:checked');
-            // If we have checked tags, enable publish button immediately
-            if (checkedTagElements && checkedTagElements.length > 0) {
-                if (publishBtn) {
+        // LocalStorage functions with enhanced error handling
+        const localStorageDraft = {
+            save: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot save draft: localStorage unavailable");
+                    return false;
+                }
+                
+                try {
+                    // Get selected tag IDs
+                    const selectedTagIds = Array.from(document.querySelectorAll('.tag-checkbox'))
+                        .filter(checkbox => checkbox.checked)
+                        .map(checkbox => checkbox.value);
+                    
+                    const draft = {
+                        title: document.getElementById('Title').value,
+                        description: document.getElementById('Description').value,
+                        content: document.getElementById('Content').value,
+                        tagIds: selectedTagIds,
+                        lastUpdated: new Date().toISOString(),
+                        published: false // Add a published flag to track state
+                    };
+                    
+                    const draftKey = getPostKey();
+                    const draftValue = JSON.stringify(draft);
+                    
+                    if (DEBUG) console.log(`Saving draft to key: ${draftKey}, size: ${draftValue.length} bytes`);
+                    localStorage.setItem(draftKey, draftValue);
+                    
+                    // Verify the save was successful
+                    const saved = localStorage.getItem(draftKey);
+                    if (!saved) {
+                        if (DEBUG) console.error("Save verification failed: Item not found after saving");
+                        return false;
+                    }
+                    
+                    // Try to check storage quota
+                    if (navigator.storage && navigator.storage.estimate) {
+                        navigator.storage.estimate().then(estimate => {
+                            const percentUsed = Math.round((estimate.usage / estimate.quota) * 100);
+                            if (percentUsed > 90) {
+                                console.warn('LocalStorage is almost full (' + percentUsed + '%). Some drafts may not be saved.');
+                            }
+                        });
+                    }
+                    
+                    if (DEBUG) console.log("Draft saved successfully");
+                    return true;
+                } catch (error) {
+                    console.error('LocalStorage save error:', error);
+                    
+                    // Show error message if saving fails
+                    showSaveStatus('error', 'Failed to save locally');
+                    return false;
+                }
+            },
+            
+            load: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot load draft: localStorage unavailable");
+                    return null;
+                }
+                
+                try {
+                    const draftKey = getPostKey();
+                    if (DEBUG) console.log(`Loading draft from key: ${draftKey}`);
+                    const draftData = localStorage.getItem(draftKey);
+                    
+                    if (!draftData) {
+                        if (DEBUG) console.log("No draft found for key:", draftKey);
+                        return null;
+                    }
+                    
+                    const draft = JSON.parse(draftData);
+                    if (DEBUG) console.log("Draft loaded successfully:", draft);
+                    return draft;
+                } catch (error) {
+                    console.error('LocalStorage load error:', error);
+                    return null;
+                }
+            },
+            
+            clear: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot clear draft: localStorage unavailable");
+                    return false;
+                }
+                
+                try {
+                    const draftKey = getPostKey();
+                    if (DEBUG) console.log(`Clearing draft for key: ${draftKey}`);
+                    localStorage.removeItem(draftKey);
+                    return true;
+                } catch (error) {
+                    console.error('LocalStorage clear error:', error);
+                    return false;
+                }
+            },
+            
+            markAsPublished: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot mark draft as published: localStorage unavailable");
+                    return false;
+                }
+                
+                try {
+                    // First clear this draft completely
+                    this.clear();
+                    
+                    // Then store this post ID in a list of published posts
+                    const publishedPosts = JSON.parse(localStorage.getItem('published_posts') || '[]');
+                    const postId = document.getElementById('postId').value;
+                    if (postId && !publishedPosts.includes(postId)) {
+                        publishedPosts.push(postId);
+                        localStorage.setItem('published_posts', JSON.stringify(publishedPosts));
+                    }
+                    
+                    // Also store the timestamp of the last publication
+                    localStorage.setItem('last_published_timestamp', new Date().toISOString());
+                    localStorage.setItem('last_published_post_id', postId);
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Error marking draft as published:', error);
+                    return false;
+                }
+            },
+            
+            isPublished: function(postId) {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot check if draft is published: localStorage unavailable");
+                    return false;
+                }
+                
+                try {
+                    if (!postId) {
+                        postId = document.getElementById('postId').value;
+                    }
+                    
+                    // Check if this post ID is in the published posts list
+                    const publishedPosts = JSON.parse(localStorage.getItem('published_posts') || '[]');
+                    return publishedPosts.includes(postId);
+                } catch (error) {
+                    return false;
+                }
+            },
+            
+            clearAllDrafts: function() {
+                if (!localStorageAvailable) {
+                    if (DEBUG) console.warn("Cannot clear all drafts: localStorage unavailable");
+                    return false;
+                }
+                
+                try {
+                    const keys = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && (key.startsWith('post_draft_') || key === 'new_post_draft')) {
+                            keys.push(key);
+                        }
+                    }
+                    keys.forEach(key => localStorage.removeItem(key));
+                    console.log(`Cleared ${keys.length} drafts from local storage`);
+                    return true;
+                } catch (error) {
+                    console.error('Error clearing all drafts:', error);
+                    return false;
+                }
+            }
+        };
+        
+        // Update word and character count
+        function updateWordCount() {
+            try {
+                const contentEditor = document.getElementById('contentEditor');
+                const wordCountElement = document.getElementById('wordCount');
+                const charCountElement = document.getElementById('characterCount');
+                
+                if (contentEditor && wordCountElement && charCountElement) {
+                    const text = contentEditor.innerText || contentEditor.textContent || '';
+                    const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+                    const charCount = text.length;
+                    
+                    wordCountElement.textContent = `${wordCount} words`;
+                    charCountElement.textContent = `${charCount} characters`;
+                    
+                    // Debug info - can be removed after fixing
+                    console.log(`Word count: ${wordCount}, Char count: ${charCount}`);
+                } else {
+                    console.error('Required elements not found for word/character count');
+                }
+            } catch (error) {
+                console.error('Error updating word/character count:', error);
+            }
+        }
+        
+        // Update hidden form fields with contenteditable content
+        function updateFormFields() {
+            document.getElementById('Title').value = document.getElementById('titleEditor').innerText.trim();
+            document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
+            document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
+            
+            // Get selected tag IDs
+            const selectedTagIds = Array.from(document.querySelectorAll('.tag-checkbox'))
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+            
+            document.getElementById('Tags').value = selectedTagIds.join(',');
+        }
+        
+        // Initialize editor with enhanced error handling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if localStorage is available
+            localStorageAvailable = checkStorageAvailability();
+            
+            if (!localStorageAvailable) {
+                console.warn("localStorage is not available. Draft functionality will be limited.");
+                // Hide draft restoration UI since it won't work
+                if (draftStatus) draftStatus.style.display = 'none';
+            }
+            
+            const titleEditor = document.getElementById('titleEditor');
+            const descriptionEditor = document.getElementById('descriptionEditor');
+            const contentEditor = document.getElementById('contentEditor');
+            const publishBtn = document.getElementById('publishBtn');
+            const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+            
+            // Ensure character count is initialized properly
+            setTimeout(updateWordCount, 100);
+            
+            // Initial word count update
+            updateWordCount();
+            
+            // Initialize auto-expanding editors
+            initAutoExpand(titleEditor);
+            initAutoExpand(descriptionEditor);
+            initAutoExpand(contentEditor);
+            
+            // Initialize content for tracking changes
+            updateFormFields();
+            const title = document.getElementById('Title').value;
+            const content = document.getElementById('Content').value;
+            const description = document.getElementById('Description').value;
+            lastSavedContent = title + content + description;
+            
+            // Check if we just came from publishing a post (within the last minute)
+            const lastPublishedTime = localStorage.getItem('last_published_timestamp');
+            let justPublished = false;
+            
+            if (lastPublishedTime) {
+                const pubTime = new Date(lastPublishedTime);
+                const now = new Date();
+                const timeDiffSeconds = Math.floor((now - pubTime) / 1000);
+                
+                // If we published less than 60 seconds ago, consider we just published
+                if (timeDiffSeconds < 60) {
+                    justPublished = true;
+                    console.log("Just published a post. Clearing all drafts.");
+                    localStorageDraft.clearAllDrafts();
+                }
+            }
+            
+            // Check if this is truly a new post (empty ID and fields)
+            const postId = document.getElementById('postId').value;
+            const isNewPost = postId === '0' && !title && !content;
+            
+            // If this is a brand new post or we just published, clear any previous drafts to prevent confusion
+            if (isNewPost || justPublished) {
+                localStorageDraft.clearAllDrafts();
+            }
+            
+            // See if this is a previously published post
+            if (postId !== '0' && localStorageDraft.isPublished(postId)) {
+                // This is a published post, make sure there's no draft for it
+                localStorageDraft.clear(); 
+                console.log(`Post ${postId} was already published, cleared any drafts.`);
+            }
+            
+            // See if we have a local draft for this post - with enhanced timing
+            if (localStorageAvailable) {
+                // Delay draft check slightly to ensure DOM is fully processed
+                setTimeout(() => {
+                    checkForDraft();
+                }, 300);
+            }
+            
+            function checkForDraft() {
+                try {
+                    const draft = localStorageDraft.load();
+                    const title = document.getElementById('Title').value;
+                    const content = document.getElementById('Content').value;
+                    const postId = document.getElementById('postId').value;
+                    
+                    // Check if we just came from publishing a post (within the last minute)
+                    const lastPublishedTime = localStorage.getItem('last_published_timestamp');
+                    let justPublished = false;
+                    
+                    if (lastPublishedTime) {
+                        const pubTime = new Date(lastPublishedTime);
+                        const now = new Date();
+                        const timeDiffSeconds = Math.floor((now - pubTime) / 1000);
+                        
+                        // If we published less than 60 seconds ago, consider we just published
+                        if (timeDiffSeconds < 60) {
+                            justPublished = true;
+                            if (DEBUG) console.log("Just published a post. Clearing all drafts.");
+                            localStorageDraft.clearAllDrafts();
+                        }
+                    }
+                    
+                    // Only show restore option if:
+                    // 1. We have a draft
+                    // 2. It's not a post we just published
+                    // 3. The post ID is not in our published posts list
+                    if (draft && draft.lastUpdated && !justPublished && !localStorageDraft.isPublished(postId)) {
+                        // Calculate the time since the draft was saved
+                        const draftDate = new Date(draft.lastUpdated);
+                        const now = new Date();
+                        const timeDiff = Math.floor((now - draftDate) / 1000 / 60); // minutes
+                        
+                        // Get formatted time string (e.g., "10 minutes ago" or "2 hours ago")
+                        let timeAgo = timeDiff < 1 ? 'just now' : 
+                                    timeDiff === 1 ? '1 minute ago' : 
+                                    timeDiff < 60 ? `${timeDiff} minutes ago` :
+                                    timeDiff < 120 ? '1 hour ago' : 
+                                    `${Math.floor(timeDiff/60)} hours ago`;
+                        
+                        // Show restore button with time information
+                        const restoreText = `Restore unsaved draft (saved ${timeAgo})`;
+                        if (DEBUG) console.log("Found draft from", timeAgo);
+                        
+                        if (restoreDraftBtn) {
+                            restoreDraftBtn.innerHTML = `<i class="bi bi-arrow-counterclockwise"></i> ${restoreText}`;
+                            draftStatus.style.display = 'block';
+                        }
+                        
+                        // Auto-restore if the form is empty but a draft exists
+                        if (!title && !content && draft.title && draft.content) {
+                            // Wait briefly to allow the page to render before restoring
+                            setTimeout(() => {
+                                const shouldRestore = confirm("An unsaved draft was found. Would you like to restore it?");
+                                if (shouldRestore) {
+                                    restoreDraft(draft);
+                                } else {
+                                    // If user declines to restore, clear the draft
+                                    localStorageDraft.clear();
+                                    draftStatus.style.display = 'none';
+                                }
+                            }, 500);
+                        }
+                    } else {
+                        // No valid draft to restore
+                        if (draftStatus) draftStatus.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error("Error checking for draft:", error);
+                    // Hide draft UI in case of error
+                    if (draftStatus) draftStatus.style.display = 'none';
+                }
+            }
+            
+            // Function to restore a draft with enhanced error handling
+            function restoreDraft(draft) {
+                try {
+                    if (DEBUG) console.log("Restoring draft:", draft);
+                    
+                    if (!titleEditor || !descriptionEditor || !contentEditor) {
+                        console.error("Editor elements not found");
+                        return;
+                    }
+                    
+                    titleEditor.innerHTML = draft.title || '';
+                    descriptionEditor.innerHTML = draft.description || '';
+                    contentEditor.innerHTML = draft.content || '';
+                    
+                    // Restore tags if available
+                    if (draft.tagIds && draft.tagIds.length > 0) {
+                        // Clear all checkboxes first
+                        tagCheckboxes.forEach(checkbox => checkbox.checked = false);
+                        
+                        // Check the saved ones
+                        draft.tagIds.forEach(tagId => {
+                            const checkbox = document.querySelector(`.tag-checkbox[value="${tagId}"]`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
+                    
+                    // Update the form fields
+                    updateFormFields();
+                    
+                    // Update word count
+                    updateWordCount();
+                    
+                    // Hide the restore button
+                    if (draftStatus) draftStatus.style.display = 'none';
+                    
+                    // Show a success message
+                    showSaveStatus('saved', 'Draft restored');
+                    
+                    // Adjust heights for auto-expanding
+                    adjustHeight(titleEditor);
+                    adjustHeight(descriptionEditor);
+                    adjustHeight(contentEditor);
+                    
+                    // Update publish button state
+                    updatePublishButtonState();
+                    
+                    if (DEBUG) console.log("Draft successfully restored");
+                } catch (error) {
+                    console.error("Error restoring draft:", error);
+                    showSaveStatus('error', 'Error restoring draft');
+                }
+            }
+        
+            // Restore draft button click handler
+            restoreDraftBtn.addEventListener('click', function() {
+                const draft = localStorageDraft.load();
+                if (draft) {
+                    restoreDraft(draft);
+                }
+            });
+            
+            // Place cursor in title if empty
+            if (!title) {
+                titleEditor.focus();
+            } else if (!content) {
+                contentEditor.focus();
+            }
+            
+            // Handle paste to remove formatting
+            [titleEditor, descriptionEditor, contentEditor].forEach(editor => {
+                editor.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+                    document.execCommand('insertText', false, text);
+                });
+                
+                // Update form fields on input and save to localStorage
+                editor.addEventListener('input', function() {
+                    updateFormFields();
+                    if (this === contentEditor) {
+                        updateWordCount();
+                    }
+                    
+                    // Clear existing timers
+                    clearTimeout(autoSaveTimer);
+                    clearTimeout(localSaveTimer);
+                    
+                    // Set new timers
+                    localSaveTimer = setTimeout(saveToLocalStorage, localSaveDelay);
+                    autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
+                });
+                
+                // Add keydown handler to create new paragraph on Enter in title and subtitle
+                if (editor !== contentEditor) {
+                    editor.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            contentEditor.focus();
+                        }
+                    });
+                }
+            });
+            
+            // Add tab key support between editors
+            titleEditor.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab' && !e.shiftKey) {
+                    e.preventDefault();
+                    descriptionEditor.focus();
+                }
+            });
+            
+            descriptionEditor.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        titleEditor.focus();
+                    } else {
+                        contentEditor.focus();
+                    }
+                }
+            });
+            
+            contentEditor.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab' && e.shiftKey) {
+                    e.preventDefault();
+                    descriptionEditor.focus();
+                }
+            });
+            
+            // Handle input in content editor with explicit character count update
+            contentEditor.addEventListener('input', function() {
+                updateFormFields();
+                updateWordCount(); // Always update word count when content changes
+            });
+            
+            // As a fallback, periodically update the word count
+            setInterval(updateWordCount, 2000);
+            
+            // Initialize formatting toolbar
+            initFormattingToolbar();
+            
+            // Initialize content addition functionality
+            initContentAddButton();
+            
+            // Handle tag checkbox changes - enhanced with validation
+            tagCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateFormFields();
+                    updatePublishButtonState();
+                    validateTagSelection();
+                    
+                    // Trigger auto-save
+                    clearTimeout(autoSaveTimer);
+                    clearTimeout(localSaveTimer);
+                    localSaveTimer = setTimeout(saveToLocalStorage, localSaveDelay);
+                    autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
+                });
+            });
+            
+            // Update publish button state based on tag selection
+            function updatePublishButtonState() {
+                const hasSelectedTags = getSelectedTagIds().length > 0;
+                
+                if (hasSelectedTags) {
                     publishBtn.classList.remove('disabled');
                     publishBtn.classList.add('valid');
                     publishBtn.disabled = false;
-                    console.log(`Initial check: ${checkedTagElements.length} tags already selected, enabling publish button`);
+                } else {
+                    publishBtn.classList.add('disabled');
+                    publishBtn.classList.remove('valid');
+                    publishBtn.disabled = true;
                 }
             }
-        })();
+            
+            // Initialize publish button state
+            updatePublishButtonState();
+            
+            // Update form fields on input
+            function updateFormFields() {
+                document.getElementById('Title').value = document.getElementById('titleEditor').innerText.trim();
+                document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
+                document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
+                
+                // Get selected tag IDs - this updates the hidden Tags field but we'll use the actual checkboxes for submission
+                const selectedTagIds = Array.from(tagCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+                
+                document.getElementById('Tags').value = selectedTagIds.join(',');
+                
+                // Update visual cue for tag selection
+                if (selectedTagIds.length > 0) {
+                    document.getElementById('tagValidationMessage').textContent = 
+                        `${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selected`;
+                } else {
+                    document.getElementById('tagValidationMessage').textContent = 
+                        'Add at least one tag to publish your story';
+                }
+            }
+        });
         
-        // LocalStorage functions with enhanced error handling
-        const localStorageDraft = {
-            // ...existing code...
-        };
+        // Function to save content to localStorage with enhanced error handling
+        function saveToLocalStorage() {
+            if (!localStorageAvailable) {
+                return false;
+            }
+            
+            try {
+                // Only save if there's actually content to save
+                const title = document.getElementById('Title').value;
+                const content = document.getElementById('Content').value;
+                const tags = document.getElementById('Tags').value;
+                
+                if (title.trim() === '' && content.trim() === '') {
+                    if (DEBUG) console.log("Nothing to save - empty content");
+                    return false;
+                }
+                
+                if (localStorageDraft.save()) {
+                    // Show a brief "Saved to device" message
+                    const saveText = saveStatus.querySelector('.save-text');
+                    if (saveText) {
+                        const originalText = saveText.textContent;
+                        saveText.textContent = 'Saved to device';
+                        
+                        // Revert back to original text after 2 seconds
+                        setTimeout(() => {
+                            saveText.textContent = originalText;
+                        }, 2000);
+                    }
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error("Error saving to localStorage:", error);
+                return false;
+            }
+        }
         
+        // Function to initialize auto-expanding editors
+        function initAutoExpand(element) {
+            // Set initial height if content exists
+            adjustHeight(element);
+            
+            // Add input event listener to adjust height as user types
+            element.addEventListener('input', function() {
+                adjustHeight(this);
+            });
+            
+            // Also adjust on window resize
+            window.addEventListener('resize', function() {
+                adjustHeight(element);
+            });
+        }
+        
+        // Function to adjust element height based on content
+        function adjustHeight(element) {
+            // Reset height to auto so we can calculate the new height
+            element.style.height = 'auto';
+            
+            // Get scrollHeight (full content height) and add a small buffer
+            const newHeight = element.scrollHeight;
+            
+            // Set new height
+            element.style.height = newHeight + 'px';
+            
+            // Ensure minimum height
+            if (element.id === 'titleEditor' && newHeight < 60) {
+                element.style.height = '60px';
+            } else if (element.id === 'descriptionEditor' && newHeight < 40) {
+                element.style.height = '40px';
+            }
+        }
+        
+        // Show save status
+        function showSaveStatus(status, message) {
+            const saveText = saveStatus.querySelector('.save-text');
+            saveText.textContent = message;
+            
+            saveStatus.className = 'save-indicator ' + status;
+            
+            if (status === 'saved') {
+                // Return to default state after 3 seconds
+                setTimeout(() => {
+                    saveText.textContent = 'Saved';
+                    saveStatus.className = 'save-indicator';
+                }, 3000);
+            }
+        }
+        
+        // Function to perform auto-save
+        function performAutoSave() {
+            if (savingInProgress) return;
+            
+            updateFormFields();
+            
+            const title = document.getElementById('Title').value;
+            const content = document.getElementById('Content').value;
+            const description = document.getElementById('Description').value;
+            const tags = document.getElementById('Tags').value;
+            const url = document.getElementById('Url').value;
+            const postId = document.getElementById('postId').value;
+            
+            // Get selected tag IDs for comparison and saving
+            const selectedTagIds = getSelectedTagIds();
+            const tagString = selectedTagIds.join(',');
+            document.getElementById('Tags').value = tagString;
+            
+            // Don't save if nothing has changed or if both title and content are empty
+            const currentContent = title + content + description + tagString;
+            if (currentContent === lastSavedContent || (title.trim() === '' && content.trim() === '')) {
+                return;
+            }
+            
+            savingInProgress = true;
+            showSaveStatus('saving', 'Saving...');
+            
+            // Create URL slug from title if empty
+            if (!url && title.trim() !== '') {
+                const slug = title.toLowerCase()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .trim();
+                document.getElementById('Url').value = slug;
+            }
+            
+            const formData = new FormData();
+            formData.append('Title', title);
+            formData.append('Content', content);
+            formData.append('Description', description);
+            formData.append('Tags', tagString);
+            formData.append('Url', document.getElementById('Url').value);
+            formData.append('PostId', postId);
+            
+            // Critical: Add each tag ID individually to ensure proper array format
+            selectedTagIds.forEach(tagId => {
+                formData.append('tagIds[]', tagId);
+            });
+            
+            // Get the anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            fetch('@Url.Action("AutoSave")', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                savingInProgress = false;
+                
+                if (data.success) {
+                    showSaveStatus('saved', 'Saved');
+                    lastSavedContent = currentContent;
+                    
+                    // If this is a new draft, update the postId field
+                    if (postId === '0' && data.postId) {
+                        document.getElementById('postId').value = data.postId;
+                    }
+                    
+                    // Since we successfully saved to server, update localStorage with new content
+                    saveToLocalStorage();
+                } else {
+                    showSaveStatus('error', 'Failed to save');
+                }
+            })
+            .catch(error => {
+                savingInProgress = false;
+                showSaveStatus('error', 'Error: Could not save');
+                console.error('Auto-save error:', error);
+                
+                // Save to localStorage when server save fails
+                saveToLocalStorage();
+            });
+        }
+        
+        // Save before user leaves the page
+        window.addEventListener('beforeunload', () => {
+            updateFormFields();
+            saveToLocalStorage();
+        });
+        
+        // Preview button handler
+        document.getElementById('previewBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            updateFormFields();
+            performAutoSave();
+            
+            // Get selected tag names for preview
+            const selectedTags = Array.from(document.querySelectorAll('.tag-checkbox'))
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.nextElementSibling.textContent.trim());
+            
+            // Simple preview in new window
+            const title = document.getElementById('Title').value || 'Untitled';
+            const content = document.getElementById('Content').value || '';
+            const description = document.getElementById('Description').value || '';
+            
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${title} - Preview</title>
+                    <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+                    <link rel="stylesheet" href="/lib/bootstrap-icons/font/bootstrap-icons.min.css">
+                    <link rel="stylesheet" href="/css/style.css">
+                    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Merriweather', serif; line-height: 1.8; padding: 40px; max-width: 800px; margin: 0 auto; }
+                        h1 { font-family: 'Montserrat', sans-serif; font-weight: 700; margin-bottom: 20px; }
+                        .subtitle { font-size: 1.2rem; color: #6c757d; margin-bottom: 30px; }
+                        .preview-banner { background-color: #f8f9fa; padding: 10px; text-align: center; margin-bottom: 30px; }
+                        .tags-container { margin-top: 30px; }
+                        .tag { display: inline-block; background-color: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); color: #6c757d; padding: 4px 10px; border-radius: 20px; margin-right: 8px; margin-bottom: 8px; font-size: 14px; font-family: 'Montserrat', sans-serif; }
+                    </style>
+                </head>
+                <body>
+                    <div class="preview-banner">
+                        <strong>Preview Mode</strong> - This is how your story will look when published
+                    </div>
+                    <h1>${title}</h1>
+                    <div class="subtitle">${description}</div>
+                    <div class="content">${content.replace(/\n/g, '<br>')}</div>
+                    <div class="tags-container">
+                        ${selectedTags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                </body>
+                </html>
+            `);
+        });
+        
+        // Publish button handler - enhanced with better validation
+        document.getElementById('publishBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            updateFormFields();
+            
+            // Validate tag selection and show appropriate UI feedback
+            if (!validateTagSelection()) {
+                // Scroll to tag selection area with a highlight effect
+                document.querySelector('.tag-selection-area').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                
+                // Add a temporary highlight effect to draw attention
+                const tagCloud = document.querySelector('.tag-cloud');
+                tagCloud.style.transition = 'background-color 0.3s ease';
+                tagCloud.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                
+                setTimeout(() => {
+                    tagCloud.style.backgroundColor = '';
+                }, 1000);
+                
+                return;
+            }
+            
+            document.getElementById('formAction').value = 'publish';
+            
+            // Submit the form
+            const form = document.getElementById('storyForm');
+            
+            // Get final list of selected tags
+            const selectedTagIds = getSelectedTagIds();
+            
+            // Ensure hidden tags input is updated with latest selections
+            document.getElementById('Tags').value = selectedTagIds.join(',');
+            
+            // Create hidden inputs for each selected tag
+            selectedTagIds.forEach(tagId => {
+                // First check if this hidden input already exists to avoid duplicates
+                const existingInput = form.querySelector(`input[name="tagIds"][value="${tagId}"]`);
+                if (!existingInput || existingInput.checked === undefined) {
+                    // Remove any old hidden input for this tag that might be unchecked now
+                    const oldInput = form.querySelector(`input[type="hidden"][name="tagIds"][value="${tagId}"]`);
+                    if (oldInput) {
+                        oldInput.remove();
+                    }
+                    
+                    // Create a new hidden input
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'tagIds';
+                    hiddenInput.value = tagId;
+                    form.appendChild(hiddenInput);
+                }
+            });
+            
+            // Mark draft as published BEFORE submitting
+            localStorageDraft.markAsPublished();
+            
+            // Set up a success flag to clear localStorage after submission
+            const publishedPostId = document.getElementById('postId').value;
+            
+            // Add event listener for successful form submission
+            form.addEventListener('submit', function() {
+                // Clear ALL drafts when publishing is successful
+                setTimeout(() => {
+                    localStorageDraft.clearAllDrafts();
+                    console.log('Cleared all drafts after successful publish');
+                }, 200);
+            }, { once: true });
+            
+            // Final verification that all selected tags have corresponding form entries
+            const formTagInputs = form.querySelectorAll('input[name="tagIds"]');
+            const formTagValues = Array.from(formTagInputs).map(input => input.value);
+            console.log(`Submitting form with ${formTagValues.length} tags: ${formTagValues.join(', ')}`);
+            
+            form.submit();
+        });
+        
+        // Helper function to get selected tag IDs - enhanced with validation
+        function getSelectedTagIds() {
+            try {
+                // Get all checked tag checkboxes
+                const checkedTagElements = document.querySelectorAll('.tag-checkbox:checked');
+                
+                // Convert to array and extract values
+                const tagIds = Array.from(checkedTagElements).map(checkbox => checkbox.value);
+                
+                return tagIds;
+            } catch (error) {
+                console.error('Error collecting tag IDs:', error);
+                // Return empty array in case of error to prevent breaking the form
+                return [];
+            }
+        }
+        
+        // Validate tag selection and show appropriate UI feedback
+        function validateTagSelection() {
+            const selectedTagIds = getSelectedTagIds();
+            const tagValidationMessage = document.getElementById('tagValidationMessage');
+            const tagSelectionArea = document.querySelector('.tag-selection-area');
+            const infoIcon = tagValidationMessage.previousElementSibling;
+            
+            if (selectedTagIds.length === 0) {
+                // No tags selected - show error
+                tagValidationMessage.innerHTML = '<span class="tag-validation-error">Please select at least one tag before publishing</span>';
+                tagSelectionArea.classList.add('error');
+                infoIcon.classList.add('error-icon');
+                return false;
+            } else {
+                // Tags selected - show success
+                tagValidationMessage.innerHTML = `<span class="tag-selection-complete">${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selected</span>`;
+                tagSelectionArea.classList.remove('error');
+                infoIcon.classList.remove('error-icon');
+                return true;
+            }
+        }
+        
+        // Update form fields function - enhanced with tag validation
+        function updateFormFields() {
+            document.getElementById('Title').value = document.getElementById('titleEditor').innerText.trim();
+            document.getElementById('Description').value = document.getElementById('descriptionEditor').innerText.trim();
+            document.getElementById('Content').value = document.getElementById('contentEditor').innerText.trim();
+            
+            // Get selected tag IDs using the helper function
+            const selectedTagIds = getSelectedTagIds();
+            
+            // Set the hidden Tags field with comma-separated tag IDs
+            document.getElementById('Tags').value = selectedTagIds.join(',');
+            
+            // Update visual cue for tag selection
+            const tagValidationMessage = document.getElementById('tagValidationMessage');
+            const tagSelectionArea = document.querySelector('.tag-selection-area');
+            const infoIcon = tagValidationMessage.previousElementSibling;
+            
+            if (selectedTagIds.length > 0) {
+                tagValidationMessage.textContent = 
+                    `${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selected`;
+                tagValidationMessage.classList.remove('text-danger');
+                tagSelectionArea.classList.remove('error');
+                infoIcon.classList.remove('error-icon');
+            } else {
+                tagValidationMessage.textContent = 'Add at least one tag to publish your story';
+                infoIcon.classList.remove('error-icon');
+                tagSelectionArea.classList.remove('error');
+            }
+        }
+        
+        // Formatting toolbar related code - Updated for minimalist design
+        function initFormattingToolbar() {
+            const toolbar = document.getElementById('formattingToolbar');
+            const linkForm = document.getElementById('linkForm');
+            const linkInput = document.getElementById('linkInput');
+            const applyLinkButton = document.getElementById('applyLinkButton');
+            const cancelLinkButton = document.getElementById('cancelLinkButton');
+            const contentEditor = document.getElementById('contentEditor');
+            
+            let currentSelection = null;
+            let selectionTimeout = null;
+            
+            // Check for text selection and show toolbar with a small delay
+            document.addEventListener('selectionchange', function() {
+                clearTimeout(selectionTimeout);
+                
+                selectionTimeout = setTimeout(() => {
+                    const selection = window.getSelection();
+                    
+                    if (selection.rangeCount > 0 && selection.toString().trim() !== '') {
+                        const range = selection.getRangeAt(0);
+                        
+                        // Check if selection is within the content editor
+                        if (contentEditor.contains(range.commonAncestorContainer)) {
+                            currentSelection = selection;
+                            showToolbar(selection);
+                        } else {
+                            hideToolbar();
+                        }
+                    } else {
+                        // Only hide toolbar if not interacting with it
+                        if (!toolbar.contains(document.activeElement)) {
+                            hideToolbar();
+                        }
+                    }
+                }, 100); // Small delay to prevent flashing
+            });
+            
+            // Show the toolbar at the selection
+            function showToolbar(selection) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                // Position the toolbar above the selection
+                toolbar.style.top = `${window.scrollY + rect.top - toolbar.offsetHeight - 10}px`;
+                toolbar.style.left = `${window.scrollX + rect.left + (rect.width / 2) - (toolbar.offsetWidth / 2)}px`;
+                
+                // Make sure the toolbar stays within viewport bounds
+                const rightEdge = toolbar.getBoundingClientRect().right;
+                const viewportWidth = window.innerWidth;
+                
+                if (rightEdge > viewportWidth) {
+                    const offset = rightEdge - viewportWidth + 10;
+                    toolbar.style.left = `${parseInt(toolbar.style.left) - offset}px`;
+                }
+                
+                if (parseInt(toolbar.style.left) < 10) {
+                    toolbar.style.left = '10px';
+                }
+                
+                // Show the toolbar with animation
+                toolbar.classList.add('visible');
+                
+                // Update active state of buttons based on current formatting
+                updateToolbarState();
+            }
+            
+            // Hide the toolbar
+            function hideToolbar() {
+                // Don't hide if we're in the link form and it's focused
+                if (linkForm.classList.contains('visible') && 
+                    (document.activeElement === linkInput || 
+                     document.activeElement === applyLinkButton || 
+                     document.activeElement === cancelLinkButton)) {
+                    return;
+                }
+                
+                toolbar.classList.remove('visible');
+                hideLinkForm();
+            }
+            
+            // Update toolbar button states based on current selection formatting
+            function updateToolbarState() {
+                const buttons = toolbar.querySelectorAll('.toolbar-button');
+                
+                buttons.forEach(button => {
+                    button.classList.remove('active');
+                    
+                    const command = button.getAttribute('data-command');
+                    
+                    if (command === 'bold' && document.queryCommandState('bold')) {
+                        button.classList.add('active');
+                    } else if (command === 'italic' && document.queryCommandState('italic')) {
+                        button.classList.add('active');
+                    } else if (command === 'link') {
+                        // Check if selection contains a link
+                        const selection = window.getSelection();
+                        if (selection.rangeCount > 0) {
+                            const node = selection.getRangeAt(0).commonAncestorContainer;
+                            const linkElement = getClosestLink(node);
+                            
+                            if (linkElement) {
+                                button.classList.add('active');
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Get closest link element
+            function getClosestLink(node) {
+                while (node && node !== contentEditor) {
+                    if (node.nodeType === 1 && node.tagName.toLowerCase() === 'a') {
+                        return node;
+                    }
+                    node = node.parentNode;
+                }
+                return null;
+            }
+            
+            // Handle toolbar button clicks
+            toolbar.querySelectorAll('.toolbar-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const command = this.getAttribute('data-command');
+                    
+                    // Restore the selection before applying formatting
+                    if (currentSelection) {
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(currentSelection.getRangeAt(0));
+                    }
+                    
+                    applyFormatting(command);
+                    
+                    // Update the hidden form fields after formatting
+                    updateFormFields();
+                });
+            });
+            
+            // Apply formatting based on command
+            function applyFormatting(command) {
+                switch (command) {
+                    case 'bold':
+                        document.execCommand('bold', false, null);
+                        break;
+                    case 'italic':
+                        document.execCommand('italic', false, null);
+                        break;
+                    case 'link':
+                        showLinkForm();
+                        break;
+                }
+                
+                // Update toolbar state after applying formatting
+                updateToolbarState();
+            }
+            
+            // Show link input form
+            function showLinkForm() {
+                // Hide toolbar buttons, show link form
+                toolbar.querySelector('.toolbar-buttons').style.display = 'none';
+                linkForm.classList.add('visible');
+                
+                // Get any existing link in the selection
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const node = selection.getRangeAt(0).commonAncestorContainer;
+                    const linkElement = getClosestLink(node);
+                    
+                    if (linkElement) {
+                        linkInput.value = linkElement.href;
+                    } else {
+                        linkInput.value = '';
+                    }
+                }
+                
+                linkInput.focus();
+            }
+            
+            // Hide link form
+            function hideLinkForm() {
+                linkForm.classList.remove('visible');
+                toolbar.querySelector('.toolbar-buttons').style.display = 'flex';
+                linkInput.value = '';
+            }
+            
+            // Apply link button click
+            applyLinkButton.addEventListener('click', function() {
+                const url = linkInput.value.trim();
+                if (url) {
+                    // Restore the selection
+                    if (currentSelection) {
+                        const selection = window.getSelection();
+                        selection.removeAllRanges();
+                        selection.addRange(currentSelection.getRangeAt(0));
+                    }
+                    
+                    // Add protocol if missing
+                    let formattedUrl = url;
+                    if (!/^https?:\/\//i.test(url)) {
+                        formattedUrl = 'https://' + url;
+                    }
+                    
+                    document.execCommand('createLink', false, formattedUrl);
+                    
+                    // Update form fields
+                    updateFormFields();
+                }
+                
+                hideLinkForm();
+                setTimeout(hideToolbar, 100);
+            });
+            
+            // Cancel link button click
+            cancelLinkButton.addEventListener('click', function() {
+                hideLinkForm();
+                setTimeout(hideToolbar, 100);
+            });
+            
+            // Handle keyboard shortcuts
+            contentEditor.addEventListener('keydown', function(e) {
+                // Ctrl+B: Bold
+                if (e.ctrlKey && e.key === 'b') {
+                    e.preventDefault();
+                    document.execCommand('bold', false, null);
+                }
+                
+                // Ctrl+I: Italic
+                if (e.ctrlKey && e.key === 'i') {
+                    e.preventDefault();
+                    document.execCommand('italic', false, null);
+                }
+                
+                // Ctrl+K: Link
+                if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    if (window.getSelection().toString().trim() !== '') {
+                        showLinkForm();
+                    }
+                }
+                
+                // Update form fields after formatting
+                updateFormFields();
+            });
+            
+            // Click outside handler to hide toolbar properly
+            document.addEventListener('mousedown', function(e) {
+                // If clicking outside the toolbar and not in the editor selection
+                if (!toolbar.contains(e.target) && !isClickInsideSelection(e)) {
+                    setTimeout(hideToolbar, 100);
+                }
+            });
+            
+            // Check if click is inside the current selection
+            function isClickInsideSelection(e) {
+                if (!currentSelection) return false;
+                
+                const range = currentSelection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                
+                return (
+                    e.clientX >= rect.left &&
+                    e.clientX <= rect.right &&
+                    e.clientY >= rect.top &&
+                    e.clientY <= rect.bottom
+                );
+            }
+        }
+        
+        // Initialize content addition button and media dialog
+        function initContentAddButton() {
+            const contentAddButton = document.getElementById('contentAddButton');
+            const addButtonTrigger = contentAddButton.querySelector('.add-button-trigger');
+            const addMenuItems = contentAddButton.querySelectorAll('.add-menu-item');
+            const contentEditor = document.getElementById('contentEditor');
+            const mediaDialog = document.getElementById('mediaDialog');
+            const closeMediaDialog = document.getElementById('closeMediaDialog');
+            
+            // Current cursor position in the editor
+            let currentCaretPosition = null;
+            
+            // Placeholder for selection to keep track of where to insert content
+            let savedSelection = null;
+            
+            // Track button position
+            let lastParagraph = null;
+            
+            // Toggle add menu on click
+            addButtonTrigger.addEventListener('click', function() {
+                contentAddButton.classList.toggle('open');
+                
+                // Save current selection
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    savedSelection = selection.getRangeAt(0);
+                }
+            });
+            
+            // Handle clicks outside of menu to close it
+            document.addEventListener('click', function(e) {
+                if (!contentAddButton.contains(e.target)) {
+                    contentAddButton.classList.remove('open');
+                }
+            });
+            
+            // Content editor click to update button position
+            contentEditor.addEventListener('click', function() {
+                updateButtonPosition();
+            });
+            
+            // Content editor keyup to update button position
+            contentEditor.addEventListener('keyup', function() {
+                updateButtonPosition();
+            });
+            
+            // Update button position based on current caret
+            function updateButtonPosition() {
+                // Get the current selection
+                const selection = window.getSelection();
+                if (selection.rangeCount === 0) return;
+                
+                // Get the current paragraph
+                const range = selection.getRangeAt(0);
+                let currentNode = range.startContainer;
+                
+                // Find paragraph or block-level element
+                while (currentNode && currentNode !== contentEditor) {
+                    if (currentNode.nodeType === 1 && 
+                        (currentNode.tagName === 'P' || 
+                         currentNode.tagName === 'DIV' || 
+                         currentNode.tagName === 'H2' || 
+                         currentNode.tagName === 'H3' || 
+                         currentNode.tagName === 'BLOCKQUOTE')) {
+                        break;
+                    }
+                    currentNode = currentNode.parentNode;
+                }
+                
+                // Use content editor if no specific block found
+                if (!currentNode || currentNode === contentEditor) {
+                    currentNode = contentEditor;
+                }
+                
+                // Only update position if we've moved to a new paragraph
+                if (currentNode !== lastParagraph) {
+                    lastParagraph = currentNode;
+                    
+                    // Get position of current paragraph
+                    const rect = currentNode.getBoundingClientRect();
+                    const editorRect = contentEditor.getBoundingClientRect();
+                    
+                    // Position the button at the left of the editor, aligned with the current paragraph
+                    contentAddButton.style.top = `${rect.top - editorRect.top + contentEditor.scrollTop}px`;
+                    
+                    // Save caret position for later content insertion
+                    currentCaretPosition = range.cloneRange();
+                }
+            }
+            
+            // Handle menu item clicks
+            addMenuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const contentType = this.getAttribute('data-content-type');
+                    
+                    // Close the menu
+                    contentAddButton.classList.remove('open');
+                    
+                    // Handle each content type
+                    switch (contentType) {
+                        case 'image':
+                            showMediaDialog('imageUploadPane', 'Add Image');
+                            break;
+                        case 'video':
+                            showMediaDialog('videoUploadPane', 'Add Video');
+                            break;
+                        case 'embed':
+                            showMediaDialog('embedUploadPane', 'Add Embed');
+                            break;
+                        case 'code':
+                            showMediaDialog('codeBlockPane', 'Add Code Block');
+                            break;
+                        case 'divider':
+                            insertDivider();
+                            break;
+                    }
+                });
+            });
+            
+            // Show media dialog
+            function showMediaDialog(paneId, title) {
+                // Set dialog title
+                document.getElementById('mediaDialogTitle').textContent = title;
+                
+                // Hide all panes and show the selected one
+                document.querySelectorAll('.media-pane').forEach(pane => {
+                    pane.classList.remove('active');
+                });
+                document.getElementById(paneId).classList.add('active');
+                
+                // Show the dialog
+                mediaDialog.classList.add('visible');
+            }
+            
+            // Close dialog button
+            closeMediaDialog.addEventListener('click', function() {
+                mediaDialog.classList.remove('visible');
+            });
+            
+            // Close dialog when clicking outside
+            mediaDialog.addEventListener('click', function(e) {
+                if (e.target === mediaDialog) {
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Image upload area
+            const imageDropArea = document.getElementById('imageDropArea');
+            const imageFileInput = document.getElementById('imageFileInput');
+            
+            // Click on drop area to trigger file input
+            imageDropArea.addEventListener('click', function() {
+                imageFileInput.click();
+            });
+            
+            // Handle file selection
+            imageFileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    handleImageFile(this.files[0]);
+                }
+            });
+            
+            // Handle drag and drop
+            imageDropArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#d4af37';
+                this.style.backgroundColor = 'rgba(212, 175, 55, 0.05)';
+            });
+            
+            imageDropArea.addEventListener('dragleave', function() {
+                this.style.borderColor = '#e9ecef';
+                this.style.backgroundColor = '';
+            });
+            
+            imageDropArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#e9ecef';
+                this.style.backgroundColor = '';
+                
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleImageFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // Image URL input
+            document.getElementById('insertImageUrlBtn').addEventListener('click', function() {
+                const imageUrl = document.getElementById('imageUrlInput').value.trim();
+                if (imageUrl) {
+                    insertImage(imageUrl);
+                    document.getElementById('imageUrlInput').value = '';
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Video URL input
+            document.getElementById('insertVideoBtn').addEventListener('click', function() {
+                const videoUrl = document.getElementById('videoUrlInput').value.trim();
+                if (videoUrl) {
+                    insertVideo(videoUrl);
+                    document.getElementById('videoUrlInput').value = '';
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Embed code input
+            document.getElementById('insertEmbedBtn').addEventListener('click', function() {
+                const embedCode = document.getElementById('embedCodeInput').value.trim();
+                if (embedCode) {
+                    insertEmbed(embedCode);
+                    document.getElementById('embedCodeInput').value = '';
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Code block input
+            document.getElementById('insertCodeBtn').addEventListener('click', function() {
+                const code = document.getElementById('codeInput').value;
+                const language = document.getElementById('codeLanguageSelect').value;
+                
+                if (code) {
+                    insertCodeBlock(code, language);
+                    document.getElementById('codeInput').value = '';
+                    mediaDialog.classList.remove('visible');
+                }
+            });
+            
+            // Process selected image file
+            function handleImageFile(file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // For this example, we'll just use the data URL directly
+                    // In a real app, you would upload the file to server
+                    insertImage(e.target.result);
+                    mediaDialog.classList.remove('visible');
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Insert image at caret position
+            function insertImage(src) {
+                restoreSelection();
+                
+                const imageHtml = `
+                    <div class="media-container">
+                        <img src="${src}" alt="User uploaded image">
+                    </div>
+                    <p></p>
+                `;
+                
+                insertContentAtCaret(imageHtml);
+            }
+            
+            // Insert video at caret position
+            function insertVideo(url) {
+                restoreSelection();
+                
+                // Extract video ID and create embed code
+                let embedCode = '';
+                
+                if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                    // YouTube
+                    let videoId = '';
+                    
+                    if (url.includes('youtube.com/watch')) {
+                        const urlParams = new URLSearchParams(new URL(url).search);
+                        videoId = urlParams.get('v');
+                    } else if (url.includes('youtu.be/')) {
+                        videoId = url.split('youtu.be/')[1].split('?')[0];
+                    }
+                    
+                    if (videoId) {
+                        embedCode = `<div class="video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
+                    }
+                } else if (url.includes('vimeo.com')) {
+                    // Vimeo
+                    const vimeoId = url.split('vimeo.com/')[1].split('?')[0];
+                    embedCode = `<div class="video-container"><iframe src="https://player.vimeo.com/video/${vimeoId}" allowfullscreen></iframe></div>`;
+                } else {
+                    alert('Unsupported video URL. Please use YouTube or Vimeo links.');
+                    return;
+                }
+                
+                if (embedCode) {
+                    insertContentAtCaret(embedCode + '<p></p>');
+                }
+            }
+            
+            // Insert embed code
+            function insertEmbed(code) {
+                restoreSelection();
+                insertContentAtCaret(`<div class="embed-container">${code}</div><p></p>`);
+            }
+            
+            // Insert code block
+            function insertCodeBlock(code, language) {
+                restoreSelection();
+                
+                // Escape HTML entities to prevent rendering
+                const escapedCode = code
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                
+                insertContentAtCaret(`<pre class="code-block" data-language="${language}">${escapedCode}</pre><p></p>`);
+            }
+            
+            // Insert divider
+            function insertDivider() {
+                restoreSelection();
+                insertContentAtCaret('<hr class="content-divider"><p></p>');
+            }
+            
+            // Restore saved selection
+            function restoreSelection() {
+                if (savedSelection) {
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(savedSelection);
+                }
+            }
+            
+            // Insert HTML content at current caret position
+            function insertContentAtCaret(html) {
+                // Focus the editor first
+                contentEditor.focus();
+                
+                // Get selection
+                const selection = window.getSelection();
+                
+                // If we have a saved selection, use it
+                if (savedSelection) {
+                    selection.removeAllRanges();
+                    selection.addRange(savedSelection);
+                }
+                
+                // If no selection, create one at the end
+                if (selection.rangeCount === 0) {
+                    const range = document.createRange();
+                    range.setStart(contentEditor, contentEditor.childNodes.length);
+                    range.collapse(true);
+                    selection.addRange(range);
+                }
+                
+                // Insert the HTML
+                document.execCommand('insertHTML', false, html);
+                
+                // Update form fields after insertion
+                updateFormFields();
+                
+                // Update the button position
+                setTimeout(updateButtonPosition, 0);
+            }
+        }
     </script>
 }
