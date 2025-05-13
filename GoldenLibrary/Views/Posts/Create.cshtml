@@ -38,20 +38,29 @@
             <button type="button" class="toolbar-button" data-command="italic" title="Italic (Ctrl+I)">
                 <i class="bi bi-type-italic"></i>
             </button>
-            <button type="button" class="toolbar-button" data-command="heading" title="Heading">
+            <button type="button" class="toolbar-button" data-command="h1" title="Heading 1">
                 <i class="bi bi-type-h1"></i>
             </button>
-            <button type="button" class="toolbar-button" data-command="subheading" title="Subheading">
+            <button type="button" class="toolbar-button" data-command="h2" title="Heading 2">
                 <i class="bi bi-type-h2"></i>
             </button>
-            <button type="button" class="toolbar-button" data-command="orderedList" title="Numbered List">
+            <button type="button" class="toolbar-button" data-command="h3" title="Heading 3">
+                <i class="bi bi-type-h3"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="orderedList" title="Numbered List (1.)">
                 <i class="bi bi-list-ol"></i>
             </button>
-            <button type="button" class="toolbar-button" data-command="unorderedList" title="Bullet List">
+            <button type="button" class="toolbar-button" data-command="unorderedList" title="Bullet List (*)">
                 <i class="bi bi-list-ul"></i>
             </button>
-            <button type="button" class="toolbar-button" data-command="quote" title="Quote">
+            <button type="button" class="toolbar-button" data-command="quote" title="Quote (>)">
                 <i class="bi bi-blockquote-left"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="inlineCode" title="Inline Code (`)">
+                <i class="bi bi-code"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="highlight" title="Highlight">
+                <i class="bi bi-highlighter"></i>
             </button>
             <button type="button" class="toolbar-button" data-command="link" title="Link (Ctrl+K)">
                 <i class="bi bi-link-45deg"></i>
@@ -63,6 +72,17 @@
             <input type="text" id="linkInput" placeholder="Paste or type a link...">
             <button type="button" id="applyLinkButton">Apply</button>
             <button type="button" id="cancelLinkButton">Cancel</button>
+        </div>
+        <!-- Highlight color picker (initially hidden, part of the toolbar) -->
+        <div class="highlight-color-picker" id="highlightColorPicker" style="display: none;">
+            <button type="button" class="color-option" data-color="yellow" style="background-color: yellow; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
+            <button type="button" class="color-option" data-color="FFADAD" style="background-color: #FFADAD; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
+            <button type="button" class="color-option" data-color="A0E7E5" style="background-color: #A0E7E5; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
+            <button type="button" class="color-option" data-color="FDFFB6" style="background-color: #FDFFB6; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
+            <button type="button" class="color-option" data-color="B0E0E6" style="background-color: #B0E0E6; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
+            <button type="button" class="toolbar-button" data-command="removeHighlight" title="Remove Highlight" style="width: auto; padding: 0 5px;">
+                 <i class="bi bi-eraser-fill"></i> Clear
+            </button>
         </div>
     </div>
     
@@ -408,8 +428,9 @@
         border-radius: 4px;
         box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         padding: 4px;
-        display: flex;
-        align-items: center;
+        display: flex; /* Changed to flex for multiple internal divs */
+        flex-direction: column; /* Stack toolbar items vertically if needed or manage via child divs */
+        align-items: flex-start; /* Align items to the start */
         transition: opacity 0.2s ease, transform 0.2s ease;
         opacity: 0;
         transform: translateY(10px) scale(0.95);
@@ -452,6 +473,56 @@
     .toolbar-button.active {
         background-color: rgba(212, 175, 55, 0.1);
         color: #d4af37;
+    }
+
+    /* Inline code style */
+    .editable-content code {
+        background-color: #f8f9fa;
+        padding: 0.2em 0.4em;
+        margin: 0;
+        font-size: 85%;
+        border-radius: 3px;
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        border: 1px solid #e9ecef;
+    }
+
+    /* Highlighted text style using classes */
+    .editable-content .highlight-yellow { background-color: yellow; }
+    .editable-content .highlight-FFADAD { background-color: #FFADAD; } /* Light Pink */
+    .editable-content .highlight-A0E7E5 { background-color: #A0E7E5; } /* Light Blue */
+    .editable-content .highlight-FDFFB6 { background-color: #FDFFB6; } /* Light Yellow */
+    .editable-content .highlight-B0E0E6 { background-color: #B0E0E6; } /* Powder Blue */
+    
+    /* Highlight color picker styles */
+    .highlight-color-picker {
+        display: flex; /* Controlled by JS */
+        padding: 4px 6px; /* Add some padding */
+        align-items: center;
+        background-color: white; /* Ensure it has a background */
+        border-top: 1px solid #e9ecef; /* Separator if below buttons */
+        margin-top: 4px; /* Space from buttons if stacked */
+    }
+
+    .highlight-color-picker .color-option {
+        /* Styles already defined inline in HTML for simplicity, can be moved here */
+    }
+    .highlight-color-picker .color-option:hover {
+        border-color: #333;
+        transform: scale(1.1);
+    }
+     .highlight-color-picker .toolbar-button:hover { /* For clear highlight button */
+        background-color: #f8f9fa;
+        color: #212529;
+    }
+
+    /* Blockquote specific styling */
+    .editable-content blockquote {
+        border-left: 3px solid #d4af37; /* Golden color from theme */
+        padding-left: 15px;
+        margin-left: 0;
+        margin-right: 0;
+        color: #6c757d; /* Muted text color */
+        font-style: italic;
     }
     
     /* Link Form - Updated for minimalist look */
@@ -1302,7 +1373,7 @@
                 });
                 
                 // Update form fields on input and save to localStorage
-                editor.addEventListener('input', function() {
+                editor.addEventListener('input', function(e) {
                     updateFormFields();
                     if (this === contentEditor) {
                         updateWordCount();
@@ -1315,6 +1386,11 @@
                     // Set new timers
                     localSaveTimer = setTimeout(saveToLocalStorage, localSaveDelay);
                     autoSaveTimer = setTimeout(performAutoSave, autoSaveDelay);
+
+                    // Handle Markdown-like shortcuts
+                    if (e.inputType === 'insertText' && e.data === ' ') {
+                        handleMarkdownBlockShortcutsOnSpace(this);
+                    }
                 });
                 
                 // Add keydown handler to create new paragraph on Enter in title and subtitle
@@ -1816,8 +1892,12 @@
             const applyLinkButton = document.getElementById('applyLinkButton');
             const cancelLinkButton = document.getElementById('cancelLinkButton');
             const contentEditor = document.getElementById('contentEditor');
+            const highlightButton = toolbar.querySelector('.toolbar-button[data-command="highlight"]');
+            const highlightColorPicker = document.getElementById('highlightColorPicker');
+            const colorOptions = highlightColorPicker.querySelectorAll('.color-option');
+            const removeHighlightButton = highlightColorPicker.querySelector('.toolbar-button[data-command="removeHighlight"]');
             
-            let currentSelection = null;
+            let currentSelection = null; // Store selection range
             let selectionTimeout = null;
             
             // Check for text selection and show toolbar with a small delay
@@ -1830,16 +1910,17 @@
                     if (selection.rangeCount > 0 && selection.toString().trim() !== '') {
                         const range = selection.getRangeAt(0);
                         
-                        // Check if selection is within the content editor
                         if (contentEditor.contains(range.commonAncestorContainer)) {
-                            currentSelection = selection;
+                            currentSelection = range.cloneRange(); // Save the current selection
                             showToolbar(selection);
                         } else {
-                            hideToolbar();
+                            if (!toolbar.contains(document.activeElement) && (!highlightColorPicker || !highlightColorPicker.contains(document.activeElement))) {
+                                hideToolbar();
+                            }
                         }
                     } else {
-                        // Only hide toolbar if not interacting with it
-                        if (!toolbar.contains(document.activeElement)) {
+                        // Only hide toolbar if not interacting with it or its sub-elements (like color picker)
+                        if (!toolbar.contains(document.activeElement) && (!highlightColorPicker || !highlightColorPicker.contains(document.activeElement))) {
                             hideToolbar();
                         }
                     }
@@ -1884,85 +1965,217 @@
                      document.activeElement === cancelLinkButton)) {
                     return;
                 }
-                
+                // Don't hide if color picker is active and focused within
+                if (highlightColorPicker && highlightColorPicker.style.display !== 'none' && highlightColorPicker.contains(document.activeElement)) {
+                    return;
+                }
+
                 toolbar.classList.remove('visible');
                 hideLinkForm();
+                if (highlightColorPicker) {
+                    highlightColorPicker.style.display = 'none';
+                }
             }
             
             // Update toolbar button states based on current selection formatting
             function updateToolbarState() {
-                const buttons = toolbar.querySelectorAll('.toolbar-button');
-                
+                const buttons = toolbar.querySelectorAll('.toolbar-buttons .toolbar-button'); // Target only main buttons
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+
+                const range = selection.getRangeAt(0);
+                let parentNode = range.commonAncestorContainer;
+                if (parentNode.nodeType === Node.TEXT_NODE) {
+                    parentNode = parentNode.parentNode;
+                }
+
                 buttons.forEach(button => {
                     button.classList.remove('active');
-                    
                     const command = button.getAttribute('data-command');
-                    
-                    if (command === 'bold' && document.queryCommandState('bold')) {
-                        button.classList.add('active');
-                    } else if (command === 'italic' && document.queryCommandState('italic')) {
-                        button.classList.add('active');
-                    } else if (command === 'link') {
-                        // Check if selection contains a link
-                        const selection = window.getSelection();
-                        if (selection.rangeCount > 0) {
-                            const node = selection.getRangeAt(0).commonAncestorContainer;
-                            const linkElement = getClosestLink(node);
-                            
-                            if (linkElement) {
+
+                    try {
+                        if (command === 'bold' || command === 'italic' || command === 'underline' || command === 'strikeThrough' || command === 'insertOrderedList' || command === 'insertUnorderedList') {
+                             if (document.queryCommandState(command)) {
                                 button.classList.add('active');
                             }
+                        }
+                    } catch (e) { console.warn("Error queryCommandState for " + command, e); }
+
+
+                    const blockType = document.queryCommandValue('formatBlock').toLowerCase();
+                    if ((command === 'h1' && blockType === 'h1') ||
+                        (command === 'h2' && blockType === 'h2') ||
+                        (command === 'h3' && blockType === 'h3') ||
+                        (command === 'quote' && (blockType === 'blockquote' || parentNode.closest('blockquote')))) { // Check parent for blockquote too
+                        button.classList.add('active');
+                    }
+                     // Check for lists more reliably
+                    if (command === 'orderedList') {
+                        if (parentNode.closest('ol')) button.classList.add('active');
+                    }
+                    if (command === 'unorderedList') {
+                         if (parentNode.closest('ul')) button.classList.add('active');
+                    }
+
+
+                    if (command === 'inlineCode') {
+                        if (parentNode.closest('code')) button.classList.add('active');
+                    }
+                    
+                    if (command === 'highlight') {
+                        let highlightNode = parentNode;
+                        let isHighlighted = false;
+                        while(highlightNode && highlightNode !== contentEditor) {
+                            if (highlightNode.nodeType === Node.ELEMENT_NODE && highlightNode.className && highlightNode.className.startsWith('highlight-')) {
+                                isHighlighted = true;
+                                break;
+                            }
+                            highlightNode = highlightNode.parentNode;
+                        }
+                        if (isHighlighted) button.classList.add('active');
+                    }
+                    
+                    if (command === 'link') {
+                        if (parentNode.closest('a')) {
+                            button.classList.add('active');
                         }
                     }
                 });
             }
             
-            // Get closest link element
-            function getClosestLink(node) {
-                while (node && node !== contentEditor) {
-                    if (node.nodeType === 1 && node.tagName.toLowerCase() === 'a') {
-                        return node;
-                    }
-                    node = node.parentNode;
-                }
-                return null;
-            }
-            
             // Handle toolbar button clicks
-            toolbar.querySelectorAll('.toolbar-button').forEach(button => {
-                button.addEventListener('click', function() {
+            toolbar.querySelectorAll('.toolbar-buttons .toolbar-button').forEach(button => {
+                button.addEventListener('click', function(e) {
                     const command = this.getAttribute('data-command');
+                     e.stopPropagation(); // Prevent toolbar from hiding if we click a button that doesn't open a sub-form
+
+                    if (command === 'highlight') {
+                        // Toggle color picker
+                        if (highlightColorPicker.style.display === 'none') {
+                            highlightColorPicker.style.display = 'flex';
+                            // Position it. For simplicity, it's part of the toolbar div, so relative positioning works.
+                        } else {
+                            highlightColorPicker.style.display = 'none';
+                        }
+                        return; // Don't apply formatting yet, just show/hide picker
+                    }
                     
+                    // For other commands, hide picker if open
+                    if (highlightColorPicker) highlightColorPicker.style.display = 'none';
+
+
                     // Restore the selection before applying formatting
                     if (currentSelection) {
-                        const selection = window.getSelection();
-                        selection.removeAllRanges();
-                        selection.addRange(currentSelection.getRangeAt(0));
+                         const selection = window.getSelection();
+                         selection.removeAllRanges();
+                         selection.addRange(currentSelection);
                     }
                     
                     applyFormatting(command);
                     
                     // Update the hidden form fields after formatting
                     updateFormFields();
+                    // Toolbar might hide due to selection change, so re-update state if needed
+                    setTimeout(updateToolbarState, 0); 
                 });
             });
+
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const color = this.getAttribute('data-color');
+                     if (currentSelection) {
+                         const selection = window.getSelection();
+                         selection.removeAllRanges();
+                         selection.addRange(currentSelection);
+                    }
+                    applyFormatting('highlight', color);
+                    highlightColorPicker.style.display = 'none';
+                    setTimeout(hideToolbar, 50); 
+                });
+            });
+
+            if (removeHighlightButton) {
+                removeHighlightButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (currentSelection) {
+                         const selection = window.getSelection();
+                         selection.removeAllRanges();
+                         selection.addRange(currentSelection);
+                    }
+                    applyFormatting('removeHighlight');
+                    highlightColorPicker.style.display = 'none';
+                    setTimeout(hideToolbar, 50);
+                });
+            }
             
             // Apply formatting based on command
-            function applyFormatting(command) {
+            function applyFormatting(command, value = null) {
+                // currentSelection should be restored by the caller if needed
+                let selectionText = window.getSelection().toString();
+
                 switch (command) {
-                    case 'bold':
-                        document.execCommand('bold', false, null);
+                    case 'bold': document.execCommand('bold'); break;
+                    case 'italic': document.execCommand('italic'); break;
+                    case 'h1': document.execCommand('formatBlock', false, 'h1'); break;
+                    case 'h2': document.execCommand('formatBlock', false, 'h2'); break;
+                    case 'h3': document.execCommand('formatBlock', false, 'h3'); break;
+                    case 'orderedList': document.execCommand('insertOrderedList'); break;
+                    case 'unorderedList': document.execCommand('insertUnorderedList'); break;
+                    case 'quote': document.execCommand('formatBlock', false, 'blockquote'); break;
+                    case 'inlineCode':
+                        if (selectionText) {
+                            document.execCommand('insertHTML', false, '<code>' + selectionText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</code>');
+                        }
                         break;
-                    case 'italic':
-                        document.execCommand('italic', false, null);
+                    case 'highlight':
+                        if (selectionText && value) {
+                            document.execCommand('insertHTML', false, `<span class="highlight-${value}">${selectionText}</span>`);
+                        }
+                        break;
+                    case 'removeHighlight':
+                        if (selectionText) {
+                            // Attempt to remove by un-wrapping. This is complex.
+                            // A simpler method for now:
+                            let sel = window.getSelection();
+                            if (sel.rangeCount > 0) {
+                                let range = sel.getRangeAt(0);
+                                let el = range.commonAncestorContainer;
+                                if (el.nodeType !== 1) el = el.parentNode;
+                                
+                                // Find the closest highlight span and remove it
+                                let spanToUnwrap = null;
+                                let tempEl = el;
+                                while(tempEl && tempEl !== contentEditor) {
+                                    if (tempEl.nodeType === 1 && tempEl.nodeName === 'SPAN' && tempEl.className && tempEl.className.startsWith('highlight-')) {
+                                        spanToUnwrap = tempEl;
+                                        break;
+                                    }
+                                    tempEl = tempEl.parentNode;
+                                }
+
+                                if (spanToUnwrap) {
+                                    let parent = spanToUnwrap.parentNode;
+                                    while (spanToUnwrap.firstChild) {
+                                        parent.insertBefore(spanToUnwrap.firstChild, spanToUnwrap);
+                                    }
+                                    parent.removeChild(spanToUnwrap);
+                                } else {
+                                     // Fallback if no single span is found, try removeFormat on selection
+                                     // This is broad, but might help.
+                                     document.execCommand('removeFormat');
+                                }
+                            }
+                        }
                         break;
                     case 'link':
-                        showLinkForm();
-                        break;
+                        // currentSelection is already set by selectionchange
+                        showLinkForm(); 
+                        return; 
                 }
-                
-                // Update toolbar state after applying formatting
                 updateToolbarState();
+                updateFormFields();
+                contentEditor.focus();
             }
             
             // Show link input form
@@ -2002,7 +2215,7 @@
                     if (currentSelection) {
                         const selection = window.getSelection();
                         selection.removeAllRanges();
-                        selection.addRange(currentSelection.getRangeAt(0));
+                        selection.addRange(currentSelection);
                     }
                     
                     // Add protocol if missing
@@ -2055,9 +2268,17 @@
             
             // Click outside handler to hide toolbar properly
             document.addEventListener('mousedown', function(e) {
-                // If clicking outside the toolbar and not in the editor selection
-                if (!toolbar.contains(e.target) && !isClickInsideSelection(e)) {
-                    setTimeout(hideToolbar, 100);
+                // Check if the click is outside the toolbar AND the color picker
+                const isToolbarClick = toolbar.contains(e.target);
+                const isPickerClick = highlightColorPicker && highlightColorPicker.contains(e.target);
+
+                if (toolbar.classList.contains('visible') && !isToolbarClick && !isPickerClick) {
+                    // If the click is on the content editor, do not hide immediately, let selectionchange handle it
+                    if (contentEditor.contains(e.target)) {
+                        // If click is inside selection, don't hide.
+                        if (isClickInsideSelection(e)) return;
+                    }
+                    hideToolbar();
                 }
             });
             
@@ -2065,7 +2286,7 @@
             function isClickInsideSelection(e) {
                 if (!currentSelection) return false;
                 
-                const range = currentSelection.getRangeAt(0);
+                const range = currentSelection;
                 const rect = range.getBoundingClientRect();
                 
                 return (
@@ -2076,363 +2297,81 @@
                 );
             }
         }
-        
-        // Initialize content addition button and media dialog
-        function initContentAddButton() {
-            const contentAddButton = document.getElementById('contentAddButton');
-            const addButtonTrigger = contentAddButton.querySelector('.add-button-trigger');
-            const addMenuItems = contentAddButton.querySelectorAll('.add-menu-item');
-            const contentEditor = document.getElementById('contentEditor');
-            const mediaDialog = document.getElementById('mediaDialog');
-            const closeMediaDialog = document.getElementById('closeMediaDialog');
+
+        function handleMarkdownBlockShortcutsOnSpace(editor) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount || !selection.isCollapsed) return;
+
+            const range = selection.getRangeAt(0);
+            let container = range.startContainer; // Usually a text node
             
-            // Current cursor position in the editor
-            let currentCaretPosition = null;
-            
-            // Placeholder for selection to keep track of where to insert content
-            let savedSelection = null;
-            
-            // Track button position
-            let lastParagraph = null;
-            
-            // Toggle add menu on click
-            addButtonTrigger.addEventListener('click', function() {
-                contentAddButton.classList.toggle('open');
-                
-                // Save current selection
-                const selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                    savedSelection = selection.getRangeAt(0);
-                }
-            });
-            
-            // Handle clicks outside of menu to close it
-            document.addEventListener('click', function(e) {
-                if (!contentAddButton.contains(e.target)) {
-                    contentAddButton.classList.remove('open');
-                }
-            });
-            
-            // Content editor click to update button position
-            contentEditor.addEventListener('click', function() {
-                updateButtonPosition();
-            });
-            
-            // Content editor keyup to update button position
-            contentEditor.addEventListener('keyup', function() {
-                updateButtonPosition();
-            });
-            
-            // Update button position based on current caret
-            function updateButtonPosition() {
-                // Get the current selection
-                const selection = window.getSelection();
-                if (selection.rangeCount === 0) return;
-                
-                // Get the current paragraph
-                const range = selection.getRangeAt(0);
-                let currentNode = range.startContainer;
-                
-                // Find paragraph or block-level element
-                while (currentNode && currentNode !== contentEditor) {
-                    if (currentNode.nodeType === 1 && 
-                        (currentNode.tagName === 'P' || 
-                         currentNode.tagName === 'DIV' || 
-                         currentNode.tagName === 'H2' || 
-                         currentNode.tagName === 'H3' || 
-                         currentNode.tagName === 'BLOCKQUOTE')) {
-                        break;
+            if (container.nodeType !== Node.TEXT_NODE || range.startOffset === 0) return;
+
+            let textContentBeforeSpace = container.textContent.substring(0, range.startOffset -1); // Text before the just-typed space
+
+            // Find the block element (P, DIV, LI etc.)
+            let blockElement = container;
+            while (blockElement && blockElement !== editor) {
+                if (blockElement.nodeType === Node.ELEMENT_NODE && 
+                    (blockElement.matches('p, div, h1, h2, h3, h4, h5, h6, li') || blockElement.parentNode === editor)) {
+                    // Check if textContentBeforeSpace is at the beginning of this block
+                    if ((blockElement.textContent || blockElement.innerText || "").trim().startsWith(textContentBeforeSpace.trim())) {
+                         break;
                     }
-                    currentNode = currentNode.parentNode;
                 }
-                
-                // Use content editor if no specific block found
-                if (!currentNode || currentNode === contentEditor) {
-                    currentNode = contentEditor;
-                }
-                
-                // Only update position if we've moved to a new paragraph
-                if (currentNode !== lastParagraph) {
-                    lastParagraph = currentNode;
-                    
-                    // Get position of current paragraph
-                    const rect = currentNode.getBoundingClientRect();
-                    const editorRect = contentEditor.getBoundingClientRect();
-                    
-                    // Position the button at the left of the editor, aligned with the current paragraph
-                    contentAddButton.style.top = `${rect.top - editorRect.top + contentEditor.scrollTop}px`;
-                    
-                    // Save caret position for later content insertion
-                    currentCaretPosition = range.cloneRange();
-                }
+                blockElement = blockElement.parentNode;
             }
             
-            // Handle menu item clicks
-            addMenuItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    const contentType = this.getAttribute('data-content-type');
-                    
-                    // Close the menu
-                    contentAddButton.classList.remove('open');
-                    
-                    // Handle each content type
-                    switch (contentType) {
-                        case 'image':
-                            showMediaDialog('imageUploadPane', 'Add Image');
-                            break;
-                        case 'video':
-                            showMediaDialog('videoUploadPane', 'Add Video');
-                            break;
-                        case 'embed':
-                            showMediaDialog('embedUploadPane', 'Add Embed');
-                            break;
-                        case 'code':
-                            showMediaDialog('codeBlockPane', 'Add Code Block');
-                            break;
-                        case 'divider':
-                            insertDivider();
-                            break;
-                    }
-                });
-            });
-            
-            // Show media dialog
-            function showMediaDialog(paneId, title) {
-                // Set dialog title
-                document.getElementById('mediaDialogTitle').textContent = title;
-                
-                // Hide all panes and show the selected one
-                document.querySelectorAll('.media-pane').forEach(pane => {
-                    pane.classList.remove('active');
-                });
-                document.getElementById(paneId).classList.add('active');
-                
-                // Show the dialog
-                mediaDialog.classList.add('visible');
-            }
-            
-            // Close dialog button
-            closeMediaDialog.addEventListener('click', function() {
-                mediaDialog.classList.remove('visible');
-            });
-            
-            // Close dialog when clicking outside
-            mediaDialog.addEventListener('click', function(e) {
-                if (e.target === mediaDialog) {
-                    mediaDialog.classList.remove('visible');
-                }
-            });
-            
-            // Image upload area
-            const imageDropArea = document.getElementById('imageDropArea');
-            const imageFileInput = document.getElementById('imageFileInput');
-            
-            // Click on drop area to trigger file input
-            imageDropArea.addEventListener('click', function() {
-                imageFileInput.click();
-            });
-            
-            // Handle file selection
-            imageFileInput.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    handleImageFile(this.files[0]);
-                }
-            });
-            
-            // Handle drag and drop
-            imageDropArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#d4af37';
-                this.style.backgroundColor = 'rgba(212, 175, 55, 0.05)';
-            });
-            
-            imageDropArea.addEventListener('dragleave', function() {
-                this.style.borderColor = '#e9ecef';
-                this.style.backgroundColor = '';
-            });
-            
-            imageDropArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.borderColor = '#e9ecef';
-                this.style.backgroundColor = '';
-                
-                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                    handleImageFile(e.dataTransfer.files[0]);
-                }
-            });
-            
-            // Image URL input
-            document.getElementById('insertImageUrlBtn').addEventListener('click', function() {
-                const imageUrl = document.getElementById('imageUrlInput').value.trim();
-                if (imageUrl) {
-                    insertImage(imageUrl);
-                    document.getElementById('imageUrlInput').value = '';
-                    mediaDialog.classList.remove('visible');
-                }
-            });
-            
-            // Video URL input
-            document.getElementById('insertVideoBtn').addEventListener('click', function() {
-                const videoUrl = document.getElementById('videoUrlInput').value.trim();
-                if (videoUrl) {
-                    insertVideo(videoUrl);
-                    document.getElementById('videoUrlInput').value = '';
-                    mediaDialog.classList.remove('visible');
-                }
-            });
-            
-            // Embed code input
-            document.getElementById('insertEmbedBtn').addEventListener('click', function() {
-                const embedCode = document.getElementById('embedCodeInput').value.trim();
-                if (embedCode) {
-                    insertEmbed(embedCode);
-                    document.getElementById('embedCodeInput').value = '';
-                    mediaDialog.classList.remove('visible');
-                }
-            });
-            
-            // Code block input
-            document.getElementById('insertCodeBtn').addEventListener('click', function() {
-                const code = document.getElementById('codeInput').value;
-                const language = document.getElementById('codeLanguageSelect').value;
-                
-                if (code) {
-                    insertCodeBlock(code, language);
-                    document.getElementById('codeInput').value = '';
-                    mediaDialog.classList.remove('visible');
-                }
-            });
-            
-            // Process selected image file
-            function handleImageFile(file) {
-                if (!file.type.startsWith('image/')) {
-                    alert('Please select an image file.');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // For this example, we'll just use the data URL directly
-                    // In a real app, you would upload the file to server
-                    insertImage(e.target.result);
-                    mediaDialog.classList.remove('visible');
-                };
-                reader.readAsDataURL(file);
-            }
-            
-            // Insert image at caret position
-            function insertImage(src) {
-                restoreSelection();
-                
-                const imageHtml = `
-                    <div class="media-container">
-                        <img src="${src}" alt="User uploaded image">
-                    </div>
-                    <p></p>
-                `;
-                
-                insertContentAtCaret(imageHtml);
-            }
-            
-            // Insert video at caret position
-            function insertVideo(url) {
-                restoreSelection();
-                
-                // Extract video ID and create embed code
-                let embedCode = '';
-                
-                if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                    // YouTube
-                    let videoId = '';
-                    
-                    if (url.includes('youtube.com/watch')) {
-                        const urlParams = new URLSearchParams(new URL(url).search);
-                        videoId = urlParams.get('v');
-                    } else if (url.includes('youtu.be/')) {
-                        videoId = url.split('youtu.be/')[1].split('?')[0];
-                    }
-                    
-                    if (videoId) {
-                        embedCode = `<div class="video-container"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
-                    }
-                } else if (url.includes('vimeo.com')) {
-                    // Vimeo
-                    const vimeoId = url.split('vimeo.com/')[1].split('?')[0];
-                    embedCode = `<div class="video-container"><iframe src="https://player.vimeo.com/video/${vimeoId}" allowfullscreen></iframe></div>`;
+            if (!blockElement || blockElement === editor) {
+                 // If we are directly in contentEditor, or couldn't find a block,
+                 // and the text node is the first child of the editor, treat the text node's content.
+                if (container.nodeType === Node.TEXT_NODE && container.parentNode === editor) {
+                    // This is a simple case, text directly in editor.
                 } else {
-                    alert('Unsupported video URL. Please use YouTube or Vimeo links.');
-                    return;
-                }
-                
-                if (embedCode) {
-                    insertContentAtCaret(embedCode + '<p></p>');
+                    return; // Cannot determine block reliably for markdown.
                 }
             }
             
-            // Insert embed code
-            function insertEmbed(code) {
-                restoreSelection();
-                insertContentAtCaret(`<div class="embed-container">${code}</div><p></p>`);
+            // Use the text content of the text node where space was typed
+            const currentTextNodeContent = container.textContent;
+            const textForMarkdownCheck = currentTextNodeContent.substring(0, range.startOffset).trim(); // Includes the space
+
+            let command = null;
+            let charsToRemove = 0; // Number of chars for markdown prefix (e.g., "# ", "> ")
+
+            if (textForMarkdownCheck === '#') { command = 'h1'; charsToRemove = 1; }
+            else if (textForMarkdownCheck === '##') { command = 'h2'; charsToRemove = 2; }
+            else if (textForMarkdownCheck === '###') { command = 'h3'; charsToRemove = 3; }
+            else if (textForMarkdownCheck === '>') { command = 'quote'; charsToRemove = 1; }
+            else if (textForMarkdownCheck === '*' || textForMarkdownCheck === '-') { command = 'insertUnorderedList'; charsToRemove = 1; }
+            else if (textForMarkdownCheck.match(/^\d+\.$/)) { // Matches "1.", "10." etc.
+                command = 'insertOrderedList'; 
+                charsToRemove = textForMarkdownCheck.length;
             }
-            
-            // Insert code block
-            function insertCodeBlock(code, language) {
-                restoreSelection();
+
+            if (command) {
+                // The space is already typed. We need to remove the markdown prefix from the text node.
+                // Range is at: prefix<space>|cursor
+                // We want to delete "prefix"
+                range.setStart(container, 0); // Start of text node
+                range.setEnd(container, charsToRemove); // End of prefix
                 
-                // Escape HTML entities to prevent rendering
-                const escapedCode = code
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
+                selection.removeAllRanges();
+                selection.addRange(range);
+                document.execCommand('delete'); // Delete the markdown prefix (e.g., "#")
+
+                // The space is still there. The cursor is now at the beginning of the space.
+                // Applying formatBlock or list command should work correctly.
                 
-                insertContentAtCaret(`<pre class="code-block" data-language="${language}">${escapedCode}</pre><p></p>`);
-            }
-            
-            // Insert divider
-            function insertDivider() {
-                restoreSelection();
-                insertContentAtCaret('<hr class="content-divider"><p></p>');
-            }
-            
-            // Restore saved selection
-            function restoreSelection() {
-                if (savedSelection) {
-                    const selection = window.getSelection();
-                    selection.removeAllRanges();
-                    selection.addRange(savedSelection);
-                }
-            }
-            
-            // Insert HTML content at current caret position
-            function insertContentAtCaret(html) {
-                // Focus the editor first
-                contentEditor.focus();
-                
-                // Get selection
-                const selection = window.getSelection();
-                
-                // If we have a saved selection, use it
-                if (savedSelection) {
-                    selection.removeAllRanges();
-                    selection.addRange(savedSelection);
+                if (command.startsWith('insert')) { // For lists
+                    document.execCommand(command);
+                } else { // For formatBlock (h1, h2, h3, blockquote)
+                    document.execCommand('formatBlock', false, command);
                 }
                 
-                // If no selection, create one at the end
-                if (selection.rangeCount === 0) {
-                    const range = document.createRange();
-                    range.setStart(contentEditor, contentEditor.childNodes.length);
-                    range.collapse(true);
-                    selection.addRange(range);
-                }
-                
-                // Insert the HTML
-                document.execCommand('insertHTML', false, html);
-                
-                // Update form fields after insertion
+                // Prevent default space insertion if necessary, though 'input' event is after the fact.
+                // The main goal is that the formatting is applied.
                 updateFormFields();
-                
-                // Update the button position
-                setTimeout(updateButtonPosition, 0);
             }
         }
     </script>
