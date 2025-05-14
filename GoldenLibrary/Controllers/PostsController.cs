@@ -590,5 +590,97 @@ namespace GoldenLibrary.Controllers
                 return Json(new { success = false, message = $"Error uploading media: {ex.Message}" });
             }
         }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SearchUnsplash(string query, int page = 1)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return Json(new { success = false, message = "Search query cannot be empty" });
+            }
+            
+            try
+            {
+                // You would normally get this from configuration
+                // Remember to register and get your own API key from Unsplash Developer portal
+                string unsplashAccessKey = "YOUR_UNSPLASH_ACCESS_KEY_HERE";
+                int perPage = 12;
+                
+                // Construct the Unsplash API URL
+                string apiUrl = $"https://api.unsplash.com/search/photos?query={Uri.EscapeDataString(query)}&page={page}&per_page={perPage}";
+                
+                // Create HTTP client
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add("Accept-Version", "v1");
+                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Client-ID {unsplashAccessKey}");
+                    
+                    // Send request to Unsplash API
+                    var response = await httpClient.GetAsync(apiUrl);
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Parse the response
+                        var jsonResponse = await response.Content.ReadAsStringAsync();
+                        var searchResult = System.Text.Json.JsonSerializer.Deserialize<UnsplashSearchResult>(jsonResponse);
+                        
+                        return Json(new { 
+                            success = true,
+                            results = searchResult.results,
+                            totalPages = searchResult.total_pages
+                        });
+                    }
+                    else
+                    {
+                        return Json(new { success = false, message = $"Unsplash API error: {response.StatusCode}" });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error searching Unsplash: {ex.Message}" });
+            }
+        }
+
+        // Classes to deserialize Unsplash API response
+        public class UnsplashSearchResult
+        {
+            public int total { get; set; }
+            public int total_pages { get; set; }
+            public List<UnsplashPhoto> results { get; set; }
+        }
+        
+        public class UnsplashPhoto
+        {
+            public string id { get; set; }
+            public UnsplashUrls urls { get; set; }
+            public string alt_description { get; set; }
+            public UnsplashUser user { get; set; }
+        }
+        
+        public class UnsplashUrls
+        {
+            public string raw { get; set; }
+            public string full { get; set; }
+            public string regular { get; set; }
+            public string small { get; set; }
+            public string thumb { get; set; }
+        }
+        
+        public class UnsplashUser
+        {
+            public string id { get; set; }
+            public string name { get; set; }
+            public UnsplashLinks links { get; set; }
+        }
+        
+        public class UnsplashLinks
+        {
+            public string html { get; set; }
+            public string photos { get; set; }
+            public string portfolio { get; set; }
+        }
     }
 }

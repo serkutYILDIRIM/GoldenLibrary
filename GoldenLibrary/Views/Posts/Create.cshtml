@@ -114,8 +114,7 @@
             </button>
         </div>
     </div>
-    
-    <!-- Media Upload Dialog -->
+      <!-- Media Upload Dialog -->
     <div class="media-dialog" id="mediaDialog">
         <div class="media-dialog-content">
             <div class="media-dialog-header">
@@ -125,10 +124,26 @@
                 </button>
             </div>
             <div class="media-dialog-body">
+                <!-- Media Dialog Tabs -->
+                <ul class="nav nav-tabs mb-3" id="mediaDialogTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#imageUploadPane" 
+                                type="button" role="tab" aria-selected="true">Upload</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="unsplash-tab" data-bs-toggle="tab" data-bs-target="#unsplashPane" 
+                                type="button" role="tab" aria-selected="false">Unsplash</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="gallery-tab" data-bs-toggle="tab" data-bs-target="#galleryPane" 
+                                type="button" role="tab" aria-selected="false">Gallery</button>
+                    </li>
+                </ul>
+                
                 <!-- Image Upload Pane -->
-                <div id="imageUploadPane" class="media-pane">
+                <div id="imageUploadPane" class="media-pane tab-pane fade show active">
                     <div class="upload-area" id="imageDropArea">
-                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;" multiple>
                         <i class="bi bi-cloud-arrow-up"></i>
                         <h5>Drag and drop an image</h5>
                         <p>or click here to upload</p>
@@ -139,6 +154,140 @@
                             <input type="text" id="imageUrlInput" class="form-control" placeholder="Paste image URL...">
                             <button class="btn btn-golden" id="insertImageUrlBtn">Insert</button>
                         </div>
+                    </div>
+                    
+                    <!-- Image Options (Only visible when an image is selected/uploaded) -->
+                    <div class="image-options mt-4" id="imageOptions" style="display: none;">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Image Options</h6>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Alignment</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-align="left">
+                                            <i class="bi bi-text-left"></i> Left
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm active" data-align="center">
+                                            <i class="bi bi-text-center"></i> Center
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-align="right">
+                                            <i class="bi bi-text-right"></i> Right
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="imageCaptionInput" class="form-label">Caption (optional)</label>
+                                    <input type="text" id="imageCaptionInput" class="form-control" placeholder="Add a caption...">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label d-flex justify-content-between">
+                                        <span>Size</span>
+                                        <span id="imageSize" class="text-muted small">100%</span>
+                                    </label>
+                                    <input type="range" class="form-range" id="imageSizeRange" min="25" max="100" step="5" value="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Unsplash Search Pane -->
+                <div id="unsplashPane" class="media-pane tab-pane fade">
+                    <div class="mb-3">
+                        <label for="unsplashSearchInput" class="form-label">Search for images on Unsplash</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="unsplashSearchInput" placeholder="Search photos...">
+                            <button class="btn btn-golden" type="button" id="unsplashSearchBtn">Search</button>
+                        </div>
+                    </div>
+                    
+                    <div id="unsplashResults" class="unsplash-results">
+                        <div class="text-center text-muted my-5">
+                            <i class="bi bi-search" style="font-size: 2rem;"></i>
+                            <p class="mt-3">Search for stunning photos from Unsplash</p>
+                        </div>
+                    </div>
+                    
+                    <div id="unsplashLoading" class="text-center" style="display: none;">
+                        <div class="spinner-border text-golden" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div id="unsplashPagination" class="d-flex justify-content-between mt-3" style="display: none;">
+                        <button type="button" class="btn btn-outline-secondary" id="unsplashPrevBtn" disabled>Previous</button>
+                        <span class="align-self-center" id="unsplashPageInfo">Page 1</span>
+                        <button type="button" class="btn btn-outline-secondary" id="unsplashNextBtn">Next</button>
+                    </div>
+                    
+                    <div class="text-center text-muted small mt-3">
+                        <span>Photos provided by <a href="https://unsplash.com" target="_blank" rel="nofollow">Unsplash</a></span>
+                    </div>
+                </div>
+                
+                <!-- Gallery/Slideshow Pane -->
+                <div id="galleryPane" class="media-pane tab-pane fade">
+                    <div class="mb-3">
+                        <label class="form-label">Create Image Gallery</label>
+                        <p class="text-muted small">Upload multiple images to create a gallery</p>
+                        
+                        <div class="upload-area" id="galleryDropArea">
+                            <input type="file" id="galleryFileInput" accept="image/*" multiple style="display: none;">
+                            <i class="bi bi-images"></i>
+                            <h5>Drag and drop multiple images</h5>
+                            <p>or click here to select images</p>
+                        </div>
+                    </div>
+                    
+                    <div class="gallery-images mt-3" id="galleryImagesContainer">
+                        <!-- Gallery images will be displayed here -->
+                        <div class="text-center text-muted p-4">
+                            <p>No images selected yet</p>
+                        </div>
+                    </div>
+                    
+                    <div class="gallery-options mt-3" style="display: none;">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Gallery Options</h6>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Display Style</label>
+                                    <select class="form-select" id="galleryStyleSelect">
+                                        <option value="grid" selected>Grid</option>
+                                        <option value="carousel">Carousel</option>
+                                        <option value="slideshow">Slideshow</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Alignment</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-align="left">
+                                            <i class="bi bi-text-left"></i> Left
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm active" data-align="center">
+                                            <i class="bi bi-text-center"></i> Center
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-align="right">
+                                            <i class="bi bi-text-right"></i> Right
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="galleryCaption" class="form-label">Gallery Caption (optional)</label>
+                                    <input type="text" id="galleryCaption" class="form-control" placeholder="Add a caption for the gallery...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-golden w-100" id="insertGalleryBtn" disabled>Insert Gallery</button>
                     </div>
                 </div>
                 
@@ -183,6 +332,39 @@
                     <button class="btn btn-golden" id="insertCodeBtn">Insert Code</button>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Image Editor Toolbar (appears when clicking on images in the editor) -->
+    <div class="image-toolbar" id="imageToolbar">
+        <button class="toolbar-button" data-command="align-left" title="Align Left">
+            <i class="bi bi-text-left"></i>
+        </button>
+        <button class="toolbar-button" data-command="align-center" title="Align Center">
+            <i class="bi bi-text-center"></i>
+        </button>
+        <button class="toolbar-button" data-command="align-right" title="Align Right">
+            <i class="bi bi-text-right"></i>
+        </button>
+        <div class="separator"></div>
+        <button class="toolbar-button" data-command="edit-caption" title="Edit Caption">
+            <i class="bi bi-card-text"></i>
+        </button>
+        <button class="toolbar-button" data-command="resize-image" title="Resize">
+            <i class="bi bi-arrows-angle-expand"></i>
+        </button>
+        <div class="separator"></div>
+        <button class="toolbar-button" data-command="remove-image" title="Remove Image">
+            <i class="bi bi-trash"></i>
+        </button>
+    </div>
+    
+    <!-- Caption Input (appears when editing image caption) -->
+    <div class="caption-input-container" id="captionInputContainer">
+        <input type="text" id="captionInput" class="form-control" placeholder="Enter caption...">
+        <div class="caption-buttons">
+            <button class="caption-button" id="saveCaptionBtn">Save</button>
+            <button class="caption-button" id="cancelCaptionBtn">Cancel</button>
         </div>
     </div>
     
@@ -739,6 +921,402 @@
         color: #d4af37;
         margin-bottom: 10px;
     }
+      /* Image Alignment Classes */
+    .img-align-left {
+        float: left;
+        margin: 0 20px 10px 0;
+        max-width: 50%;
+    }
+    
+    .img-align-center {
+        display: block;
+        margin: 20px auto;
+        max-width: 100%;
+    }
+    
+    .img-align-right {
+        float: right;
+        margin: 0 0 10px 20px;
+        max-width: 50%;
+    }
+    
+    /* Media Dialog Tabs */
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.5rem 1rem;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #d4af37;
+        border-bottom: 2px solid #d4af37;
+        background: transparent;
+    }
+    
+    /* Unsplash Results Styling */
+    .unsplash-results {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .unsplash-image {
+        position: relative;
+        cursor: pointer;
+        border-radius: 4px;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+    }
+    
+    .unsplash-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.2s;
+    }
+    
+    .unsplash-image:hover img {
+        transform: scale(1.05);
+    }
+    
+    .unsplash-image.selected {
+        box-shadow: 0 0 0 3px #d4af37;
+    }
+    
+    .unsplash-image .photographer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 5px;
+        font-size: 10px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .unsplash-image:hover .photographer {
+        opacity: 1;
+    }
+    
+    /* Gallery Images */
+    .gallery-images {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+    
+    .gallery-image-item {
+        position: relative;
+        cursor: grab;
+        border-radius: 4px;
+        overflow: hidden;
+        aspect-ratio: 1;
+    }
+    
+    .gallery-image-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .gallery-image-item .remove-gallery-image {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    
+    .gallery-image-item:hover .remove-gallery-image {
+        opacity: 1;
+    }
+    
+    /* Image Editor Toolbar */
+    .image-toolbar {
+        position: absolute;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        padding: 5px;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(10px);
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    
+    .image-toolbar.visible {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+    
+    .image-toolbar .toolbar-button {
+        background: transparent;
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #495057;
+        transition: all 0.15s ease;
+        margin: 0 2px;
+    }
+    
+    .image-toolbar .toolbar-button:hover {
+        background-color: #f8f9fa;
+        color: #212529;
+    }
+    
+    .image-toolbar .toolbar-button.active {
+        background-color: rgba(212, 175, 55, 0.1);
+        color: #d4af37;
+    }
+    
+    .image-toolbar .separator {
+        width: 1px;
+        height: 20px;
+        background-color: #e9ecef;
+        margin: 0 5px;
+    }
+    
+    /* Caption Input */
+    .caption-input-container {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        padding: 10px;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(10px);
+        transition: opacity 0.2s, transform 0.2s;
+        width: 250px;
+    }
+    
+    .caption-input-container.visible {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+    
+    .caption-buttons {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+    
+    .caption-button {
+        background: transparent;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-left: 5px;
+    }
+    
+    .caption-button:first-child {
+        color: #d4af37;
+        font-weight: 500;
+    }
+    
+    .caption-button:first-child:hover {
+        background-color: rgba(212, 175, 55, 0.1);
+    }
+    
+    .caption-button:last-child:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Image Figure with Caption */
+    figure.content-image {
+        margin: 30px 0;
+        position: relative;
+    }
+    
+    figure.content-image img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+    
+    figure.content-image figcaption {
+        margin-top: 8px;
+        color: #6c757d;
+        font-size: 14px;
+        font-style: italic;
+        text-align: center;
+    }
+    
+    /* Resizable Image Handles */
+    figure.content-image .resize-handle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: #d4af37;
+        border: 1px solid white;
+        border-radius: 50%;
+        z-index: 5;
+    }
+    
+    figure.content-image .resize-handle.top-left {
+        top: -5px;
+        left: -5px;
+        cursor: nwse-resize;
+    }
+    
+    figure.content-image .resize-handle.top-right {
+        top: -5px;
+        right: -5px;
+        cursor: nesw-resize;
+    }
+    
+    figure.content-image .resize-handle.bottom-left {
+        bottom: -5px;
+        left: -5px;
+        cursor: nesw-resize;
+    }
+    
+    figure.content-image .resize-handle.bottom-right {
+        bottom: -5px;
+        right: -5px;
+        cursor: nwse-resize;
+    }
+    
+    figure.content-image.resize-active {
+        outline: 1px dashed #d4af37;
+        user-select: none;
+    }
+    
+    figure.content-image:hover .resize-handle {
+        display: block;
+    }
+    
+    figure.content-image .resize-handle {
+        display: none;
+    }
+    
+    /* Gallery Styling */
+    .gallery-container {
+        margin: 30px 0;
+    }
+    
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .gallery-grid img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+    
+    .gallery-grid img:hover {
+        transform: scale(1.03);
+    }
+    
+    .gallery-carousel {
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+    
+    .gallery-carousel .carousel-inner {
+        display: flex;
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    .gallery-carousel .carousel-item {
+        flex: 0 0 100%;
+    }
+    
+    .gallery-carousel .carousel-item img {
+        width: 100%;
+        object-fit: contain;
+        border-radius: 4px;
+    }
+    
+    .gallery-carousel .carousel-control {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.5);
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+    }
+    
+    .gallery-carousel .carousel-control.prev {
+        left: 10px;
+    }
+    
+    .gallery-carousel .carousel-control.next {
+        right: 10px;
+    }
+    
+    .gallery-caption {
+        margin-top: 10px;
+        color: #6c757d;
+        font-size: 14px;
+        font-style: italic;
+        text-align: center;
+    }
+    
+    /* Drag and drop styles */
+    .content-area.drag-over {
+        background-color: rgba(212, 175, 55, 0.05);
+        border: 2px dashed rgba(212, 175, 55, 0.3);
+    }
+    
+    .editable-content.drag-over {
+        background-color: rgba(212, 175, 55, 0.05);
+    }
+    
+    /* Upload area active state */
+    .upload-area.active {
+        background-color: rgba(212, 175, 55, 0.05);
+        border-color: #d4af37;
+    }
     
     /* Content elements styling */
     .editable-content .media-container {
@@ -900,6 +1478,7 @@
 @section Scripts {
     <script src="~/js/rich-editor.js"></script>
     <script src="~/js/rich-editor-media.js"></script>
+    <script src="~/js/image-editor.js"></script>
     <script>
         // Variables for auto-save
         let autoSaveTimer;
@@ -1438,12 +2017,16 @@
             
             // As a fallback, periodically update the word count
             setInterval(updateWordCount, 2000);
-            
-            // Initialize formatting toolbar
+              // Initialize formatting toolbar
             initFormattingToolbar();
             
             // Initialize content addition functionality
             initContentAddButton();
+            
+            // Initialize enhanced media handling features
+            if (typeof initializeMediaHandling === 'function') {
+                initializeMediaHandling();
+            }
             
             // Handle tag checkbox changes - enhanced with validation
             tagCheckboxes.forEach(checkbox => {
