@@ -613,32 +613,61 @@
     color: #6c757d;
 }
 
-/* Figcaption placeholder and editing styles */
-figcaption[contenteditable="true"] {
+/* Figcaption Medium-style editing */
+.content-image {
+    position: relative;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.content-image figcaption {
+    margin-top: 12px;
+    padding: 8px 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #6c757d;
+    text-align: center;
+    font-style: italic;
     cursor: text;
-    padding: 8px 12px;
-    margin-top: 8px;
-    border-radius: 4px;
+    border-radius: 3px;
     transition: all 0.2s ease;
     min-height: 20px;
+    position: relative;
 }
 
-figcaption[contenteditable="true"]:hover {
-    background-color: rgba(212, 175, 55, 0.1);
+.content-image figcaption:hover {
+    background-color: rgba(0, 0, 0, 0.03);
 }
 
-figcaption[contenteditable="true"].placeholder-active {
+.content-image.caption-editing figcaption {
+    background-color: rgba(255, 215, 0, 0.1);
+    outline: 1px solid rgba(255, 215, 0, 0.3);
+    color: #333;
+    font-style: normal;
+}
+
+.content-image figcaption.empty-caption {
+    color: #999;
+}
+
+.content-image figcaption .caption-placeholder {
     color: #999;
     font-style: italic;
+    pointer-events: none;
 }
 
-figcaption[contenteditable="true"]:focus {
-    background-color: rgba(255, 215, 0, 0.1) !important;
-    outline: 2px solid #ffd700 !important;
+.content-image figcaption:focus {
+    outline: 1px solid rgba(255, 215, 0, 0.5);
+    background-color: rgba(255, 215, 0, 0.1);
+    color: #333;
+    font-style: normal;
 }
 
+.content-image figcaption:focus .caption-placeholder {
+    display: none;
+}
+
+/* Remove old placeholder styles */
 figcaption[contenteditable="true"]:empty:before {
-    content: attr(data-placeholder);
-    color: #999;
-    font-style: italic;
+    display: none;
 }

@@ -272,11 +272,10 @@ function replaceTempImage(tempId, imageSrc) {
     
     if (tempFigure) {
         // Keep whatever alignment was applied
-        const currentClass = tempFigure.className.replace('content-image', '').trim();
-          // Create new figure HTML
+        const currentClass = tempFigure.className.replace('content-image', '').trim();        // Create new figure HTML
         tempFigure.innerHTML = `
             <img src="${imageSrc}" alt="User uploaded image">
-            <figcaption contenteditable="true" data-placeholder="Click to add a caption"></figcaption>
+            <figcaption contenteditable="true" class="empty-caption"><span class="caption-placeholder">Add a caption...</span></figcaption>
             <div class="resize-handle top-left"></div>
             <div class="resize-handle top-right"></div>
             <div class="resize-handle bottom-left"></div>
@@ -305,7 +304,7 @@ function insertImageFromUrl(url) {    // Create HTML for figure with image and c
     const imageHtml = `
         <figure class="content-image">
             <img src="${url}" alt="User added image">
-            <figcaption contenteditable="true" data-placeholder="Click to add a caption"></figcaption>
+            <figcaption contenteditable="true" class="empty-caption"><span class="caption-placeholder">Add a caption...</span></figcaption>
             <div class="resize-handle top-left"></div>
             <div class="resize-handle top-right"></div>
             <div class="resize-handle bottom-left"></div>
@@ -497,13 +496,13 @@ function initCaptionHandling() {
         
         if (figure) {
             const caption = captionTextField.value.trim();
-            const figcaption = figure.querySelector('figcaption');
-              if (figcaption) {
-                figcaption.textContent = caption;
-                if (!caption) {
-                    figcaption.setAttribute('data-placeholder', 'Click to add a caption');
+            const figcaption = figure.querySelector('figcaption');            if (figcaption) {
+                if (caption.trim()) {
+                    figcaption.textContent = caption;
+                    figcaption.classList.remove('empty-caption');
                 } else {
-                    figcaption.removeAttribute('data-placeholder');
+                    figcaption.innerHTML = '<span class="caption-placeholder">Add a caption...</span>';
+                    figcaption.classList.add('empty-caption');
                 }
             }
             
@@ -530,9 +529,9 @@ function initCaptionHandling() {
         // Position caption input below the image
         captionInput.style.top = (figureRect.bottom - editorRect.top + 10) + 'px';
         captionInput.style.left = (figureRect.left - editorRect.left + (figureRect.width / 2) - (captionInput.offsetWidth / 2)) + 'px';
-        
-        // Set initial value
-        captionTextField.value = figCaption ? figCaption.textContent : '';
+          // Set initial value
+        const currentText = figCaption ? (figCaption.classList.contains('empty-caption') ? '' : figCaption.textContent) : '';
+        captionTextField.value = currentText;
         
         // Store reference to figure
         captionInput.dataset.targetFigure = getElementPath(figure);
@@ -1216,75 +1215,106 @@ function initFigcaptionEditing() {
     const contentEditor = document.getElementById('contentEditor');
     if (!contentEditor) return;
     
-    // Event delegation for figcaption elements
+    // Handle clicks on figcaptions - Medium style
     contentEditor.addEventListener('click', (e) => {
+        // Check if the clicked element is a figcaption or inside one
         const figcaption = e.target.closest('figcaption[contenteditable="true"]');
+        
         if (figcaption) {
+            e.stopPropagation(); // Prevent other event handlers
             handleFigcaptionClick(figcaption);
         }
     });
     
-    contentEditor.addEventListener('focus', (e) => {
+    // Handle focus events for figcaptions
+    contentEditor.addEventListener('focusin', (e) => {
         const figcaption = e.target.closest('figcaption[contenteditable="true"]');
         if (figcaption) {
             handleFigcaptionFocus(figcaption);
         }
-    }, true);
+    });
     
-    contentEditor.addEventListener('blur', (e) => {
+    // Handle blur events for figcaptions
+    contentEditor.addEventListener('focusout', (e) => {
         const figcaption = e.target.closest('figcaption[contenteditable="true"]');
         if (figcaption) {
-            handleFigcaptionBlur(figcaption);
+            // Use setTimeout to allow time for potential focus switch
+            setTimeout(() => {
+                if (!figcaption.contains(document.activeElement)) {
+                    handleFigcaptionBlur(figcaption);
+                }
+            }, 10);
         }
-    }, true);
+    });
     
+    // Handle input events for figcaptions
     contentEditor.addEventListener('input', (e) => {
         const figcaption = e.target.closest('figcaption[contenteditable="true"]');
         if (figcaption) {
             handleFigcaptionInput(figcaption);
         }
     });
+    
+    // Handle keydown for better UX
+    contentEditor.addEventListener('keydown', (e) => {
+        const figcaption = e.target.closest('figcaption[contenteditable="true"]');
+        if (figcaption && e.key === 'Enter') {
+            e.preventDefault();
+            figcaption.blur(); // Exit caption editing on Enter
+        }
+    });
 }
 
 function handleFigcaptionClick(figcaption) {
-    // If figcaption is empty or contains only placeholder, clear it and focus
-    if (!figcaption.textContent.trim() || figcaption.classList.contains('placeholder-active')) {
-        figcaption.textContent = '';
-        figcaption.classList.remove('placeholder-active');
-        figcaption.focus();
-        
-        // Place cursor at the beginning
-        const range = document.createRange();
-        const selection = window.getSelection();
-        range.setStart(figcaption, 0);
-        range.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(range);
+    // Clear placeholder if it exists
+    if (figcaption.classList.contains('empty-caption')) {
+        figcaption.innerHTML = '';
+        figcaption.classList.remove('empty-caption');
     }
+    
+    // Focus the figcaption for editing
+    figcaption.focus();
+    
+    // Place cursor at end of content
+    const range = document.createRange();
+    const selection = window.getSelection();
+    
+    if (figcaption.childNodes.length > 0) {
+        range.setStartAfter(figcaption.lastChild);
+    } else {
+        range.setStart(figcaption, 0);
+    }
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
 }
 
 function handleFigcaptionFocus(figcaption) {
-    // Remove placeholder styling when focused
-    if (figcaption.classList.contains('placeholder-active')) {
-        figcaption.textContent = '';
-        figcaption.classList.remove('placeholder-active');
+    // Add focused state styling
+    const figure = figcaption.closest('figure');
+    if (figure) {
+        figure.classList.add('caption-editing');
     }
     
-    // Add focus styling
-    figcaption.style.outline = '2px solid #ffd700';
-    figcaption.style.backgroundColor = 'rgba(255, 215, 0, 0.1)';
+    // Clear placeholder if empty
+    if (figcaption.classList.contains('empty-caption')) {
+        figcaption.innerHTML = '';
+        figcaption.classList.remove('empty-caption');
+    }
 }
 
 function handleFigcaptionBlur(figcaption) {
-    // Remove focus styling
-    figcaption.style.outline = '';
-    figcaption.style.backgroundColor = '';
+    // Remove focused state styling
+    const figure = figcaption.closest('figure');
+    if (figure) {
+        figure.classList.remove('caption-editing');
+    }
     
-    // If empty, show placeholder
-    if (!figcaption.textContent.trim()) {
-        const placeholder = figcaption.getAttribute('data-placeholder') || 'Click to add a caption';
-        figcaption.textContent = placeholder;
-        figcaption.classList.add('placeholder-active');
+    // Check if figcaption is empty and add placeholder if needed
+    const text = figcaption.textContent.trim();
+    if (!text) {
+        figcaption.innerHTML = '<span class="caption-placeholder">Add a caption...</span>';
+        figcaption.classList.add('empty-caption');
     }
     
     // Update form fields when caption changes
@@ -1292,9 +1322,9 @@ function handleFigcaptionBlur(figcaption) {
 }
 
 function handleFigcaptionInput(figcaption) {
-    // Remove placeholder class if user is typing
-    if (figcaption.classList.contains('placeholder-active')) {
-        figcaption.classList.remove('placeholder-active');
+    // Remove empty-caption class if user is typing
+    if (figcaption.classList.contains('empty-caption')) {
+        figcaption.classList.remove('empty-caption');
     }
     
     // Update form fields in real-time
@@ -1307,10 +1337,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Apply initial placeholder styling to existing figcaptions
     document.querySelectorAll('figcaption[contenteditable="true"]').forEach(figcaption => {
-        if (!figcaption.textContent.trim()) {
-            const placeholder = figcaption.getAttribute('data-placeholder') || 'Click to add a caption';
-            figcaption.textContent = placeholder;
-            figcaption.classList.add('placeholder-active');
+        const text = figcaption.textContent.trim();
+        if (!text) {
+            figcaption.innerHTML = '<span class="caption-placeholder">Add a caption...</span>';
+            figcaption.classList.add('empty-caption');
         }
     });
 });
