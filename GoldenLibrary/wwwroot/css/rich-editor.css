@@ -612,3 +612,33 @@
     font-size: 14px;
     color: #6c757d;
 }
+
+/* Figcaption placeholder and editing styles */
+figcaption[contenteditable="true"] {
+    cursor: text;
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    min-height: 20px;
+}
+
+figcaption[contenteditable="true"]:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+}
+
+figcaption[contenteditable="true"].placeholder-active {
+    color: #999;
+    font-style: italic;
+}
+
+figcaption[contenteditable="true"]:focus {
+    background-color: rgba(255, 215, 0, 0.1) !important;
+    outline: 2px solid #ffd700 !important;
+}
+
+figcaption[contenteditable="true"]:empty:before {
+    content: attr(data-placeholder);
+    color: #999;
+    font-style: italic;
+}
