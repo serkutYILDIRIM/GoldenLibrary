@@ -347,16 +347,19 @@ function initRichMediaEditor() {
             imageDropArea.innerHTML = originalContent;
         });
     }
-    
-    // Insert image at cursor position
+      // Insert image at cursor position
     function insertImage(src) {
         restoreSelection();
         
         const imageHtml = `
-            <div class="media-container">
+            <figure class="content-image">
                 <img src="${src}" alt="User uploaded image">
-                <figcaption data-placeholder="Add a caption (optional)" contenteditable="true"></figcaption>
-            </div>
+                <figcaption contenteditable="true" class="empty-caption"><span class="caption-placeholder">Click to add a caption</span></figcaption>
+                <div class="resize-handle top-left"></div>
+                <div class="resize-handle top-right"></div>
+                <div class="resize-handle bottom-left"></div>
+                <div class="resize-handle bottom-right"></div>
+            </figure>
             <p><br></p>
         `;
         
@@ -383,14 +386,12 @@ function initRichMediaEditor() {
             } else if (url.includes('youtu.be/')) {
                 videoId = url.split('youtu.be/')[1].split('?')[0];
             }
-            
-            if (videoId) {
-                embedCode = `<div class="video-container"><iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe><figcaption data-placeholder="Add a caption (optional)" contenteditable="true"></figcaption></div>`;
+              if (videoId) {
+                embedCode = `<div class="video-container"><iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe><figcaption contenteditable="true" class="empty-caption"><span class="caption-placeholder">Click to add a caption</span></figcaption></div>`;
             }
-        } else if (url.includes('vimeo.com')) {
-            // Vimeo
+        } else if (url.includes('vimeo.com')) {            // Vimeo
             const vimeoId = url.split('vimeo.com/')[1].split('?')[0];
-            embedCode = `<div class="video-container"><iframe src="https://player.vimeo.com/video/${vimeoId}" frameborder="0" allowfullscreen></iframe><figcaption data-placeholder="Add a caption (optional)" contenteditable="true"></figcaption></div>`;
+            embedCode = `<div class="video-container"><iframe src="https://player.vimeo.com/video/${vimeoId}" frameborder="0" allowfullscreen></iframe><figcaption contenteditable="true" class="empty-caption"><span class="caption-placeholder">Click to add a caption</span></figcaption></div>`;
         } else {
             alert('Unsupported video URL. Please use YouTube or Vimeo links.');
             return;
@@ -411,7 +412,7 @@ function initRichMediaEditor() {
         // Sanitize the embed code - this is a simple example and may need more robust sanitization
         const sanitizedCode = sanitizeHtml(code);
         
-        insertContentAtCaret(`<div class="embed-container">${sanitizedCode}<figcaption data-placeholder="Add a caption (optional)" contenteditable="true"></figcaption></div><p><br></p>`);
+        insertContentAtCaret(`<div class="embed-container">${sanitizedCode}<figcaption contenteditable="true" class="empty-caption"><span class="caption-placeholder">Click to add a caption</span></figcaption></div><p><br></p>`);
         
         // Update form fields
         updateFormFields();
