@@ -12,7 +12,6 @@ function initializeMediaHandling() {
     initUnsplashIntegration();
     initGalleryHandling();
     initCaptionHandling();
-    initFigcaptionEditing();
 }
 
 // ===== DRAG AND DROP FUNCTIONALITY =====
@@ -194,7 +193,7 @@ function initImageUploadHandling() {
     
     if (sizeRange && sizeLabel) {
         sizeRange.addEventListener('input', () => {
-            sizeLabel.textContent = sizeRange.value + '%';
+            sizeLabel.textContent = `${sizeRange.value}%`;
         });
     }
 }
@@ -251,15 +250,16 @@ function insertTempImage(tempSrc, tempId) {
     const contentEditor = document.getElementById('contentEditor');
     
     // Create HTML for figure with image
-    const tempHtml = 
-        '<figure class="content-image" id="' + tempId + '">' +
-            '<img src="' + tempSrc + '" alt="Uploading..." style="opacity: 0.7;">' +
-            '<div class="text-center mt-2">' +
-                '<div class="spinner-border spinner-border-sm text-golden" role="status"></div>' +
-                '<span class="ms-2">Uploading image...</span>' +
-            '</div>' +
-        '</figure>' +
-        '<p><br></p>';
+    const tempHtml = `
+        <figure class="content-image" id="${tempId}">
+            <img src="${tempSrc}" alt="Uploading..." style="opacity: 0.7;">
+            <div class="text-center mt-2">
+                <div class="spinner-border spinner-border-sm text-golden" role="status"></div>
+                <span class="ms-2">Uploading image...</span>
+            </div>
+        </figure>
+        <p><br></p>
+    `;
     
     // Insert at caret position
     insertContentAtCaret(tempHtml);
@@ -274,18 +274,18 @@ function replaceTempImage(tempId, imageSrc) {
         const currentClass = tempFigure.className.replace('content-image', '').trim();
         
         // Create new figure HTML
-        tempFigure.innerHTML = 
-            '<img src="' + imageSrc + '" alt="User uploaded image">' +
-            '<figcaption contenteditable="true" class="empty-caption"><span class="caption-placeholder">Resim alt yazısı eklemek için tıklayın</span></figcaption>' +
-            '<div class="resize-handle top-left"></div>' +
-            '<div class="resize-handle top-right"></div>' +
-            '<div class="resize-handle bottom-left"></div>' +
-            '<div class="resize-handle bottom-right"></div>';
-        
+        tempFigure.innerHTML = `
+            <img src="${imageSrc}" alt="User uploaded image">
+            <figcaption contenteditable="true" data-placeholder="Add a caption (optional)"></figcaption>
+            <div class="resize-handle top-left"></div>
+            <div class="resize-handle top-right"></div>
+            <div class="resize-handle bottom-left"></div>
+            <div class="resize-handle bottom-right"></div>
+        `;
         tempFigure.id = '';
         
         // Make sure content-image class remains along with any alignment class
-        tempFigure.className = ('content-image ' + currentClass).trim();
+        tempFigure.className = `content-image ${currentClass}`.trim();
         
         // Update form fields
         updateFormFields();
@@ -303,16 +303,17 @@ function removeTempImage(tempId) {
 // Insert image from URL
 function insertImageFromUrl(url) {
     // Create HTML for figure with image and caption
-    const imageHtml = 
-        '<figure class="content-image">' +
-            '<img src="' + url + '" alt="User added image">' +
-            '<figcaption contenteditable="true" class="empty-caption"><span class="caption-placeholder">Resim alt yazısı eklemek için tıklayın</span></figcaption>' +
-            '<div class="resize-handle top-left"></div>' +
-            '<div class="resize-handle top-right"></div>' +
-            '<div class="resize-handle bottom-left"></div>' +
-            '<div class="resize-handle bottom-right"></div>' +
-        '</figure>' +
-        '<p><br></p>';
+    const imageHtml = `
+        <figure class="content-image">
+            <img src="${url}" alt="User added image">
+            <figcaption contenteditable="true" data-placeholder="Add a caption (optional)"></figcaption>
+            <div class="resize-handle top-left"></div>
+            <div class="resize-handle top-right"></div>
+            <div class="resize-handle bottom-left"></div>
+            <div class="resize-handle bottom-right"></div>
+        </figure>
+        <p><br></p>
+    `;
     
     insertContentAtCaret(imageHtml);
     updateFormFields();
@@ -333,131 +334,6 @@ function insertContentAtCaret(html) {
         range.collapse(false);
         selection.removeAllRanges();
         selection.addRange(range);
-    }
-}
-
-// ===== FIGCAPTION EDITING =====
-function initFigcaptionEditing() {
-    const contentEditor = document.getElementById('contentEditor');
-    if (!contentEditor) return;
-    
-    // Handle clicks on figcaptions - Medium style
-    contentEditor.addEventListener('click', (e) => {
-        // Check if the clicked element is a figcaption or inside one
-        const figcaption = e.target.closest('figcaption[contenteditable="true"]');
-        
-        if (figcaption) {
-            e.stopPropagation(); // Prevent other event handlers
-            handleFigcaptionClick(figcaption);
-        }
-    });
-    
-    // Handle focus events for figcaptions
-    contentEditor.addEventListener('focusin', (e) => {
-        const figcaption = e.target.closest('figcaption[contenteditable="true"]');
-        if (figcaption) {
-            handleFigcaptionFocus(figcaption);
-        }
-    });
-    
-    // Handle blur events for figcaptions
-    contentEditor.addEventListener('focusout', (e) => {
-        const figcaption = e.target.closest('figcaption[contenteditable="true"]');
-        if (figcaption) {
-            // Use setTimeout to allow time for potential focus switch
-            setTimeout(() => {
-                if (!figcaption.contains(document.activeElement)) {
-                    handleFigcaptionBlur(figcaption);
-                }
-            }, 10);
-        }
-    });
-    
-    // Handle input events for figcaptions
-    contentEditor.addEventListener('input', (e) => {
-        const figcaption = e.target.closest('figcaption[contenteditable="true"]');
-        if (figcaption) {
-            handleFigcaptionInput(figcaption);
-        }
-    });
-    
-    // Handle keydown for better UX
-    contentEditor.addEventListener('keydown', (e) => {
-        const figcaption = e.target.closest('figcaption[contenteditable="true"]');
-        if (figcaption && e.key === 'Enter') {
-            e.preventDefault();
-            figcaption.blur(); // Exit caption editing on Enter
-        }
-    });
-}
-
-function handleFigcaptionClick(figcaption) {
-    // Clear placeholder if it exists
-    if (figcaption.classList.contains('empty-caption')) {
-        figcaption.innerHTML = '';
-        figcaption.classList.remove('empty-caption');
-    }
-    
-    // Focus the figcaption for editing
-    figcaption.focus();
-    
-    // Place cursor at end of content
-    const range = document.createRange();
-    const selection = window.getSelection();
-    
-    if (figcaption.childNodes.length > 0) {
-        range.setStartAfter(figcaption.lastChild);
-    } else {
-        range.setStart(figcaption, 0);
-    }
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-}
-
-function handleFigcaptionFocus(figcaption) {
-    // Add focused state styling
-    const figure = figcaption.closest('figure');
-    if (figure) {
-        figure.classList.add('caption-editing');
-    }
-    
-    // Clear placeholder if empty
-    if (figcaption.classList.contains('empty-caption')) {
-        figcaption.innerHTML = '';
-        figcaption.classList.remove('empty-caption');
-    }
-}
-
-function handleFigcaptionBlur(figcaption) {
-    // Remove focused state styling
-    const figure = figcaption.closest('figure');
-    if (figure) {
-        figure.classList.remove('caption-editing');
-    }
-    
-    // Check if figcaption is empty and add placeholder if needed
-    const text = figcaption.textContent.trim();
-    if (!text) {
-        figcaption.innerHTML = '<span class="caption-placeholder">Resim alt yazısı eklemek için tıklayın</span>';
-        figcaption.classList.add('empty-caption');
-    }
-    
-    // Update form fields when caption changes
-    if (typeof updateFormFields === 'function') {
-        updateFormFields();
-    }
-}
-
-function handleFigcaptionInput(figcaption) {
-    // Remove empty-caption class if user is typing
-    if (figcaption.classList.contains('empty-caption')) {
-        figcaption.classList.remove('empty-caption');
-    }
-    
-    // Update form fields in real-time
-    if (typeof updateFormFields === 'function') {
-        updateFormFields();
     }
 }
 
@@ -522,6 +398,10 @@ function initImageToolbar() {
                     setImageAlignment(targetFigure, 'right');
                     break;
                     
+                case 'edit-caption':
+                    showCaptionInput(targetFigure);
+                    break;
+                    
                 case 'resize-image':
                     toggleResizeMode(targetFigure);
                     break;
@@ -530,9 +410,7 @@ function initImageToolbar() {
                     if (confirm('Are you sure you want to remove this image?')) {
                         targetFigure.parentElement.removeChild(targetFigure);
                         imageToolbar.classList.remove('visible');
-                        if (typeof updateFormFields === 'function') {
-                            updateFormFields();
-                        }
+                        updateFormFields();
                     }
                     break;
             }
@@ -594,19 +472,114 @@ function initImageToolbar() {
         
         // Add the requested alignment class
         if (alignment !== 'center') {
-            figure.classList.add('img-align-' + alignment);
+            figure.classList.add(`img-align-${alignment}`);
         } else {
             figure.classList.add('img-align-center'); // Default is center
         }
         
         updateAlignmentButtonsState(figure);
-        if (typeof updateFormFields === 'function') {
-            updateFormFields();
-        }
+        updateFormFields();
     }
 }
 
-// ===== RESIZING FUNCTIONALITY =====
+// ===== CAPTION HANDLING =====
+function initCaptionHandling() {
+    const captionInput = document.getElementById('captionInputContainer');
+    const captionTextField = document.getElementById('captionInput');
+    const saveButton = document.getElementById('saveCaptionBtn');
+    const cancelButton = document.getElementById('cancelCaptionBtn');
+    
+    if (!captionInput || !captionTextField) return;
+    
+    // Save caption
+    saveButton.addEventListener('click', () => {
+        const figurePath = captionInput.dataset.targetFigure;
+        const figure = getFigureByPath(figurePath);
+        
+        if (figure) {
+            const caption = captionTextField.value.trim();
+            const figcaption = figure.querySelector('figcaption');
+            
+            if (figcaption) {
+                figcaption.textContent = caption;
+                if (!caption) {
+                    figcaption.setAttribute('data-placeholder', 'Add a caption (optional)');
+                } else {
+                    figcaption.removeAttribute('data-placeholder');
+                }
+            }
+            
+            updateFormFields();
+        }
+        
+        captionInput.classList.remove('visible');
+    });
+    
+    // Cancel caption editing
+    cancelButton.addEventListener('click', () => {
+        captionInput.classList.remove('visible');
+    });
+    
+    // Helper function - used from toolbar
+    window.showCaptionInput = function(figure) {
+        if (!figure) return;
+        
+        const figCaption = figure.querySelector('figcaption');
+        const figureRect = figure.getBoundingClientRect();
+        const contentEditor = document.getElementById('contentEditor');
+        const editorRect = contentEditor.getBoundingClientRect();
+        
+        // Position caption input below the image
+        captionInput.style.top = (figureRect.bottom - editorRect.top + 10) + 'px';
+        captionInput.style.left = (figureRect.left - editorRect.left + (figureRect.width / 2) - (captionInput.offsetWidth / 2)) + 'px';
+        
+        // Set initial value
+        captionTextField.value = figCaption ? figCaption.textContent : '';
+        
+        // Store reference to figure
+        captionInput.dataset.targetFigure = getElementPath(figure);
+        
+        // Show caption input
+        captionInput.classList.add('visible');
+        captionTextField.focus();
+    }
+    
+    // Helper to generate a unique path to an element
+    function getElementPath(el) {
+        if (!el || !el.parentElement) return '';
+        
+        const parent = document.getElementById('contentEditor');
+        const path = [];
+        let currentEl = el;
+        
+        while (currentEl !== parent) {
+            const index = Array.from(currentEl.parentElement.children).indexOf(currentEl);
+            path.unshift(index);
+            currentEl = currentEl.parentElement;
+            
+            if (!currentEl) return '';
+        }
+        
+        return path.join('.');
+    }
+    
+    // Helper to find element by generated path
+    function getFigureByPath(path) {
+        if (!path) return null;
+        
+        const indices = path.split('.').map(Number);
+        let current = document.getElementById('contentEditor');
+        
+        for (const index of indices) {
+            if (!current.children[index]) return null;
+            current = current.children[index];
+        }
+        
+        return current;
+    }
+}
+
+// ===== IMAGE RESIZING =====
 function initImageResizing() {
     const contentEditor = document.getElementById('contentEditor');
     if (!contentEditor) return;
@@ -658,6 +631,7 @@ function initImageResizing() {
             currentImage.style.width = newWidth + 'px';
             currentImage.style.height = newHeight + 'px';
         }
+        
         else if (currentHandle.classList.contains('bottom-left')) {
             const newWidth = Math.max(50, startWidth - dx);
             const aspectRatio = startWidth / startHeight;
@@ -666,6 +640,7 @@ function initImageResizing() {
             currentImage.style.width = newWidth + 'px';
             currentImage.style.height = newHeight + 'px';
         }
+        
         else if (currentHandle.classList.contains('top-right')) {
             const newWidth = Math.max(50, startWidth + dx);
             const aspectRatio = startWidth / startHeight;
@@ -674,6 +649,7 @@ function initImageResizing() {
             currentImage.style.width = newWidth + 'px';
             currentImage.style.height = newHeight + 'px';
         }
+        
         else if (currentHandle.classList.contains('top-left')) {
             const newWidth = Math.max(50, startWidth - dx);
             const aspectRatio = startWidth / startHeight;
@@ -691,9 +667,7 @@ function initImageResizing() {
             currentImage.closest('figure').classList.remove('resize-active');
             
             // Update form fields
-            if (typeof updateFormFields === 'function') {
-                updateFormFields();
-            }
+            updateFormFields();
             
             // Reset state
             isResizing = false;
@@ -708,36 +682,539 @@ function initImageResizing() {
     }
 }
 
-// ===== CAPTION HANDLING (DEPRECATED - using direct figcaption editing instead) =====
-function initCaptionHandling() {
-    // This function is deprecated in favor of direct figcaption editing
-    // We keep it for backward compatibility but don't initialize the old system
-    console.log('Old caption system disabled - using direct figcaption editing instead');
-    return;
-}
-
-// ===== UNSPLASH AND GALLERY INTEGRATION =====
+// ===== UNSPLASH INTEGRATION =====
 function initUnsplashIntegration() {
-    // Placeholder for Unsplash integration - can be implemented later
-    console.log('Unsplash integration placeholder');
+    const searchInput = document.getElementById('unsplashSearchInput');
+    const searchButton = document.getElementById('unsplashSearchBtn');
+    const resultsContainer = document.getElementById('unsplashResults');
+    const loadingIndicator = document.getElementById('unsplashLoading');
+    const paginationContainer = document.getElementById('unsplashPagination');
+    const prevBtn = document.getElementById('unsplashPrevBtn');
+    const nextBtn = document.getElementById('unsplashNextBtn');
+    const pageInfo = document.getElementById('unsplashPageInfo');
+    
+    if (!searchInput || !searchButton) return;
+    
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentQuery = '';
+    let selectedUnsplashImage = null;
+    
+    // Search button click
+    searchButton.addEventListener('click', () => {
+        const query = searchInput.value.trim();
+        if (query) {
+            currentQuery = query;
+            currentPage = 1;
+            searchUnsplashImages(query, 1);
+        }
+    });
+    
+    // Enter key in search input
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
+            if (query) {
+                currentQuery = query;
+                currentPage = 1;
+                searchUnsplashImages(query, 1);
+            }
+        }
+    });
+    
+    // Pagination
+    prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            searchUnsplashImages(currentQuery, currentPage);
+        }
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            searchUnsplashImages(currentQuery, currentPage);
+        }
+    });
+    
+    // Search Unsplash API
+    function searchUnsplashImages(query, page) {
+        // Show loading indicator
+        resultsContainer.style.display = 'none';
+        loadingIndicator.style.display = 'block';
+        paginationContainer.style.display = 'none';
+        
+        // Create form data for the request
+        const formData = new FormData();
+        formData.append('query', query);
+        formData.append('page', page);
+        
+        // Get the anti-forgery token
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        
+        // Send request to our backend, which will proxy to Unsplash API
+        fetch('/Posts/SearchUnsplash', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'RequestVerificationToken': token
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide loading indicator
+            loadingIndicator.style.display = 'none';
+            resultsContainer.style.display = 'grid';
+            
+            if (data.success && data.results.length > 0) {
+                // Update pagination
+                totalPages = data.totalPages || 1;
+                updatePagination();
+                
+                // Display results
+                displayUnsplashResults(data.results);
+            } else {
+                // Show no results message
+                resultsContainer.innerHTML = `
+                    <div class="text-center text-muted my-5 col-12">
+                        <i class="bi bi-x-circle" style="font-size: 2rem;"></i>
+                        <p class="mt-3">No images found for "${query}".</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error searching Unsplash:', error);
+            loadingIndicator.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            resultsContainer.innerHTML = `
+                <div class="text-center text-muted my-5 col-12">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>
+                    <p class="mt-3">Error connecting to Unsplash. Please try again later.</p>
+                </div>
+            `;
+        });
+    }
+    
+    // Display search results
+    function displayUnsplashResults(images) {
+        resultsContainer.innerHTML = '';
+        
+        images.forEach(image => {
+            const imageElement = document.createElement('div');
+            imageElement.className = 'unsplash-image';
+            imageElement.innerHTML = `
+                <img src="${image.urls.small}" alt="${image.alt_description || 'Unsplash image'}" data-url="${image.urls.regular}" data-unsplash-id="${image.id}">
+                <div class="photographer">
+                    Photo by <a href="${image.user.links.html}?utm_source=goldenlibrary&utm_medium=referral" target="_blank">${image.user.name}</a> on <a href="https://unsplash.com/?utm_source=goldenlibrary&utm_medium=referral" target="_blank">Unsplash</a>
+                </div>
+            `;
+            
+            // Add click event to select image
+            imageElement.addEventListener('click', () => {
+                // Reset previously selected image
+                document.querySelectorAll('.unsplash-image.selected').forEach(el => el.classList.remove('selected'));
+                
+                // Select this image
+                imageElement.classList.add('selected');
+                selectedUnsplashImage = image;
+                
+                // Show insert button
+                const insertButton = document.createElement('button');
+                insertButton.className = 'btn btn-golden btn-sm position-absolute top-0 end-0 m-2';
+                insertButton.textContent = 'Insert';
+                insertButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    insertUnsplashImage(image);
+                });
+                
+                // Remove existing insert buttons
+                document.querySelectorAll('.unsplash-image button').forEach(btn => btn.remove());
+                imageElement.appendChild(insertButton);
+            });
+            
+            resultsContainer.appendChild(imageElement);
+        });
+    }
+    
+    // Update pagination UI
+    function updatePagination() {
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+        paginationContainer.style.display = totalPages > 1 ? 'flex' : 'none';
+    }
+    
+    // Insert selected Unsplash image
+    function insertUnsplashImage(image) {
+        const imageUrl = image.urls.regular;
+        const photographerName = image.user.name;
+        const photographerLink = image.user.links.html + '?utm_source=goldenlibrary&utm_medium=referral';
+        const unsplashLink = 'https://unsplash.com/?utm_source=goldenlibrary&utm_medium=referral';
+        
+        // Create HTML for figure with caption containing attribution
+        const imageHtml = `
+            <figure class="content-image">
+                <img src="${imageUrl}" alt="${image.alt_description || 'Photo from Unsplash'}">
+                <figcaption contenteditable="true">
+                    Photo by <a href="${photographerLink}" target="_blank" rel="noopener">${photographerName}</a> on <a href="${unsplashLink}" target="_blank" rel="noopener">Unsplash</a>
+                </figcaption>
+                <div class="resize-handle top-left"></div>
+                <div class="resize-handle top-right"></div>
+                <div class="resize-handle bottom-left"></div>
+                <div class="resize-handle bottom-right"></div>
+            </figure>
+            <p><br></p>
+        `;
+        
+        // Restore selection from before dialog was opened
+        restoreSelection();
+        
+        // Insert at caret position
+        insertContentAtCaret(imageHtml);
+        
+        // Update form fields
+        updateFormFields();
+        
+        // Close dialog
+        document.getElementById('mediaDialog').classList.remove('visible');
+    }
+    
+    // Save selection before opening dialog
+    let savedSelection = null;
+    
+    window.saveSelection = function() {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            savedSelection = selection.getRangeAt(0).cloneRange();
+        }
+    }
+    
+    function restoreSelection() {
+        if (savedSelection) {
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(savedSelection);
+        }
+    }
 }
 
+// ===== GALLERY HANDLING =====
 function initGalleryHandling() {
-    // Placeholder for gallery handling - can be implemented later
-    console.log('Gallery handling placeholder');
+    const galleryFileInput = document.getElementById('galleryFileInput');
+    const galleryContainer = document.getElementById('galleryImagesContainer');
+    const galleryOptions = document.querySelector('.gallery-options');
+    const insertGalleryBtn = document.getElementById('insertGalleryBtn');
+    const galleryStyleSelect = document.getElementById('galleryStyleSelect');
+    
+    if (!galleryFileInput || !galleryContainer || !insertGalleryBtn) return;
+    
+    let galleryImages = [];
+    
+    // Handle gallery image uploads
+    window.handleGalleryImages = function(files) {
+        if (files.length === 0) return;
+        
+        // Check if files are images
+        const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+        
+        if (imageFiles.length === 0) {
+            alert('Please select only image files.');
+            return;
+        }
+        
+        // Upload each image
+        Promise.all(imageFiles.map(uploadGalleryImage))
+            .then(results => {
+                // Filter out failed uploads
+                const successfulUploads = results.filter(result => result.success);
+                
+                // Add to gallery images array
+                galleryImages = galleryImages.concat(successfulUploads);
+                
+                // Update gallery preview
+                updateGalleryPreview();
+                
+                // Show options and enable insert button
+                if (galleryImages.length > 0) {
+                    galleryOptions.style.display = 'block';
+                    insertGalleryBtn.disabled = false;
+                }
+            });
+    }
+    
+    // Upload a single gallery image
+    function uploadGalleryImage(file) {
+        return new Promise((resolve) => {
+            // Create form data
+            const formData = new FormData();
+            formData.append('mediaFile', file);
+            formData.append('mediaType', 'image');
+            
+            // Get the anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            // Upload the image
+            fetch('/Posts/UploadMedia', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    resolve({
+                        success: true,
+                        url: data.mediaUrl,
+                        filename: data.fileName
+                    });
+                } else {
+                    console.error('Error uploading gallery image:', data.message);
+                    resolve({ success: false });
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading gallery image:', error);
+                resolve({ success: false });
+            });
+        });
+    }
+    
+    // Update gallery preview
+    function updateGalleryPreview() {
+        if (galleryImages.length === 0) {
+            galleryContainer.innerHTML = `
+                <div class="text-center text-muted p-4">
+                    <p>No images selected yet</p>
+                </div>
+            `;
+            return;
+        }
+        
+        galleryContainer.innerHTML = '';
+        
+        galleryImages.forEach((image, index) => {
+            const imageItem = document.createElement('div');
+            imageItem.className = 'gallery-image-item';
+            imageItem.innerHTML = `
+                <img src="${image.url}" alt="Gallery image ${index + 1}">
+                <button type="button" class="remove-gallery-image" data-index="${index}">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            
+            galleryContainer.appendChild(imageItem);
+        });
+        
+        // Add remove button event listeners
+        galleryContainer.querySelectorAll('.remove-gallery-image').forEach(button => {
+            button.addEventListener('click', () => {
+                const index = parseInt(button.getAttribute('data-index'));
+                galleryImages.splice(index, 1);
+                updateGalleryPreview();
+                
+                // Hide options and disable insert button if no images
+                if (galleryImages.length === 0) {
+                    galleryOptions.style.display = 'none';
+                    insertGalleryBtn.disabled = true;
+                }
+            });
+        });
+    }
+    
+    // Handle insert gallery button
+    insertGalleryBtn.addEventListener('click', () => {
+        if (galleryImages.length === 0) return;
+        
+        const galleryStyle = galleryStyleSelect.value;
+        const galleryCaption = document.getElementById('galleryCaption').value;
+        
+        // Get alignment
+        let alignment = 'center'; // Default
+        document.querySelectorAll('.gallery-options .btn-group button').forEach(btn => {
+            if (btn.classList.contains('active')) {
+                alignment = btn.getAttribute('data-align');
+            }
+        });
+        
+        // Create gallery HTML based on style
+        let galleryHtml = '';
+        
+        if (galleryStyle === 'grid') {
+            galleryHtml = createGridGallery(galleryImages, alignment, galleryCaption);
+        } else if (galleryStyle === 'carousel') {
+            galleryHtml = createCarouselGallery(galleryImages, alignment, galleryCaption);
+        } else {
+            galleryHtml = createSlideshowGallery(galleryImages, alignment, galleryCaption);
+        }
+        
+        // Restore selection from before dialog was opened
+        restoreSelection();
+        
+        // Insert gallery at caret position
+        insertContentAtCaret(galleryHtml);
+        
+        // Update form fields
+        updateFormFields();
+        
+        // Reset gallery state
+        galleryImages = [];
+        updateGalleryPreview();
+        galleryOptions.style.display = 'none';
+        insertGalleryBtn.disabled = true;
+        document.getElementById('galleryCaption').value = '';
+        
+        // Close dialog
+        document.getElementById('mediaDialog').classList.remove('visible');
+        
+        // Initialize any carousels in the editor
+        initializeCarousels();
+    });
+    
+    // Create grid gallery HTML
+    function createGridGallery(images, alignment, caption) {
+        const galleryId = 'gallery-' + Date.now();
+        
+        let html = `
+            <div class="gallery-container ${alignment !== 'center' ? 'img-align-' + alignment : ''}" id="${galleryId}">
+                <div class="gallery-grid">
+        `;
+        
+        images.forEach(image => {
+            html += `<img src="${image.url}" alt="Gallery image">`;
+        });
+        
+        html += `
+                </div>
+                ${caption ? `<div class="gallery-caption">${caption}</div>` : ''}
+            </div>
+            <p><br></p>
+        `;
+        
+        return html;
+    }
+    
+    // Create carousel gallery HTML
+    function createCarouselGallery(images, alignment, caption) {
+        const galleryId = 'gallery-' + Date.now();
+        
+        let html = `
+            <div class="gallery-container ${alignment !== 'center' ? 'img-align-' + alignment : ''}" id="${galleryId}">
+                <div class="gallery-carousel">
+                    <div class="carousel-inner">
+        `;
+        
+        images.forEach((image, index) => {
+            html += `
+                <div class="carousel-item ${index === 0 ? 'active' : ''}" data-index="${index}">
+                    <img src="${image.url}" alt="Gallery image ${index + 1}">
+                </div>
+            `;
+        });
+        
+        html += `
+                    </div>
+                    <button type="button" class="carousel-control prev" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button type="button" class="carousel-control next" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                ${caption ? `<div class="gallery-caption">${caption}</div>` : ''}
+            </div>
+            <p><br></p>
+        `;
+        
+        return html;
+    }
+    
+    // Create slideshow gallery HTML
+    function createSlideshowGallery(images, alignment, caption) {
+        // Slideshow is similar to carousel but with full-screen option
+        const galleryId = 'gallery-' + Date.now();
+        
+        let html = `
+            <div class="gallery-container ${alignment !== 'center' ? 'img-align-' + alignment : ''}" id="${galleryId}">
+                <div class="gallery-carousel slideshow">
+                    <div class="carousel-inner">
+        `;
+        
+        images.forEach((image, index) => {
+            html += `
+                <div class="carousel-item ${index === 0 ? 'active' : ''}" data-index="${index}">
+                    <img src="${image.url}" alt="Gallery image ${index + 1}">
+                </div>
+            `;
+        });
+        
+        html += `
+                    </div>
+                    <button type="button" class="carousel-control prev" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button type="button" class="carousel-control next" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <div class="slideshow-counter">1/${images.length}</div>
+                </div>
+                ${caption ? `<div class="gallery-caption">${caption}</div>` : ''}
+            </div>
+            <p><br></p>
+        `;
+        
+        return html;
+    }
+    
+    // Initialize carousels in the editor
+    function initializeCarousels() {
+        const contentEditor = document.getElementById('contentEditor');
+        const carousels = contentEditor.querySelectorAll('.gallery-carousel');
+        
+        carousels.forEach(carousel => {
+            const prevButton = carousel.querySelector('.prev');
+            const nextButton = carousel.querySelector('.next');
+            const slides = carousel.querySelectorAll('.carousel-item');
+            let currentIndex = 0;
+            
+            if (!prevButton || !nextButton || slides.length === 0) return;
+            
+            // Show counter for slideshows
+            const counter = carousel.querySelector('.slideshow-counter');
+            
+            // Previous button click
+            prevButton.addEventListener('click', () => {
+                currentIndex = (currentIndex === 0) ? slides.length - 1 : currentIndex - 1;
+                updateCarousel();
+            });
+            
+            // Next button click
+            nextButton.addEventListener('click', () => {
+                currentIndex = (currentIndex === slides.length - 1) ? 0 : currentIndex + 1;
+                updateCarousel();
+            });
+            
+            // Update carousel display
+            function updateCarousel() {
+                const translateValue = -currentIndex * 100;
+                carousel.querySelector('.carousel-inner').style.transform = `translateX(${translateValue}%)`;
+                
+                // Update active class
+                slides.forEach(slide => slide.classList.remove('active'));
+                slides[currentIndex].classList.add('active');
+                
+                // Update counter if exists
+                if (counter) {
+                    counter.textContent = `${currentIndex + 1}/${slides.length}`;
+                }
+            }
+        });
+    }
 }
 
-// ===== INITIALIZATION =====
 // Initialize everything when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     initializeMediaHandling();
-    
-    // Apply initial placeholder styling to existing figcaptions
-    document.querySelectorAll('figcaption[contenteditable="true"]').forEach(figcaption => {
-        const text = figcaption.textContent.trim();
-        if (!text) {
-            figcaption.innerHTML = '<span class="caption-placeholder">Resim alt yazısı eklemek için tıklayın</span>';
-            figcaption.classList.add('empty-caption');
-        }
-    });
 });
