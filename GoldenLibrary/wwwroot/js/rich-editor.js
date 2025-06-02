@@ -3,6 +3,11 @@
  * GoldenLibrary Project
  */
 
+// Auto-save configuration
+let autoSaveTimeout;
+let lastSavedContent = '';
+let saveIndicator;
+
 // Function to initialize the rich text editor
 function initializeRichEditor() {
     // Editor elements
@@ -12,8 +17,17 @@ function initializeRichEditor() {
     const toolbar = document.getElementById('formattingToolbar');
     const toolbarButtons = toolbar.querySelectorAll('.toolbar-button');
     
+    // Initialize save indicator
+    initializeSaveIndicator();
+    
+    // Initialize placeholder behavior
+    initializePlaceholders();
+    
     // Current selection for formatting
     let currentSelection = null;
+    
+    // Initialize auto-save
+    initializeAutoSave();
     
     // Event listener for selection changes
     document.addEventListener('selectionchange', function() {
@@ -407,3 +421,229 @@ function initializeRichEditor() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeRichEditor();
 });
+
+// Initialize save indicator
+function initializeSaveIndicator() {
+    saveIndicator = document.createElement('div');
+    saveIndicator.className = 'save-indicator';
+    saveIndicator.innerHTML = `
+        <div class="save-status">
+            <span class="save-text">Draft saved</span>
+            <span class="save-spinner"></span>
+        </div>
+    `;
+    document.body.appendChild(saveIndicator);
+}
+
+// Initialize placeholder behavior
+function initializePlaceholders() {
+    const titleEditor = document.getElementById('titleEditor');
+    const descriptionEditor = document.getElementById('descriptionEditor');
+    const contentEditor = document.getElementById('contentEditor');
+    
+    // Enhanced placeholder behavior for title
+    titleEditor.addEventListener('focus', function() {
+        if (this.innerText.trim() === '') {
+            this.setAttribute('data-placeholder-active', 'true');
+        }
+    });
+    
+    titleEditor.addEventListener('blur', function() {
+        this.removeAttribute('data-placeholder-active');
+    });
+    
+    titleEditor.addEventListener('input', function() {
+        if (this.innerText.trim() === '') {
+            this.setAttribute('data-empty', 'true');
+        } else {
+            this.removeAttribute('data-empty');
+        }
+    });
+    
+    // Enhanced placeholder behavior for description
+    descriptionEditor.addEventListener('focus', function() {
+        if (this.innerText.trim() === '') {
+            this.setAttribute('data-placeholder-active', 'true');
+        }
+    });
+    
+    descriptionEditor.addEventListener('blur', function() {
+        this.removeAttribute('data-placeholder-active');
+    });
+    
+    descriptionEditor.addEventListener('input', function() {
+        if (this.innerText.trim() === '') {
+            this.setAttribute('data-empty', 'true');
+        } else {
+            this.removeAttribute('data-empty');
+        }
+    });
+    
+    // Enhanced placeholder behavior for content
+    contentEditor.addEventListener('focus', function() {
+        if (this.innerText.trim() === '') {
+            this.setAttribute('data-placeholder-active', 'true');
+        }
+    });
+    
+    contentEditor.addEventListener('blur', function() {
+        this.removeAttribute('data-placeholder-active');
+    });
+    
+    contentEditor.addEventListener('input', function() {
+        if (this.innerText.trim() === '') {
+            this.setAttribute('data-empty', 'true');
+        } else {
+            this.removeAttribute('data-empty');
+        }
+    });
+}
+
+// Initialize auto-save functionality
+function initializeAutoSave() {
+    const titleEditor = document.getElementById('titleEditor');
+    const descriptionEditor = document.getElementById('descriptionEditor');
+    const contentEditor = document.getElementById('contentEditor');
+    
+    // Add input listeners for auto-save
+    [titleEditor, descriptionEditor, contentEditor].forEach(editor => {
+        editor.addEventListener('input', debounceAutoSave);
+        editor.addEventListener('paste', debounceAutoSave);
+    });
+    
+    // Load draft from localStorage on page load
+    loadDraftFromStorage();
+}
+
+// Debounced auto-save function
+function debounceAutoSave() {
+    clearTimeout(autoSaveTimeout);
+    showSaveIndicator('saving');
+    
+    autoSaveTimeout = setTimeout(() => {
+        performAutoSave();
+    }, 2000); // Save 2 seconds after user stops typing
+}
+
+// Perform the actual auto-save
+function performAutoSave() {
+    const currentContent = {
+        title: document.getElementById('titleEditor').innerText.trim(),
+        description: document.getElementById('descriptionEditor').innerText.trim(),
+        content: document.getElementById('contentEditor').innerHTML.trim(),
+        timestamp: new Date().toISOString()
+    };
+    
+    // Only save if content has changed
+    const contentString = JSON.stringify(currentContent);
+    if (contentString !== lastSavedContent) {
+        // Save to localStorage as backup
+        localStorage.setItem('goldenLibrary_draft', contentString);
+        
+        // Send to server
+        sendAutoSaveToServer(currentContent);
+        
+        lastSavedContent = contentString;
+    }
+}
+
+// Send auto-save data to server
+function sendAutoSaveToServer(content) {
+    fetch('/Posts/AutoSave', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify(content)
+    })
+    .then(response => {
+        if (response.ok) {
+            showSaveIndicator('saved');
+        } else {
+            showSaveIndicator('error');
+        }
+    })
+    .catch(error => {
+        console.error('Auto-save error:', error);
+        showSaveIndicator('error');
+    });
+}
+
+// Show save indicator with different states
+function showSaveIndicator(state) {
+    if (!saveIndicator) return;
+    
+    const saveText = saveIndicator.querySelector('.save-text');
+    const saveSpinner = saveIndicator.querySelector('.save-spinner');
+    
+    saveIndicator.className = `save-indicator ${state}`;
+    
+    switch (state) {
+        case 'saving':
+            saveText.textContent = 'Saving...';
+            saveSpinner.style.display = 'inline-block';
+            break;
+        case 'saved':
+            saveText.textContent = 'Draft saved';
+            saveSpinner.style.display = 'none';
+            break;
+        case 'error':
+            saveText.textContent = 'Save failed';
+            saveSpinner.style.display = 'none';
+            break;
+    }
+    
+    saveIndicator.classList.add('visible');
+    
+    // Hide after 3 seconds (except when saving)
+    if (state !== 'saving') {
+        setTimeout(() => {
+            saveIndicator.classList.remove('visible');
+        }, 3000);
+    }
+}
+
+// Load draft from localStorage
+function loadDraftFromStorage() {
+    const savedDraft = localStorage.getItem('goldenLibrary_draft');
+    if (savedDraft) {
+        try {
+            const draft = JSON.parse(savedDraft);
+            const titleEditor = document.getElementById('titleEditor');
+            const descriptionEditor = document.getElementById('descriptionEditor');
+            const contentEditor = document.getElementById('contentEditor');
+            
+            // Only load if editors are empty
+            if (titleEditor.innerText.trim() === '' && draft.title) {
+                titleEditor.innerText = draft.title;
+            }
+            if (descriptionEditor.innerText.trim() === '' && draft.description) {
+                descriptionEditor.innerText = draft.description;
+            }
+            if (contentEditor.innerHTML.trim() === '' && draft.content) {
+                contentEditor.innerHTML = draft.content;
+            }
+            
+            // Update form fields
+            updateFormFields();
+            
+            // Show notification if draft was loaded
+            if (draft.title || draft.description || draft.content) {
+                showSaveIndicator('saved');
+                setTimeout(() => {
+                    const saveText = saveIndicator.querySelector('.save-text');
+                    saveText.textContent = 'Draft restored';
+                    showSaveIndicator('saved');
+                }, 100);
+            }
+        } catch (error) {
+            console.error('Error loading draft:', error);
+        }
+    }
+}
+
+// Clear draft from localStorage (call this when post is published)
+function clearDraftFromStorage() {
+    localStorage.removeItem('goldenLibrary_draft');
+}

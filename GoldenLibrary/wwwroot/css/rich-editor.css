@@ -650,190 +650,104 @@
 /* Save status indicator */
 .save-indicator {
     position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background-color: rgba(255, 255, 255, 0.95);
+    top: 20px;
+    right: 20px;
+    background: rgba(41, 41, 41, 0.95);
+    color: white;
+    padding: 12px 20px;
     border-radius: 24px;
-    padding: 8px 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    font-size: 14px;
+    font-weight: 400;
+    backdrop-filter: blur(10px);
+    transform: translateX(100px);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    z-index: 9999;
     display: flex;
     align-items: center;
-    font-size: 13px;
-    font-family: var(--medium-sans-font);
-    font-weight: 400;
-    z-index: 1000;
-    transition: all 0.2s cubic-bezier(0.2, 0, 0.2, 1);
-    backdrop-filter: blur(8px);
+    gap: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.save-indicator i {
-    margin-right: 6px;
-    font-size: 12px;
-}
-
-.save-indicator.saving {
-    background-color: rgba(255, 193, 7, 0.1);
-    color: rgba(133, 77, 14, 1);
-    border: 1px solid rgba(255, 193, 7, 0.3);
+.save-indicator.visible {
+    transform: translateX(0);
+    opacity: 1;
 }
 
 .save-indicator.saved {
-    background-color: rgba(25, 135, 84, 0.1);
-    color: rgba(25, 135, 84, 1);
-    border: 1px solid rgba(25, 135, 84, 0.3);
+    background: rgba(26, 137, 23, 0.95);
 }
 
 .save-indicator.error {
-    background-color: rgba(220, 53, 69, 0.1);
-    color: rgba(220, 53, 69, 1);
-    border: 1px solid rgba(220, 53, 69, 0.3);
+    background: rgba(217, 45, 32, 0.95);
 }
 
-/* Word count */
-.meta-info {
-    display: flex;
-    justify-content: flex-start;
-    color: var(--medium-subtitle-color);
-    font-size: 13px;
-    font-family: var(--medium-sans-font);
-    margin-top: 24px;
-    margin-bottom: 48px;
-    gap: 24px;
-}
-
-.meta-info div {
+.save-indicator .save-status {
     display: flex;
     align-items: center;
+    gap: 8px;
 }
 
-/* Tag selection styling */
-.tag-selection-area {
-    margin: 30px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
-
-.tag-selection-area h4 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-}
-
-.tag-selection-area h4 i {
-    margin-right: 8px;
-    color: #6c757d;
-}
-
-.tag-selection-area.error {
-    border-color: #dc3545;
-    background-color: rgba(220, 53, 69, 0.05);
-}
-
-.tag-selection-area h4 i.error-icon {
-    color: #dc3545;
-}
-
-.tag-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
-
-.tag-item {
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
-
-.tag-checkbox {
+.save-indicator .save-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: save-spin 1s linear infinite;
     display: none;
 }
 
-.tag-label {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    background-color: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    color: #6c757d;
-    cursor: pointer;
-    transition: all 0.2s ease;
+@keyframes save-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-.tag-checkbox:checked + .tag-label {
-    background-color: #d4af37;
-    border-color: #d4af37;
-    color: #fff;
+/* Enhanced Placeholder Animations */
+.title-editor[data-placeholder-active="true"]::before,
+.description-editor[data-placeholder-active="true"]::before,
+.content-editor[data-placeholder-active="true"]::before {
+    animation: placeholder-fade 0.3s ease-in-out;
 }
 
-.tag-validation-message {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #6c757d;
+@keyframes placeholder-fade {
+    from {
+        opacity: 0.6;
+        transform: translateY(-2px);
+    }
+    to {
+        opacity: 0.4;
+        transform: translateY(0);
+    }
 }
 
-/* Figcaption Medium-style editing */
-.content-image {
-    position: relative;
-    margin: 20px 0;
-    text-align: center;
+/* Enhanced Editor Focus States */
+.title-editor:focus,
+.description-editor:focus,
+.content-editor:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(26, 137, 23, 0.2);
+    transition: box-shadow 0.2s ease-in-out;
 }
 
-.content-image figcaption {
-    margin-top: 12px;
-    padding: 8px 16px;
-    font-size: 14px;
-    line-height: 1.4;
-    color: #6c757d;
-    text-align: center;
-    font-style: italic;
-    cursor: text;
-    border-radius: 3px;
-    transition: all 0.2s ease;
-    min-height: 20px;
-    position: relative;
+/* Improved Mobile Responsiveness for Save Indicator */
+@media (max-width: 768px) {
+    .save-indicator {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        transform: translateY(-60px);
+        border-radius: 12px;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    .save-indicator.visible {
+        transform: translateY(0);
+    }
 }
 
-.content-image figcaption:hover {
-    background-color: rgba(0, 0, 0, 0.03);
-}
-
-.content-image.caption-editing figcaption {
-    background-color: rgba(255, 215, 0, 0.1);
-    outline: 1px solid rgba(255, 215, 0, 0.3);
-    color: #333;
-    font-style: normal;
-}
-
-.content-image figcaption.empty-caption {
-    color: #999;
-}
-
-.content-image figcaption .caption-placeholder {
-    color: #999;
-    font-style: italic;
-    pointer-events: none;
-}
-
-.content-image figcaption:focus {
-    outline: 1px solid rgba(255, 215, 0, 0.5);
-    background-color: rgba(255, 215, 0, 0.1);
-    color: #333;
-    font-style: normal;
-}
-
-.content-image figcaption:focus .caption-placeholder {
-    display: none;
-}
-
-/* Remove old placeholder styles */
-figcaption[contenteditable="true"]:empty:before {
-    display: none;
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
     .editor-container {
         max-width: 100%;
