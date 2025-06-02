@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medium-Style Editor Test - GoldenLibrary</title>
+    <link rel="stylesheet" href="css/rich-editor.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #fafafa;
+        }
+        .test-container {
+            max-width: 740px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .test-header h1 {
+            color: var(--primary-text);
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .test-header p {
+            color: var(--secondary-text);
+            font-size: 16px;
+        }
+        .feature-list {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .feature-list h3 {
+            margin-top: 0;
+            color: var(--primary-text);
+        }
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li::before {
+            content: "✓";
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>Medium-Style Rich Text Editor</h1>
+            <p>Test the enhanced GoldenLibrary editor with Medium-inspired design and functionality</p>
+        </div>
+        
+        <div class="feature-list">
+            <h3>Features to Test:</h3>
+            <ul>
+                <li>Auto-save functionality (saves drafts every 2 seconds)</li>
+                <li>Floating formatting toolbar on text selection</li>
+                <li>Keyboard shortcuts (Ctrl+B, Ctrl+I, Ctrl+K)</li>
+                <li>Enhanced placeholder animations</li>
+                <li>Medium-style typography and spacing</li>
+                <li>Responsive design for mobile devices</li>
+                <li>Draft restoration from localStorage</li>
+                <li>Visual save indicators</li>
+            </ul>
+        </div>
+        
+        <!-- Editor Container -->
+        <div class="editor-container">
+            <div class="editor-content">
+                <!-- Title Editor -->
+                <div id="titleEditor" 
+                     class="title-editor" 
+                     contenteditable="true" 
+                     data-placeholder="Title"
+                     data-empty="true"></div>
+                
+                <!-- Description Editor -->
+                <div id="descriptionEditor" 
+                     class="description-editor" 
+                     contenteditable="true" 
+                     data-placeholder="Tell your story..."
+                     data-empty="true"></div>
+                
+                <!-- Content Editor -->
+                <div id="contentEditor" 
+                     class="content-editor" 
+                     contenteditable="true" 
+                     data-placeholder="Write your story..."
+                     data-empty="true"></div>
+            </div>
+        </div>
+        
+        <!-- Formatting Toolbar -->
+        <div id="formattingToolbar" class="formatting-toolbar">
+            <button type="button" class="toolbar-button" data-command="bold" title="Bold (Ctrl+B)">
+                <strong>B</strong>
+            </button>
+            <button type="button" class="toolbar-button" data-command="italic" title="Italic (Ctrl+I)">
+                <em>I</em>
+            </button>
+            <button type="button" class="toolbar-button" data-command="link" title="Link (Ctrl+K)">
+                🔗
+            </button>
+            <button type="button" class="toolbar-button" data-command="heading" title="Heading">
+                H1
+            </button>
+            <button type="button" class="toolbar-button" data-command="subheading" title="Subheading">
+                H2
+            </button>
+            <button type="button" class="toolbar-button" data-command="quote" title="Quote">
+                "
+            </button>
+            <button type="button" class="toolbar-button" data-command="unorderedList" title="Bullet List">
+                •
+            </button>
+            <button type="button" class="toolbar-button" data-command="orderedList" title="Numbered List">
+                1.
+            </button>
+        </div>
+        
+        <!-- Link Form -->
+        <div id="linkForm" class="link-form">
+            <input type="url" id="linkUrl" placeholder="Paste or type a link..." />
+            <button type="button" id="applyLink">Apply</button>
+            <button type="button" id="removeLink">Remove</button>
+            <button type="button" id="cancelLink">Cancel</button>
+        </div>
+        
+        <!-- Hidden form fields for testing -->
+        <form style="display: none;">
+            <input type="hidden" id="Title" name="Title">
+            <input type="hidden" id="Description" name="Description">
+            <input type="hidden" id="Content" name="Content">
+            <input type="hidden" id="Tags" name="Tags">
+            <input type="hidden" name="__RequestVerificationToken" value="test-token">
+        </form>
+    </div>
+    
+    <!-- Test JavaScript -->
+    <script src="js/rich-editor.js"></script>
+    <script>
+        // Override auto-save server call for testing
+        function sendAutoSaveToServer(content) {
+            console.log('Auto-save would send to server:', content);
+            showSaveIndicator('saved');
+        }
+        
+        // Add some test instructions
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Medium-style editor loaded. Try the following:');
+            console.log('1. Type some text and select it to see the formatting toolbar');
+            console.log('2. Use keyboard shortcuts: Ctrl+B (bold), Ctrl+I (italic), Ctrl+K (link)');
+            console.log('3. Check the browser console for auto-save logs');
+            console.log('4. Refresh the page to test draft restoration');
+        });
+    </script>
+</body>
+</html>
