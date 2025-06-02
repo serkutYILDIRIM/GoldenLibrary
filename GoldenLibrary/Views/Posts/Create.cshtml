@@ -4,114 +4,132 @@
 }
 
 <div class="editor-container">
-    <!-- Top Navigation Bar -->
-    <div class="editor-navbar">
-        <div class="editor-stats">
-            <span id="wordCount">0 words</span>
-            <span class="separator">•</span>
-            <span id="characterCount">0 characters</span>
+    <!-- Top Navigation Bar -->    <div class="editor-navbar">
+        <div class="editor-left">
+            <div class="editor-stats">
+                <span id="wordCount">0 words</span>
+                <span class="separator">•</span>
+                <span id="readingTime">0 min read</span>
+                <span class="separator">•</span>
+                <span id="characterCount">0 characters</span>
+            </div>
+            
+            <div class="save-indicator" id="saveStatus">
+                <span class="save-dot"></span>
+                <span class="save-text">Saved</span>
+            </div>
         </div>
         
-        <div class="save-indicator" id="saveStatus">
-            <span class="save-dot"></span>
-            <span class="save-text">Saved</span>
-        </div>
-        
-        <div class="draft-indicator" id="draftStatus" style="display: none;">
-            <button class="btn btn-sm btn-link text-muted" id="restoreDraftBtn">
-                <i class="bi bi-arrow-counterclockwise"></i> Restore unsaved draft
-            </button>
+        <div class="editor-center">
+            <div class="draft-indicator" id="draftStatus" style="display: none;">
+                <button class="btn btn-sm btn-link text-muted" id="restoreDraftBtn">
+                    <i class="bi bi-arrow-counterclockwise"></i> Restore unsaved draft
+                </button>
+            </div>
         </div>
         
         <div class="editor-actions">
-            <button class="btn btn-outline-secondary btn-sm rounded-pill me-2" id="previewBtn">Preview</button>
-            <button class="btn btn-golden btn-sm rounded-pill" id="publishBtn">Publish</button>
+            <button class="btn btn-outline-secondary btn-sm" id="saveAsDraftBtn">Save draft</button>
+            <div class="dropdown">
+                <button class="btn btn-golden btn-sm dropdown-toggle" type="button" id="publishDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Publish
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="publishDropdown">
+                    <li><a class="dropdown-item" href="#" id="publishNowBtn">Publish now</a></li>
+                    <li><a class="dropdown-item" href="#" id="schedulePublishBtn">Schedule for later</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" id="previewBtn">Preview story</a></li>
+                </ul>
+            </div>
         </div>
     </div>
-    
-    <!-- Simplified Minimalist Formatting Toolbar -->
+      <!-- Simplified Minimalist Formatting Toolbar -->
     <div class="formatting-toolbar" id="formattingToolbar">
         <div class="toolbar-buttons">
             <button type="button" class="toolbar-button" data-command="bold" title="Bold (Ctrl+B)">
-                <i class="bi bi-type-bold"></i>
+                <strong>B</strong>
             </button>
             <button type="button" class="toolbar-button" data-command="italic" title="Italic (Ctrl+I)">
-                <i class="bi bi-type-italic"></i>
+                <em>I</em>
             </button>
-            <button type="button" class="toolbar-button" data-command="h1" title="Heading 1">
-                <i class="bi bi-type-h1"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="h2" title="Heading 2">
-                <i class="bi bi-type-h2"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="h3" title="Heading 3">
-                <i class="bi bi-type-h3"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="orderedList" title="Numbered List (1.)">
-                <i class="bi bi-list-ol"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="unorderedList" title="Bullet List (*)">
-                <i class="bi bi-list-ul"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="quote" title="Quote (>)">
-                <i class="bi bi-blockquote-left"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="inlineCode" title="Inline Code (`)">
-                <i class="bi bi-code"></i>
-            </button>
-            <button type="button" class="toolbar-button" data-command="highlight" title="Highlight">
-                <i class="bi bi-highlighter"></i>
-            </button>
+            <div class="toolbar-separator"></div>
             <button type="button" class="toolbar-button" data-command="link" title="Link (Ctrl+K)">
                 <i class="bi bi-link-45deg"></i>
+            </button>
+            <div class="toolbar-separator"></div>
+            <button type="button" class="toolbar-button toolbar-button-text" data-command="h2" title="Heading">
+                T
+            </button>
+            <button type="button" class="toolbar-button" data-command="quote" title="Quote">
+                <i class="bi bi-quote"></i>
+            </button>
+            <button type="button" class="toolbar-button" data-command="inlineCode" title="Code">
+                <i class="bi bi-code"></i>
+            </button>
+            <div class="toolbar-separator"></div>
+            <button type="button" class="toolbar-button" data-command="highlight" title="Highlight">
+                <i class="bi bi-brush"></i>
             </button>
         </div>
         
         <!-- Link Input Form (initially hidden) -->
         <div class="link-form" id="linkForm">
-            <input type="text" id="linkInput" placeholder="Paste or type a link...">
-            <button type="button" id="applyLinkButton">Apply</button>
-            <button type="button" id="cancelLinkButton">Cancel</button>
+            <input type="url" id="linkInput" placeholder="Paste or type a link..." autocomplete="off">
+            <button type="button" id="applyLinkButton" class="link-apply-btn">Apply</button>
+            <button type="button" id="cancelLinkButton" class="link-cancel-btn">×</button>
         </div>
-        <!-- Highlight color picker (initially hidden, part of the toolbar) -->
-        <div class="highlight-color-picker" id="highlightColorPicker" style="display: none;">
-            <button type="button" class="color-option" data-color="yellow" style="background-color: yellow; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
-            <button type="button" class="color-option" data-color="FFADAD" style="background-color: #FFADAD; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
-            <button type="button" class="color-option" data-color="A0E7E5" style="background-color: #A0E7E5; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
-            <button type="button" class="color-option" data-color="FDFFB6" style="background-color: #FDFFB6; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
-            <button type="button" class="color-option" data-color="B0E0E6" style="background-color: #B0E0E6; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #ccc; margin: 0 3px; cursor: pointer; padding: 0;"></button>
-            <button type="button" class="toolbar-button" data-command="removeHighlight" title="Remove Highlight" style="width: auto; padding: 0 5px;">
-                 <i class="bi bi-eraser-fill"></i> Clear
-            </button>
+        
+        <!-- Highlight color picker -->
+        <div class="highlight-color-picker" id="highlightColorPicker">
+            <div class="color-options">
+                <button type="button" class="color-option" data-color="yellow" style="background-color: #ffeb3b;"></button>
+                <button type="button" class="color-option" data-color="green" style="background-color: #4caf50;"></button>
+                <button type="button" class="color-option" data-color="blue" style="background-color: #2196f3;"></button>
+                <button type="button" class="color-option" data-color="pink" style="background-color: #e91e63;"></button>
+                <button type="button" class="color-option" data-command="removeHighlight" title="Remove">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
         </div>
     </div>
-    
-    <!-- Content Addition Button -->
+      <!-- Content Addition Button -->
     <div class="content-add-button" id="contentAddButton">
-        <button class="add-button-trigger">
-            <i class="bi bi-plus"></i>
+        <button class="add-button-trigger" title="Add content">
+            <i class="bi bi-plus-lg"></i>
         </button>
         <div class="add-button-menu">
-            <button class="add-menu-item" data-content-type="image">
-                <i class="bi bi-image"></i>
-                <span>Image</span>
-            </button>
-            <button class="add-menu-item" data-content-type="video">
-                <i class="bi bi-play-btn"></i>
-                <span>Video</span>
-            </button>
-            <button class="add-menu-item" data-content-type="embed">
-                <i class="bi bi-code-slash"></i>
-                <span>Embed</span>
-            </button>
-            <button class="add-menu-item" data-content-type="code">
-                <i class="bi bi-code-square"></i>
-                <span>Code</span>
-            </button>
-            <button class="add-menu-item" data-content-type="divider">
-                <i class="bi bi-hr"></i>
-                <span>Divider</span>
-            </button>
+            <div class="add-menu-header">
+                <span>Add to story</span>
+            </div>
+            <div class="add-menu-items">
+                <button class="add-menu-item" data-content-type="image" title="Upload an image">
+                    <div class="add-menu-icon">
+                        <i class="bi bi-image"></i>
+                    </div>
+                    <div class="add-menu-text">
+                        <span class="add-menu-title">Image</span>
+                        <span class="add-menu-desc">Upload from computer</span>
+                    </div>
+                </button>
+                <button class="add-menu-item" data-content-type="divider" title="Add a divider">
+                    <div class="add-menu-icon">
+                        <i class="bi bi-three-dots"></i>
+                    </div>
+                    <div class="add-menu-text">
+                        <span class="add-menu-title">Divider</span>
+                        <span class="add-menu-desc">Add a section break</span>
+                    </div>
+                </button>
+                <button class="add-menu-item" data-content-type="embed" title="Embed content">
+                    <div class="add-menu-icon">
+                        <i class="bi bi-code-slash"></i>
+                    </div>
+                    <div class="add-menu-text">
+                        <span class="add-menu-title">Embed</span>
+                        <span class="add-menu-desc">Add any embed code</span>
+                    </div>
+                </button>
+            </div>
         </div>
     </div>
       <!-- Media Upload Dialog -->
