@@ -818,6 +818,37 @@
     }
 }
 
+.tag-item {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.tag-checkbox {
+    display: none;
+}
+
+.tag-label {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background-color: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag-checkbox:checked + .tag-label {
+    background-color: #d4af37;
+    border-color: #d4af37;
+    color: #fff;
+}
+
+.tag-validation-message {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #6c757d;
+}
 @media (max-width: 480px) {
     .editor-container {
         padding: 0 16px;
