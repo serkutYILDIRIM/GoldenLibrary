@@ -64,7 +64,7 @@
         
         <!-- Link Input Form (initially hidden) -->
         <div class="link-form" id="linkForm">
-            <input type="url" id="linkInput" placeholder="Paste or type a link..." autocomplete="off">
+            <input type="url" id="linkInput" placeholder="Paste or type a link..." autocomplete="off" />
             <button type="button" id="applyLinkButton" class="link-apply-btn">Apply</button>
             <button type="button" id="cancelLinkButton" class="link-cancel-btn">×</button>
         </div>
@@ -151,7 +151,7 @@
                 <!-- Image Upload Pane -->
                 <div id="imageUploadPane" class="media-pane tab-pane fade show active">
                     <div class="upload-area" id="imageDropArea">
-                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;" multiple>
+                        <input type="file" id="imageFileInput" accept="image/*" style="display: none;" multiple />
                         <i class="bi bi-cloud-arrow-up"></i>
                         <h5>Drag and drop an image</h5>
                         <p>or click here to upload</p>
@@ -159,7 +159,7 @@
                     <div class="mt-3">
                         <p class="text-muted">Or insert from URL:</p>
                         <div class="input-group">
-                            <input type="text" id="imageUrlInput" class="form-control" placeholder="Paste image URL...">
+                            <input type="text" id="imageUrlInput" class="form-control" placeholder="Paste image URL..." />
                             <button class="btn btn-golden" id="insertImageUrlBtn">Insert</button>
                         </div>
                     </div>
@@ -187,7 +187,7 @@
                                 
                                 <div class="mb-3">
                                     <label for="imageCaptionInput" class="form-label">Caption (optional)</label>
-                                    <input type="text" id="imageCaptionInput" class="form-control" placeholder="Add a caption...">
+                                    <input type="text" id="imageCaptionInput" class="form-control" placeholder="Add a caption..." />
                                 </div>
                                 
                                 <div class="mb-3">
@@ -195,7 +195,7 @@
                                         <span>Size</span>
                                         <span id="imageSize" class="text-muted small">100%</span>
                                     </label>
-                                    <input type="range" class="form-range" id="imageSizeRange" min="25" max="100" step="5" value="100">
+                                    <input type="range" class="form-range" id="imageSizeRange" min="25" max="100" step="5" value="100" />
                                 </div>
                             </div>
                         </div>
@@ -207,7 +207,7 @@
                     <div class="mb-3">
                         <label for="unsplashSearchInput" class="form-label">Search for images on Unsplash</label>
                         <div class="input-group mb-3">
-                            <input type="text" class="form-control" id="unsplashSearchInput" placeholder="Search photos...">
+                            <input type="text" class="form-control" id="unsplashSearchInput" placeholder="Search photos..." />
                             <button class="btn btn-golden" type="button" id="unsplashSearchBtn">Search</button>
                         </div>
                     </div>
@@ -243,7 +243,7 @@
                         <p class="text-muted small">Upload multiple images to create a gallery</p>
                         
                         <div class="upload-area" id="galleryDropArea">
-                            <input type="file" id="galleryFileInput" accept="image/*" multiple style="display: none;">
+                            <input type="file" id="galleryFileInput" accept="image/*" multiple style="display: none;" />
                             <i class="bi bi-images"></i>
                             <h5>Drag and drop multiple images</h5>
                             <p>or click here to select images</p>
@@ -288,7 +288,7 @@
                                 
                                 <div class="mb-3">
                                     <label for="galleryCaption" class="form-label">Gallery Caption (optional)</label>
-                                    <input type="text" id="galleryCaption" class="form-control" placeholder="Add a caption for the gallery...">
+                                    <input type="text" id="galleryCaption" class="form-control" placeholder="Add a caption for the gallery..." />
                                 </div>
                             </div>
                         </div>
@@ -303,7 +303,7 @@
                 <div id="videoUploadPane" class="media-pane">
                     <div class="mb-3">
                         <label for="videoUrlInput" class="form-label">Enter a YouTube or Vimeo URL:</label>
-                        <input type="text" id="videoUrlInput" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
+                        <input type="text" id="videoUrlInput" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
                     </div>
                     <button class="btn btn-golden" id="insertVideoBtn">Insert Video</button>
                 </div>
@@ -369,7 +369,7 @@
     
     <!-- Caption Input (appears when editing image caption) -->
     <div class="caption-input-container" id="captionInputContainer">
-        <input type="text" id="captionInput" class="form-control" placeholder="Enter caption...">
+        <input type="text" id="captionInput" class="form-control" placeholder="Enter caption..." />
         <div class="caption-buttons">
             <button class="caption-button" id="saveCaptionBtn">Save</button>
             <button class="caption-button" id="cancelCaptionBtn">Cancel</button>
@@ -382,10 +382,9 @@
             <input type="hidden" asp-for="PostId" id="postId" />
             <input type="hidden" id="Title" name="Title" value="@Model?.Title" />
             <input type="hidden" id="Description" name="Description" value="@Model?.Description" />
-            <input type="hidden" id="Content" name="Content" value="@Model?.Content" />
-            <input type="hidden" id="Url" name="Url" value="@Model?.Url">
-            <input type="hidden" id="Tags" name="Tags" value="@Model?.Tags">
-            <input type="hidden" name="action" id="formAction" value="draft">
+            <input type="hidden" id="Content" name="Content" value="@Model?.Content" />            <input type="hidden" id="Url" name="Url" value="@Model?.Url" />
+            <input type="hidden" id="Tags" name="Tags" value="@Model?.Tags" />
+            <input type="hidden" name="action" id="formAction" value="draft" />
             @Html.AntiForgeryToken()
             
             <div class="title-area">
