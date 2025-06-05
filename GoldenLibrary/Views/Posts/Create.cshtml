@@ -382,7 +382,8 @@
             <input type="hidden" asp-for="PostId" id="postId" />
             <input type="hidden" id="Title" name="Title" value="@Model?.Title" />
             <input type="hidden" id="Description" name="Description" value="@Model?.Description" />
-            <input type="hidden" id="Content" name="Content" value="@Model?.Content" />            <input type="hidden" id="Url" name="Url" value="@Model?.Url" />
+            <input type="hidden" id="Content" name="Content" value="@Model?.Content" />
+            <input type="hidden" id="Url" name="Url" value="@Model?.Url" />
             <input type="hidden" id="Tags" name="Tags" value="@Model?.Tags" />
             <input type="hidden" name="action" id="formAction" value="draft" />
             @Html.AntiForgeryToken()
