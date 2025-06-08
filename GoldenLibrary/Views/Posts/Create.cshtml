@@ -1596,27 +1596,7 @@
     <script src="~/js/rich-editor-media.js"></script>
     <script src="~/js/image-editor.js"></script>
     <script src="~/js/create-post.js"></script>
-
-        
-        // LocalStorage functions with enhanced error handling
-        const localStorageDraft = {
-            save: function() {
-                if (!localStorageAvailable) {
-                    if (DEBUG) console.warn("Cannot save draft: localStorage unavailable");
-                    return false;
-                }
-                
-                try {
-                    // Get selected tag IDs
-                    const selectedTagIds = Array.from(document.querySelectorAll('.tag-checkbox'))
-                        .filter(checkbox => checkbox.checked)
-                        .map(checkbox => checkbox.value);
-                    
-                    const draft = {
-                        title: document.getElementById('Title').value,
-                        description: document.getElementById('Description').value,
-                        content: document.getElementById('Content').value,
-                        tagIds: selectedTagIds,
+}
                         lastUpdated: new Date().toISOString(),
                         published: false // Add a published flag to track state
                     };
