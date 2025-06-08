@@ -1587,8 +1587,7 @@
         .formatting-toolbar {
             flex-direction: column;
             max-width: calc(100vw - 40px);
-        }
-    }
+        }    }
 </style>
 
 @section Scripts {
@@ -1597,42 +1596,6 @@
     <script src="~/js/image-editor.js"></script>
     <script src="~/js/create-post.js"></script>
 }
-                        lastUpdated: new Date().toISOString(),
-                        published: false // Add a published flag to track state
-                    };
-                    
-                    const draftKey = getPostKey();
-                    const draftValue = JSON.stringify(draft);
-                    
-                    if (DEBUG) console.log(`Saving draft to key: ${draftKey}, size: ${draftValue.length} bytes`);
-                    localStorage.setItem(draftKey, draftValue);
-                    
-                    // Verify the save was successful
-                    const saved = localStorage.getItem(draftKey);
-                    if (!saved) {
-                        if (DEBUG) console.error("Save verification failed: Item not found after saving");
-                        return false;
-                    }
-                    
-                    // Try to check storage quota
-                    if (navigator.storage && navigator.storage.estimate) {
-                        navigator.storage.estimate().then(estimate => {
-                            const percentUsed = Math.round((estimate.usage / estimate.quota) * 100);
-                            if (percentUsed > 90) {
-                                console.warn('LocalStorage is almost full (' + percentUsed + '%). Some drafts may not be saved.');
-                            }
-                        });
-                    }
-                    
-                    if (DEBUG) console.log("Draft saved successfully");
-                    return true;
-                } catch (error) {
-                    console.error('LocalStorage save error:', error);
-                    
-                    // Show error message if saving fails
-                    showSaveStatus('error', 'Failed to save locally');
-                    return false;
-                }
             },
             
             load: function() {
