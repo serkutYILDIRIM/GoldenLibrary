@@ -1595,40 +1595,8 @@
     <script src="~/js/rich-editor.js"></script>
     <script src="~/js/rich-editor-media.js"></script>
     <script src="~/js/image-editor.js"></script>
-    <script type="text/javascript">
-        // Variables for auto-save
-        let autoSaveTimer;
-        let localSaveTimer;
-        const autoSaveDelay = 3000; // 3 seconds
-        const localSaveDelay = 1000; // 1 second
-        let lastSavedContent = '';
-        let savingInProgress = false;
-        const saveStatus = document.querySelector('.save-indicator');
-        const draftStatus = document.getElementById('draftStatus');
-        const restoreDraftBtn = document.getElementById('restoreDraftBtn');
-        const DEBUG = true; // Enable debug logging
-        let localStorageAvailable = false;
-        
-        // Check if localStorage is available and working
-        function checkStorageAvailability() {
-            try {
-                const storage = window.localStorage;
-                const testKey = "__storage_test__";
-                storage.setItem(testKey, testKey);
-                storage.removeItem(testKey);
-                if (DEBUG) console.log("localStorage is available");
-                return true;
-            } catch (e) {
-                if (DEBUG) console.error("localStorage is not available:", e);
-                return false;
-            }
-        }
-        
-        // Get the post ID for storage keys
-        const getPostKey = () => {
-            const postId = document.getElementById('postId').value;
-            return postId !== '0' ? `post_draft_${postId}` : 'new_post_draft';
-        };
+    <script src="~/js/create-post.js"></script>
+
         
         // LocalStorage functions with enhanced error handling
         const localStorageDraft = {
