@@ -1,6 +1,143 @@
 // Create Post JavaScript Functions
 // Extracted from Create.cshtml for better organization
 
+// Debug flag for localStorage operations
+const DEBUG = true;
+
+// Check if localStorage is available
+const localStorageAvailable = (function() {
+    try {
+        const test = '__localStorage_test__';
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+    } catch (e) {
+        return false;
+    }
+})();
+
+// Get post key for localStorage
+function getPostKey() {
+    const postId = document.getElementById('postId')?.value || '0';
+    const userId = document.querySelector('input[name="UserId"]')?.value || 'anonymous';
+    return `goldenLibrary_draft_${userId}_${postId}`;
+}
+
+// Show save status
+function showSaveStatus(type, message) {
+    // This function could show toast notifications or status messages
+    if (DEBUG) console.log(`Save status: ${type} - ${message}`);
+}
+
+// LocalStorage draft management object
+const localStorageDraft = {
+    save: function() {
+        if (!localStorageAvailable) {
+            if (DEBUG) console.warn("Cannot save draft: localStorage unavailable");
+            return false;
+        }
+        
+        try {
+            const titleEditor = document.getElementById('titleEditor');
+            const descriptionEditor = document.getElementById('descriptionEditor');
+            const contentEditor = document.getElementById('contentEditor');
+            
+            const draft = {
+                title: titleEditor?.innerText?.trim() || '',
+                description: descriptionEditor?.innerText?.trim() || '',
+                content: contentEditor?.innerHTML?.trim() || '',
+                lastUpdated: new Date().toISOString(),
+                published: false
+            };
+            
+            const draftKey = getPostKey();
+            const draftValue = JSON.stringify(draft);
+            
+            if (DEBUG) console.log(`Saving draft to key: ${draftKey}, size: ${draftValue.length} bytes`);
+            localStorage.setItem(draftKey, draftValue);
+            
+            // Verify the save was successful
+            const saved = localStorage.getItem(draftKey);
+            if (!saved) {
+                if (DEBUG) console.error("Save verification failed: Item not found after saving");
+                return false;
+            }
+            
+            if (DEBUG) console.log("Draft saved successfully");
+            return true;
+        } catch (error) {
+            console.error('LocalStorage save error:', error);
+            showSaveStatus('error', 'Failed to save locally');
+            return false;
+        }
+    },
+    
+    load: function() {
+        if (!localStorageAvailable) {
+            if (DEBUG) console.warn("Cannot load draft: localStorage unavailable");
+            return null;
+        }
+        
+        try {
+            const draftKey = getPostKey();
+            if (DEBUG) console.log(`Loading draft from key: ${draftKey}`);
+            const draftData = localStorage.getItem(draftKey);
+            
+            if (!draftData) {
+                if (DEBUG) console.log("No draft found for key:", draftKey);
+                return null;
+            }
+            
+            const draft = JSON.parse(draftData);
+            if (DEBUG) console.log("Draft loaded successfully:", draft);
+            return draft;
+        } catch (error) {
+            console.error('LocalStorage load error:', error);
+            return null;
+        }
+    },
+    
+    markAsPublished: function() {
+        if (!localStorageAvailable) return;
+        
+        try {
+            const draftKey = getPostKey();
+            const draftData = localStorage.getItem(draftKey);
+            if (draftData) {
+                const draft = JSON.parse(draftData);
+                draft.published = true;
+                localStorage.setItem(draftKey, JSON.stringify(draft));
+                if (DEBUG) console.log("Draft marked as published");
+            }
+        } catch (error) {
+            console.error('Error marking draft as published:', error);
+        }
+    },
+    
+    clearAllDrafts: function() {
+        if (!localStorageAvailable) return;
+        
+        try {
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('goldenLibrary_draft_')) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                if (DEBUG) console.log(`Removed draft: ${key}`);
+            });
+            
+            if (DEBUG) console.log(`Cleared ${keysToRemove.length} drafts`);
+        } catch (error) {
+            console.error('Error clearing drafts:', error);
+        }
+    }
+};
+
 // Publish button handler - enhanced with better validation
 function initializePublishButton() {
     document.getElementById('publishBtn').addEventListener('click', function(e) {
