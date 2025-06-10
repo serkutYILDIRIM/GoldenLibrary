@@ -84,7 +84,7 @@ namespace GoldenLibrary.Data.Concrete.EfCore
             }
         }
 
-        // 3. SaveDraft - Tag ilişkilerini de yönetir:
+        // 3. SaveDraft - It is also manage tag relations:
         public void SaveDraft(Post post, int[]? tagIds = null)
         {
             try
