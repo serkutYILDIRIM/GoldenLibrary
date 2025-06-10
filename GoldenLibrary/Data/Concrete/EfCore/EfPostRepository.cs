@@ -110,9 +110,9 @@ namespace GoldenLibrary.Data.Concrete.EfCore
                         entity.IsDraft = true;
                         entity.LastModified = DateTime.Now;
                         
-                        // Çok-a-Çok İlişki Yönetimi:
-                        // Taslak kaydetme sırasında da tagIds dizisi alır ve 
-                        // etiketleri gönderi ile ilişkilendirir
+                        // Many-to-Many Relationship Management:
+                        // The tagIds array is also accepted during draft saving and
+                        // associates the tags with the post
                         if (tagIds != null && tagIds.Length > 0)
                         {
                             entity.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
