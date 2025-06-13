@@ -1,60 +1,62 @@
 ﻿using GoldenLibrary.Data.Abstract;
 using GoldenLibrary.Entity;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GoldenLibrary.Data.Concrete.EfCore
 {
     public class EfPostRepository : IPostRepository
     {
-        private BlogContext _context;
+        private readonly BlogContext _context;
+        
         public EfPostRepository(BlogContext context)
         {
             _context = context;
         }
+        
         public IQueryable<Post> Posts => _context.Posts;
 
-        // Repository Seviyesinde Yapılan İşlemler:
+        // Repository Level Operations:
 
-        // 1. CreatePost - İki versiyonu vardır:
+        // 1. CreatePost - Two versions:
         public void CreatePost(Post post)
         {
-            // Bu metot tag ilişkilerini yönetmez, sadece gönderiyi kaydeder
+            // This method doesn't handle tag relationships, just saves the post
             _context.Posts.Add(post);
             _context.SaveChanges();
         }
 
         public void CreatePost(Post post, int[] tagIds)
         {
-            // When a new post is created:
-            if (tagIds != null && tagIds.Length > 0)
+            try
             {
-                // 1. Fetch all Tag entities whose IDs are in the tagIds array
-                // 2. Assign these Tag entities to the post.Tags collection
-                post.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
+                // When a new post is created with tags:
+                if (tagIds != null && tagIds.Length > 0)
+                {
+                    // Assign Tag entities to the post.Tags collection in a single query
+                    post.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
+                }
                 
-                // 3. When SaveChanges() is called, EF Core will:
-                //    - Insert the new Post entity
-                //    - Insert entries in the join table (PostTag) to connect the post with each tag
+                _context.Posts.Add(post);
+                _context.SaveChanges();
             }
-            
-            _context.Posts.Add(post);
-            _context.SaveChanges();
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error creating post: {ex.Message}");
+                throw; // Re-throw to allow caller to handle
+            }
         }
 
-        // 2. EditPost - Tag ilişkilerini yöneten versiyon:
+        // 2. EditPost - Two versions:
         public void EditPost(Post post)
         {
             var entity = _context.Posts.FirstOrDefault(i => i.PostId == post.PostId);
 
             if (entity != null)
             {
-                entity.Title = post.Title;
-                entity.Description = post.Description;
-                entity.Content = post.Content;
-                entity.Url = post.Url;
-                entity.IsActive = post.IsActive;
-
+                UpdatePostProperties(entity, post);
                 _context.SaveChanges();
             }
         }
@@ -65,26 +67,24 @@ namespace GoldenLibrary.Data.Concrete.EfCore
 
             if (entity != null)
             {
-                entity.Title = post.Title;
-                entity.Description = post.Description;
-                entity.Content = post.Content;
-                entity.Url = post.Url;
-                entity.IsActive = post.IsActive;
+                UpdatePostProperties(entity, post);
 
-                // 1. Include(i => i.Tags) loads the current tag relationships
-                // 2. Completely replace the Tags collection with new tags
-                entity.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
+                // Handle many-to-many relationship
+                if (tagIds != null && tagIds.Length > 0)
+                {
+                    entity.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
+                }
+                else
+                {
+                    // Clear all tags if empty array is passed
+                    entity.Tags?.Clear();
+                }
                 
-                // 3. When SaveChanges() is called, EF Core will:
-                //    - Delete all existing entries from the join table for this post
-                //    - Insert new join table entries for the new tag relationships
-                //    - This effectively replaces all tag associations in one operation
-
                 _context.SaveChanges();
             }
         }
 
-        // 3. SaveDraft - It is also manage tag relations:
+        // 3. SaveDraft - Also manages tag relations:
         public void SaveDraft(Post post, int[]? tagIds = null)
         {
             try
@@ -102,17 +102,12 @@ namespace GoldenLibrary.Data.Concrete.EfCore
                     var entity = _context.Posts.Include(i => i.Tags).FirstOrDefault(i => i.PostId == post.PostId);
                     if (entity != null)
                     {
-                        entity.Title = post.Title;
-                        entity.Description = post.Description;
-                        entity.Content = post.Content;
-                        entity.Url = post.Url;
+                        UpdatePostProperties(entity, post);
                         entity.IsActive = false;
                         entity.IsDraft = true;
                         entity.LastModified = DateTime.Now;
                         
-                        // Many-to-Many Relationship Management:
-                        // The tagIds array is also accepted during draft saving and
-                        // associates the tags with the post
+                        // Handle tag relationships
                         if (tagIds != null && tagIds.Length > 0)
                         {
                             entity.Tags = _context.Tags.Where(tag => tagIds.Contains(tag.TagId)).ToList();
@@ -123,7 +118,6 @@ namespace GoldenLibrary.Data.Concrete.EfCore
             }
             catch (Exception ex)
             {
-                // Log the error
                 System.Diagnostics.Debug.WriteLine($"Error saving draft: {ex.Message}");
                 throw; // Rethrow to notify caller
             }
@@ -133,8 +127,7 @@ namespace GoldenLibrary.Data.Concrete.EfCore
         {
             return _context.Posts
                 .Include(p => p.Tags)
-                .Where(p => p.PostId == draftId && p.UserId == userId && p.IsDraft)
-                .FirstOrDefault();
+                .FirstOrDefault(p => p.PostId == draftId && p.UserId == userId && p.IsDraft);
         }
 
         public List<Post> GetUserDrafts(int userId)
@@ -150,10 +143,9 @@ namespace GoldenLibrary.Data.Concrete.EfCore
         {
             try
             {
-                // For auto-save we only update content fields, not relationships
                 if (post.PostId == 0)
                 {
-                    // New draft
+                    // New draft - auto-save
                     post.IsActive = false;
                     post.IsDraft = true;
                     post.LastModified = DateTime.Now;
@@ -161,15 +153,15 @@ namespace GoldenLibrary.Data.Concrete.EfCore
                 }
                 else
                 {
-                    // Update existing draft
+                    // Update existing draft - auto-save
                     var entity = _context.Posts.FirstOrDefault(i => i.PostId == post.PostId && i.UserId == post.UserId);
                     if (entity != null)
                     {
+                        // Only update content fields for auto-save
                         entity.Title = post.Title;
                         entity.Description = post.Description;
                         entity.Content = post.Content;
                         entity.LastModified = DateTime.Now;
-                        // Keep other properties unchanged for auto-save
                     }
                     else
                     {
@@ -179,13 +171,15 @@ namespace GoldenLibrary.Data.Concrete.EfCore
                 _context.SaveChanges();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error auto-saving draft: {ex.Message}");
                 return false;
             }
         }
 
-        public Post? GetDraft(int userId)
+        // Renamed to be more descriptive and avoid method overload ambiguity
+        public Post? GetLatestDraft(int userId)
         {
             return _context.Posts
                 .Include(p => p.Tags)
@@ -194,35 +188,43 @@ namespace GoldenLibrary.Data.Concrete.EfCore
                 .FirstOrDefault();
         }
 
+        // Implementation of the interface method to maintain compatibility
+        public Post? GetDraft(int userId) => GetLatestDraft(userId);
+
         public void DeletePost(int postId)
         {
             try
             {
-                // When a post is deleted:
                 var post = _context.Posts.Find(postId);
                 if (post != null)
                 {
-                    // 1. Explicitly load the related tags to ensure they're tracked
+                    // Load the related tags to ensure they're tracked
                     _context.Entry(post).Collection(p => p.Tags).Load();
                     
-                    // 2. Clear the Tags collection to remove all relationships
-                    if (post.Tags != null)
-                    {
-                        post.Tags.Clear();
-                        _context.SaveChanges(); // Save to delete all join table entries
-                    }
+                    // Clear the Tags collection to properly remove all relationships
+                    post.Tags?.Clear();
+                    _context.SaveChanges(); // Save to delete join table entries first
                     
-                    // 3. Then remove the post itself
+                    // Then remove the post itself
                     _context.Posts.Remove(post);
                     _context.SaveChanges();
                 }
             }
             catch (Exception ex)
             {
-                // Log the error for debugging
                 System.Diagnostics.Debug.WriteLine($"Error deleting post: {ex.Message}");
                 throw; // Re-throw the exception to notify the caller
             }
+        }
+
+        // Helper method to avoid code duplication when updating post properties
+        private void UpdatePostProperties(Post entity, Post post)
+        {
+            entity.Title = post.Title;
+            entity.Description = post.Description;
+            entity.Content = post.Content;
+            entity.Url = post.Url;
+            entity.IsActive = post.IsActive;
         }
     }
 }
