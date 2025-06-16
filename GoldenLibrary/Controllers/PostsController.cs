@@ -25,9 +25,7 @@ namespace GoldenLibrary.Controllers
             var posts = _postRepository.Posts.Where(i => i.IsActive);
 
             if (!string.IsNullOrEmpty(tag))
-            {
                 posts = posts.Where(x => x.Tags.Any(t => t.Url == tag));
-            }
 
             return View(new PostsViewModel { Posts = await posts.ToListAsync() });
         }
