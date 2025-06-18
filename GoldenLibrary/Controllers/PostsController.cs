@@ -71,7 +71,7 @@ namespace GoldenLibrary.Controllers
         public IActionResult Create(int? id)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            
+
             // Check if user is trying to edit an existing draft
             if (id.HasValue)
             {
@@ -81,7 +81,7 @@ namespace GoldenLibrary.Controllers
                     // Get the IDs of tags associated with this draft
                     var selectedTagIds = draft.Tags?.Select(t => t.TagId).ToList() ?? new List<int>();
                     ViewBag.SelectedTagIds = selectedTagIds;
-                    
+
                     // Return existing draft for editing
                     ViewBag.Tags = _tagRepository.Tags.ToList();
                     return View(new PostCreateViewModel
@@ -95,7 +95,7 @@ namespace GoldenLibrary.Controllers
                     });
                 }
             }
-            
+
             // Start a new draft
             ViewBag.Tags = _tagRepository.Tags.ToList();
             ViewBag.SelectedTagIds = new List<int>(); // Empty list for new drafts
@@ -106,7 +106,7 @@ namespace GoldenLibrary.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         public IActionResult Create(PostCreateViewModel model, int[] tagIds, string action)
-        {           
+        {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
             if (ModelState.IsValid)
             {
@@ -119,15 +119,15 @@ namespace GoldenLibrary.Controllers
 
                 var post = new Post
                 {
-                    PostId = postId, 
-                    Title = model.Title, 
-                    Description = model.Description, 
-                    Content = model.Content, 
-                    Url = model.Url, 
-                    UserId = userId, 
-                    PublishedOn = DateTime.Now, 
-                    LastModified = DateTime.Now, 
-                    Image = "1.jpg" 
+                    PostId = postId,
+                    Title = model.Title,
+                    Description = model.Description,
+                    Content = model.Content,
+                    Url = model.Url,
+                    UserId = userId,
+                    PublishedOn = DateTime.Now,
+                    LastModified = DateTime.Now,
+                    Image = "1.jpg"
                 };
 
                 if (action == "draft")
@@ -140,7 +140,7 @@ namespace GoldenLibrary.Controllers
                 {
                     post.IsActive = false;
                     post.IsDraft = false;
-                    
+
                     if (postId > 0)
                     {
                         _postRepository.EditPost(post, tagIds);
@@ -153,20 +153,21 @@ namespace GoldenLibrary.Controllers
                     return RedirectToAction("Index");
                 }
             }
-            
-    var errors = ModelState
-        .Where(x => x.Value.Errors.Count > 0)
-        .Select(x => new { 
-            Property = x.Key, 
-            Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList() 
-        })
-        .ToList();
-        
-    // Log or inspect errors
-    foreach (var error in errors)
-    {
-        System.Diagnostics.Debug.WriteLine($"Property: {error.Property}, Errors: {string.Join(", ", error.Errors)}");
-    }
+
+            var errors = ModelState
+                .Where(x => x.Value.Errors.Count > 0)
+                .Select(x => new
+                {
+                    Property = x.Key,
+                    Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                })
+                .ToList();
+
+            // Log or inspect errors
+            foreach (var error in errors)
+            {
+                System.Diagnostics.Debug.WriteLine($"Property: {error.Property}, Errors: {string.Join(", ", error.Errors)}");
+            }
 
             ViewBag.Tags = _tagRepository.Tags.ToList();
             return View(model);
@@ -174,16 +175,16 @@ namespace GoldenLibrary.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken] 
+        [ValidateAntiForgeryToken]
         public JsonResult AutoSave(PostCreateViewModel model)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            
+
             if (string.IsNullOrWhiteSpace(model.Title) && string.IsNullOrWhiteSpace(model.Content))
             {
                 return Json(new { success = false, message = "Nothing to save" });
             }
-            
+
             var post = new Post
             {
                 PostId = model.PostId ?? 0, // Fix: Handle nullable PostId by using null-coalescing operator
@@ -198,27 +199,27 @@ namespace GoldenLibrary.Controllers
                 IsActive = false,
                 IsDraft = true
             };
-            
+
             bool success = _postRepository.AutoSaveDraft(post);
-            
+
             if (success)
             {
                 // If this was a new draft, we need to return the new ID
                 if (model.PostId == 0)
                 {
-                    var newDraft = _postRepository.GetUserDrafts(userId).FirstOrDefault(d => 
-                        d.Title == post.Title && 
+                    var newDraft = _postRepository.GetUserDrafts(userId).FirstOrDefault(d =>
+                        d.Title == post.Title &&
                         d.Content == post.Content);
-                        
+
                     if (newDraft != null)
                     {
                         return Json(new { success = true, message = "Draft saved", postId = newDraft.PostId });
                     }
                 }
-                
+
                 return Json(new { success = true, message = "Draft saved" });
             }
-            
+
             return Json(new { success = false, message = "Failed to save draft" });
         }
 
@@ -227,7 +228,7 @@ namespace GoldenLibrary.Controllers
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
             var drafts = _postRepository.GetUserDrafts(userId);
-            
+
             return View(drafts);
         }
 
@@ -284,19 +285,19 @@ namespace GoldenLibrary.Controllers
                             .Include(p => p.Tags)
                             .Include(p => p.User)
                             .FirstOrDefaultAsync(p => p.PostId == model.Id);
-                            
+
                 if (post == null)
                 {
                     return Json(new { success = false, message = "Post not found" });
                 }
-                
+
                 // Toggle the status
                 bool originalStatus = post.IsActive;
                 post.IsActive = !originalStatus;
-                
+
                 // Get the tag IDs to maintain associations
                 var tagIds = post.Tags?.Select(t => t.TagId).ToArray() ?? Array.Empty<int>();
-                
+
                 // Create a complete entity that preserves all properties
                 var entityToUpdate = new Post
                 {
@@ -310,13 +311,14 @@ namespace GoldenLibrary.Controllers
                     PublishedOn = post.PublishedOn,
                     IsActive = post.IsActive // This is the toggled value
                 };
-                
+
                 // Update the post in database
                 _postRepository.EditPost(entityToUpdate, tagIds);
-                
+
                 // Return clear success response
-                return Json(new { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     isActive = entityToUpdate.IsActive,
                     message = $"Post status changed from {(originalStatus ? "active" : "inactive")} to {(entityToUpdate.IsActive ? "active" : "inactive")}"
                 });
@@ -345,18 +347,19 @@ namespace GoldenLibrary.Controllers
                 // Get the post to verify it exists
                 var post = await _postRepository.Posts
                             .FirstOrDefaultAsync(p => p.PostId == model.Id);
-                
+
                 if (post == null)
                 {
                     return Json(new { success = false, message = "Post not found" });
                 }
-                
+
                 // Delete the post
                 _postRepository.DeletePost(model.Id);
-                
+
                 // Return success response
-                return Json(new { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     message = "Post has been successfully deleted"
                 });
             }
@@ -427,22 +430,22 @@ namespace GoldenLibrary.Controllers
         public IActionResult Delete(int id)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            
+
             // Get the draft
             var draft = _postRepository.GetDraft(id, userId);
-            
+
             // Check if the draft exists and belongs to the current user
             if (draft == null)
             {
                 return NotFound();
             }
-            
+
             // Delete the draft
             _postRepository.DeletePost(id);
-            
+
             // Add success message
             TempData["Message"] = "Draft deleted successfully.";
-            
+
             // Redirect back to drafts page
             return RedirectToAction("Drafts");
         }
@@ -463,31 +466,32 @@ namespace GoldenLibrary.Controllers
             {
                 return Json(new { success = false, message = "Invalid file type. Only JPG, PNG, GIF and WEBP are allowed." });
             }
-            
+
             try
             {
                 // Generate a unique filename to prevent overwrites
                 string uniqueFileName = $"{Guid.NewGuid()}_{image.FileName}";
-                
+
                 // Create directory if it doesn't exist
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                 if (!Directory.Exists(uploadsFolder))
                 {
                     Directory.CreateDirectory(uploadsFolder);
                 }
-                
+
                 // Save the file
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await image.CopyToAsync(fileStream);
                 }
-                
+
                 // Return success with the URL to the saved image
-                return Json(new { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     imageUrl = $"/uploads/{uniqueFileName}",
-                    message = "Image uploaded successfully" 
+                    message = "Image uploaded successfully"
                 });
             }
             catch (Exception ex)
@@ -511,7 +515,7 @@ namespace GoldenLibrary.Controllers
                 string uploadsFolder = "";
                 string uniqueFileName = "";
                 string fileUrl = "";
-                
+
                 // Handle different media types
                 switch (mediaType.ToLower())
                 {
@@ -522,13 +526,13 @@ namespace GoldenLibrary.Controllers
                         {
                             return Json(new { success = false, message = "Invalid file type. Only JPG, PNG, GIF and WEBP are allowed." });
                         }
-                        
+
                         // Save to images directory
                         uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "images");
                         uniqueFileName = $"{Guid.NewGuid()}_{mediaFile.FileName}";
                         fileUrl = $"/uploads/images/{uniqueFileName}";
                         break;
-                        
+
                     case "video":
                         // Validate file type for videos
                         var allowedVideoTypes = new[] { "video/mp4", "video/webm", "video/ogg" };
@@ -536,13 +540,13 @@ namespace GoldenLibrary.Controllers
                         {
                             return Json(new { success = false, message = "Invalid file type. Only MP4, WebM, and OGG video formats are allowed." });
                         }
-                        
+
                         // Save to videos directory
                         uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "videos");
                         uniqueFileName = $"{Guid.NewGuid()}_{mediaFile.FileName}";
                         fileUrl = $"/uploads/videos/{uniqueFileName}";
                         break;
-                        
+
                     case "document":
                         // Validate file type for documents
                         var allowedDocTypes = new[] { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
@@ -550,37 +554,38 @@ namespace GoldenLibrary.Controllers
                         {
                             return Json(new { success = false, message = "Invalid file type. Only PDF and Word documents are allowed." });
                         }
-                        
+
                         // Save to documents directory
                         uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents");
                         uniqueFileName = $"{Guid.NewGuid()}_{mediaFile.FileName}";
                         fileUrl = $"/uploads/documents/{uniqueFileName}";
                         break;
-                        
+
                     default:
                         return Json(new { success = false, message = "Invalid media type specified." });
                 }
-                
+
                 // Create directory if it doesn't exist
                 if (!Directory.Exists(uploadsFolder))
                 {
                     Directory.CreateDirectory(uploadsFolder);
                 }
-                
+
                 // Save the file
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await mediaFile.CopyToAsync(fileStream);
                 }
-                
+
                 // Return success with the URL to the saved media
-                return Json(new { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     mediaUrl = fileUrl,
                     mediaType = mediaType,
                     fileName = mediaFile.FileName,
-                    message = $"{mediaType} uploaded successfully" 
+                    message = $"{mediaType} uploaded successfully"
                 });
             }
             catch (Exception ex)
@@ -598,33 +603,34 @@ namespace GoldenLibrary.Controllers
             {
                 return Json(new { success = false, message = "Search query cannot be empty" });
             }
-            
+
             try
             {
                 // You would normally get this from configuration
                 // Remember to register and get your own API key from Unsplash Developer portal
                 string unsplashAccessKey = "YOUR_UNSPLASH_ACCESS_KEY_HERE";
                 int perPage = 12;
-                
+
                 // Construct the Unsplash API URL
                 string apiUrl = $"https://api.unsplash.com/search/photos?query={Uri.EscapeDataString(query)}&page={page}&per_page={perPage}";
-                
+
                 // Create HTTP client
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.DefaultRequestHeaders.Add("Accept-Version", "v1");
                     httpClient.DefaultRequestHeaders.Add("Authorization", $"Client-ID {unsplashAccessKey}");
-                    
+
                     // Send request to Unsplash API
                     var response = await httpClient.GetAsync(apiUrl);
-                    
+
                     if (response.IsSuccessStatusCode)
                     {
                         // Parse the response
                         var jsonResponse = await response.Content.ReadAsStringAsync();
                         var searchResult = System.Text.Json.JsonSerializer.Deserialize<UnsplashSearchResult>(jsonResponse);
-                        
-                        return Json(new { 
+
+                        return Json(new
+                        {
                             success = true,
                             results = searchResult.results,
                             totalPages = searchResult.total_pages
@@ -649,7 +655,7 @@ namespace GoldenLibrary.Controllers
             public int total_pages { get; set; }
             public List<UnsplashPhoto> results { get; set; }
         }
-        
+
         public class UnsplashPhoto
         {
             public string id { get; set; }
@@ -657,7 +663,7 @@ namespace GoldenLibrary.Controllers
             public string alt_description { get; set; }
             public UnsplashUser user { get; set; }
         }
-        
+
         public class UnsplashUrls
         {
             public string raw { get; set; }
@@ -666,14 +672,14 @@ namespace GoldenLibrary.Controllers
             public string small { get; set; }
             public string thumb { get; set; }
         }
-        
+
         public class UnsplashUser
         {
             public string id { get; set; }
             public string name { get; set; }
             public UnsplashLinks links { get; set; }
         }
-        
+
         public class UnsplashLinks
         {
             public string html { get; set; }
