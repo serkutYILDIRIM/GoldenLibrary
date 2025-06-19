@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using GoldenLibrary.Data.Abstract;
-using GoldenLibrary.Data.Concrete.EfCore;
 using GoldenLibrary.Entity;
 using GoldenLibrary.Models;
 using Microsoft.AspNetCore.Authentication;
