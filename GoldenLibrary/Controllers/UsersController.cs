@@ -84,7 +84,7 @@ namespace GoldenLibrary.Controllers
                         userClaims.Add(new Claim(ClaimTypes.Role, "admin"));
                     }
 
-                    var claimsIdentity = new ClaimsIdentity( userClaims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var claimsIdentity = new ClaimsIdentity(userClaims, CookieAuthenticationDefaults.AuthenticationScheme);
 
                     var authProperties = new AuthenticationProperties
                     {
