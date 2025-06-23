@@ -101,9 +101,7 @@ namespace GoldenLibrary.Controllers
                     return RedirectToAction("Index", "Posts");
                 }
                 else
-                {
                     ModelState.AddModelError("", "Kullanıcı adı veya şifre yanlış");
-                }
             }
 
             return View(model);
