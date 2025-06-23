@@ -142,9 +142,7 @@ namespace GoldenLibrary.Controllers
                     post.IsDraft = false;
 
                     if (postId > 0)
-                    {
                         _postRepository.EditPost(post, tagIds);
-                    }
                     else
                     {
                         _postRepository.CreatePost(post, tagIds);
