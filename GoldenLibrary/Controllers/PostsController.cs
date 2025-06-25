@@ -184,7 +184,7 @@ namespace GoldenLibrary.Controllers
 
             var post = new Post
             {
-                PostId = model.PostId ?? 0, // Fix: Handle nullable PostId by using null-coalescing operator
+                PostId = model.PostId ?? 0,
                 Title = model.Title ?? "Untitled",
                 Description = model.Description,
                 Content = model.Content,
