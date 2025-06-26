@@ -112,10 +112,9 @@ namespace GoldenLibrary.Controllers
             {
                 // Ensure PostId is properly handled - if empty/invalid, default to 0
                 int postId = 0;
+
                 if (model.PostId.HasValue)
-                {
                     postId = model.PostId.Value;
-                }
 
                 var post = new Post
                 {
