@@ -208,9 +208,7 @@ namespace GoldenLibrary.Controllers
                         d.Content == post.Content);
 
                     if (newDraft != null)
-                    {
                         return Json(new { success = true, message = "Draft saved", postId = newDraft.PostId });
-                    }
                 }
 
                 return Json(new { success = true, message = "Draft saved" });
