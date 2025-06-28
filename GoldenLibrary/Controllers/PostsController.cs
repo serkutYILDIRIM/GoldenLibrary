@@ -235,9 +235,7 @@ namespace GoldenLibrary.Controllers
             var posts = _postRepository.Posts.Where(p => !p.IsDraft); // Exclude drafts from regular list
 
             if (string.IsNullOrEmpty(role))
-            {
                 posts = posts.Where(i => i.UserId == userId);
-            }
 
             // Filter by tag if specified
             if (!string.IsNullOrEmpty(tag))
