@@ -239,9 +239,7 @@ namespace GoldenLibrary.Controllers
 
             // Filter by tag if specified
             if (!string.IsNullOrEmpty(tag))
-            {
                 posts = posts.Where(x => x.Tags.Any(t => t.Url == tag));
-            }
 
             // Get all tags for the filter
             ViewBag.Tags = await _tagRepository.Tags.ToListAsync();
