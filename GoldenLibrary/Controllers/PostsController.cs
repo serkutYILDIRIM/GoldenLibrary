@@ -177,9 +177,7 @@ namespace GoldenLibrary.Controllers
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
             if (string.IsNullOrWhiteSpace(model.Title) && string.IsNullOrWhiteSpace(model.Content))
-            {
                 return Json(new { success = false, message = "Nothing to save" });
-            }
 
             var post = new Post
             {
