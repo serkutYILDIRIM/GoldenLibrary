@@ -273,9 +273,7 @@ namespace GoldenLibrary.Controllers
                             .FirstOrDefaultAsync(p => p.PostId == model.Id);
 
                 if (post == null)
-                {
                     return Json(new { success = false, message = "Post not found" });
-                }
 
                 // Toggle the status
                 bool originalStatus = post.IsActive;
@@ -326,9 +324,7 @@ namespace GoldenLibrary.Controllers
             try
             {
                 if (model == null || model.Id <= 0)
-                {
                     return Json(new { success = false, message = "Invalid post ID" });
-                }
 
                 // Get the post to verify it exists
                 var post = await _postRepository.Posts
