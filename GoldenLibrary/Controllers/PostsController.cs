@@ -331,9 +331,7 @@ namespace GoldenLibrary.Controllers
                             .FirstOrDefaultAsync(p => p.PostId == model.Id);
 
                 if (post == null)
-                {
                     return Json(new { success = false, message = "Post not found" });
-                }
 
                 // Delete the post
                 _postRepository.DeletePost(model.Id);
