@@ -356,9 +356,8 @@ namespace GoldenLibrary.Controllers
         public IActionResult Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
+
             var post = _postRepository.Posts.Include(i => i.Tags).FirstOrDefault(i => i.PostId == id);
             if (post == null)
             {
