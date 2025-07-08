@@ -359,10 +359,9 @@ namespace GoldenLibrary.Controllers
                 return NotFound();
 
             var post = _postRepository.Posts.Include(i => i.Tags).FirstOrDefault(i => i.PostId == id);
+
             if (post == null)
-            {
                 return NotFound();
-            }
 
             ViewBag.Tags = _tagRepository.Tags.ToList();
 
