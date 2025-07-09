@@ -393,9 +393,7 @@ namespace GoldenLibrary.Controllers
                 };
 
                 if (User.FindFirstValue(ClaimTypes.Role) == "admin")
-                {
                     entityToUpdate.IsActive = model.IsActive;
-                }
 
                 _postRepository.EditPost(entityToUpdate, tagIds);
                 return RedirectToAction("List");
