@@ -412,9 +412,7 @@ namespace GoldenLibrary.Controllers
 
             // Check if the draft exists and belongs to the current user
             if (draft == null)
-            {
                 return NotFound();
-            }
 
             // Delete the draft
             _postRepository.DeletePost(id);
