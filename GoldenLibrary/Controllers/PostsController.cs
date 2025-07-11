@@ -430,9 +430,7 @@ namespace GoldenLibrary.Controllers
         public async Task<IActionResult> UploadArticleImage(IFormFile image)
         {
             if (image == null || image.Length == 0)
-            {
                 return Json(new { success = false, message = "No file was uploaded" });
-            }
 
             // Validate file type
             var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
