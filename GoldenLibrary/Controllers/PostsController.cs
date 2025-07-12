@@ -435,9 +435,7 @@ namespace GoldenLibrary.Controllers
             // Validate file type
             var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
             if (!allowedTypes.Contains(image.ContentType))
-            {
                 return Json(new { success = false, message = "Invalid file type. Only JPG, PNG, GIF and WEBP are allowed." });
-            }
 
             try
             {
