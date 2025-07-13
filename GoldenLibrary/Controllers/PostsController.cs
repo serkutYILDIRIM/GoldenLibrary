@@ -445,9 +445,7 @@ namespace GoldenLibrary.Controllers
                 // Create directory if it doesn't exist
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                 if (!Directory.Exists(uploadsFolder))
-                {
                     Directory.CreateDirectory(uploadsFolder);
-                }
 
                 // Save the file
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
