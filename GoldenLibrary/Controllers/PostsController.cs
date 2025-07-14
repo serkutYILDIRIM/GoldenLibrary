@@ -474,9 +474,7 @@ namespace GoldenLibrary.Controllers
         public async Task<IActionResult> UploadMedia(IFormFile mediaFile, string mediaType)
         {
             if (mediaFile == null || mediaFile.Length == 0)
-            {
                 return Json(new { success = false, message = "No file was uploaded" });
-            }
 
             try
             {
