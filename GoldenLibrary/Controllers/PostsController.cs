@@ -489,9 +489,7 @@ namespace GoldenLibrary.Controllers
                         // Validate file type
                         var allowedImageTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
                         if (!allowedImageTypes.Contains(mediaFile.ContentType))
-                        {
                             return Json(new { success = false, message = "Invalid file type. Only JPG, PNG, GIF and WEBP are allowed." });
-                        }
 
                         // Save to images directory
                         uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "images");
