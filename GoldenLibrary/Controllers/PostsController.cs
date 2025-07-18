@@ -513,9 +513,7 @@ namespace GoldenLibrary.Controllers
                         // Validate file type for documents
                         var allowedDocTypes = new[] { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" };
                         if (!allowedDocTypes.Contains(mediaFile.ContentType))
-                        {
                             return Json(new { success = false, message = "Invalid file type. Only PDF and Word documents are allowed." });
-                        }
 
                         // Save to documents directory
                         uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "documents");
@@ -529,9 +527,7 @@ namespace GoldenLibrary.Controllers
 
                 // Create directory if it doesn't exist
                 if (!Directory.Exists(uploadsFolder))
-                {
                     Directory.CreateDirectory(uploadsFolder);
-                }
 
                 // Save the file
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
