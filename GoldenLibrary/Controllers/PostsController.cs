@@ -558,9 +558,7 @@ namespace GoldenLibrary.Controllers
         public async Task<IActionResult> SearchUnsplash(string query, int page = 1)
         {
             if (string.IsNullOrWhiteSpace(query))
-            {
                 return Json(new { success = false, message = "Search query cannot be empty" });
-            }
 
             try
             {
