@@ -20,9 +20,8 @@ namespace GoldenLibrary.Controllers
         public IActionResult Login()
         {
             if (User.Identity!.IsAuthenticated)
-            {
                 return RedirectToAction("Index", "Posts");
-            }
+
             return View();
         }
 
