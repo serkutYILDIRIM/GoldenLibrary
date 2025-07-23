@@ -117,9 +117,8 @@ namespace GoldenLibrary.Controllers
                         .FirstOrDefault(x => x.UserName == username);
 
             if (user == null)
-            {
                 return NotFound();
-            }
+
             return View(user);
         }
 
