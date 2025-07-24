@@ -116,9 +116,9 @@ namespace GoldenLibrary.Controllers
                         .ThenInclude(x => x.Post)
                         .FirstOrDefault(x => x.UserName == username);
 
-            if (user == null) { 
+            if (user == null)  
                 return NotFound();
-            }
+            
 
             return View(user);
         }
