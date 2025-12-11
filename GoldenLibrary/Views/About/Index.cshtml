@@ -2,20 +2,6 @@
     ViewData["Title"] = "International Women's Day";
 }
 
-
-        // Create random floating elements
-        for (let i = 0; i < 15; i++) {
-            createFloatingElement(container,
-                                symbols[Math.floor(Math.random() * symbols.length)],
-                                iwdColors[i % 4]);
-        }
-
-        // Create falling flowers
-        createFallingFlowers();
-
-        // Add hover effects to achievement icons
-        addIconInteractions();
-
         // Start the MVP buttercup flying animation
         initMVPButtercup();
 
