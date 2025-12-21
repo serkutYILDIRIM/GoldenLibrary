@@ -5,12 +5,6 @@
         container.appendChild(element);
     }
 
-        // Create falling flowers
-        for (let i = 0; i < 30; i++) {
-            setTimeout(() => {
-                const flower = document.createElement('div');
-                flower.className = 'falling-flower';
-
                 // Random flower and color
                 flower.textContent = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
                 flower.style.color = iwdColors[i % 4];
