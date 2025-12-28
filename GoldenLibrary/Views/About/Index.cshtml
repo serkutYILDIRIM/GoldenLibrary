@@ -7,11 +7,7 @@
 
 
 
-        // Continue creating flowers periodically
-        setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                const flower = document.createElement('div');
-                flower.className = 'falling-flower';
+
 
                 const randomIndex = Math.floor(Math.random() * flowerEmojis.length);
                 flower.textContent = flowerEmojis[randomIndex];
