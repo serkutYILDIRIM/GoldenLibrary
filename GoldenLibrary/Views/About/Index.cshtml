@@ -5,20 +5,6 @@
 
  
 
-            // Add a click handler to make the buttercup "sparkle" when clicked
-            mvpClone.addEventListener('click', function() {
-                const sparkle = document.createElement('div');
-                sparkle.innerHTML = '✨';
-                sparkle.style.position = 'absolute';
-                sparkle.style.left = '50%';
-                sparkle.style.top = '50%';
-                sparkle.style.transform = 'translate(-50%, -50%)';
-                sparkle.style.fontSize = '40px';
-                sparkle.style.zIndex = '20';
-                sparkle.style.pointerEvents = 'none';
-                sparkle.style.animation = 'fadeOut 1s forwards';
-
-                this.appendChild(sparkle);
 
                 setTimeout(() => {
                     sparkle.remove();
