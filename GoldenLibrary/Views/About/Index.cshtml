@@ -4,11 +4,6 @@
 
     
 
-        
-
-            // Calculate rotation based on mouse position
-            const xRotation = ((y / rect.height) - 0.5) * 5; // Max 5 degrees
-            const yRotation = ((x / rect.width) - 0.5) * -5; // Max 5 degrees
 
             // Apply the rotation
             this.style.transform = `perspective(1000px) rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
