@@ -4,11 +4,7 @@
 
     
 
-        // Add a subtle hover effect
-        envelope.addEventListener('mousemove', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left; // x position within the element
-            const y = e.clientY - rect.top;  // y position within the element
+        
 
             // Calculate rotation based on mouse position
             const xRotation = ((y / rect.height) - 0.5) * 5; // Max 5 degrees
